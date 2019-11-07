@@ -31,7 +31,7 @@ namespace UiPathOrchestratorStartJob
 
             Console.WriteLine("Authentication...");
 
-            authenticated = TryAuthorize(uiPathCloudAPI, "", "");
+            // authenticated = TryAuthorize(uiPathCloudAPI, "", "");
             if (!authenticated)
             {
                 string login = ConfigurationManager.AppSettings["login"];
@@ -89,9 +89,9 @@ namespace UiPathOrchestratorStartJob
             {
                 Console.WriteLine(uiPathCloudAPI.LastErrorMessage);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
+                Console.WriteLine(ex.Message);
             }
 
             return result;

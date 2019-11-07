@@ -1,4 +1,7 @@
 ﻿using Newtonsoft.Json;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Support.UI;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -106,16 +109,7 @@ namespace UiPathOrchestrator
                 Password = password;
             }
 
-            try
-            {
-                // TODO: Make without WebBrowser
-                RunBrowserThread(string.Format(urlGetCodeBase, CodeChallenge, ClientId));
-            }
-            catch (Exception ex)
-            {
-                LastErrorMessage = ex.Message;
-                throw ex;
-            }
+            SeleniumAuthorize();
 
             var authParametr = new AuthParameters
             {
@@ -321,6 +315,40 @@ namespace UiPathOrchestrator
             }
 
             return result;
+        }
+
+        private void SeleniumAuthorize()
+        {
+            IWebDriver driver = new ChromeDriver(Environment.CurrentDirectory);
+            driver.Url = string.Format(urlGetCodeBase, CodeChallenge, ClientId);
+            driver.Manage().Window.Maximize();
+
+            IWebElement emailField = driver.FindElement(By.XPath("//input[@id='text-field-hero-input'][@class='mdc-text-field__input marginNone loginFormEmailText']"));
+            IWebElement passwordField = driver.FindElement(By.XPath("//input[@id='text-field-hero-input'][@type='password'][@class='mdc-text-field__input marginNone loginFormPasswordTextField']"));
+            IWebElement loginButton = driver.FindElement(By.Id("loginButton"));
+
+            emailField.SendKeys(Login);
+            passwordField.SendKeys(Password);
+            loginButton.Click();
+
+            int tryCount = 5;
+            while (tryCount > 0)
+            {
+                Thread.Sleep(2000);
+
+                Regex regex = new Regex(patternCode);
+                Match match = regex.Match(driver.Url);
+                if (match.Success)
+                {
+                    Code = match.Value;
+                    Authenticated = true;
+                    break;
+                }
+
+                tryCount--;
+            }
+
+            driver.Close();
         }
 
         private void RunBrowserThread(string url)
