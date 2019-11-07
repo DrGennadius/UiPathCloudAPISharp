@@ -246,7 +246,7 @@ namespace UiPathOrchestrator
             HttpWebRequest req = WebRequest.Create(url) as HttpWebRequest;
             req.Method = "GET";
             req.Timeout = 10000;
-            req.Headers.Add("Authorization", Token.token_type + " " + (access ? Token.access_token : Token.id_token));
+            req.Headers.Add("Authorization", Token.TokenType + " " + (access ? Token.AccessToken : Token.IdToken));
             if (access)
             {
                 req.Headers.Add("X-UIPATH-TenantName", ServiceInstances.FirstOrDefault().LogicalName);
@@ -289,7 +289,7 @@ namespace UiPathOrchestrator
             req.Accept = "application/json";
             if (access)
             {
-                req.Headers.Add("Authorization", Token.token_type + " " + Token.access_token);
+                req.Headers.Add("Authorization", Token.TokenType + " " + Token.AccessToken);
                 req.Headers.Add("X-UIPATH-TenantName", ServiceInstances.FirstOrDefault().LogicalName);
             }
 
@@ -328,6 +328,7 @@ namespace UiPathOrchestrator
             var th = new Thread(() =>
             {
                 WebBrowser webBrowser = new WebBrowser();
+                webBrowser.ScriptErrorsSuppressed = true;
                 webBrowser.DocumentCompleted += browser_DocumentCompleted;
                 webBrowser.Navigate(url);
                 Application.Run();
@@ -350,7 +351,6 @@ namespace UiPathOrchestrator
             }
             if (!Authenticated && webBrowser.Url == e.Url)
             {
-                Console.WriteLine("Natigated to {0}", e.Url);
                 HtmlElement emailField = null;
                 HtmlElement passwordField = null;
                 var elements = webBrowser.Document.GetElementsByTagName("input");

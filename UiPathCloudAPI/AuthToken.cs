@@ -1,11 +1,22 @@
-﻿namespace UiPathOrchestrator
+﻿using Newtonsoft.Json;
+
+namespace UiPathOrchestrator
 {
     internal class AuthToken
     {
-        public string access_token;
-        public string id_token;
-        public string scope;
-        public string expires_in;
-        public string token_type;
+        [JsonProperty(PropertyName = "access_token")]
+        public string AccessToken { get; set; }
+
+        [JsonProperty(PropertyName = "id_token")]
+        public string IdToken { get; set; }
+
+        [JsonProperty(PropertyName = "scope")]
+        public string Scope { get; set; }
+
+        [JsonProperty(PropertyName = "expires_in")]
+        public string ExpiresIn { get; set; }
+
+        [JsonProperty(PropertyName = "token_type")]
+        public string TokenType { get; set; }
     }
 }

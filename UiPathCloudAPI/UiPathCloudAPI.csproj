@@ -49,7 +49,6 @@
     <Compile Include="AuthParameters.cs" />
     <Compile Include="AuthToken.cs" />
     <Compile Include="Info.cs" />
-    <Compile Include="InfoMini.cs" />
     <Compile Include="Job.cs" />
     <Compile Include="Process.cs" />
     <Compile Include="Robot.cs" />
