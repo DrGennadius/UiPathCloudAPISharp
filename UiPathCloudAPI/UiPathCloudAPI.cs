@@ -1,7 +1,6 @@
 ﻿using Newtonsoft.Json;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
-using OpenQA.Selenium.Support.UI;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,8 +10,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace UiPathOrchestrator
 {
@@ -120,6 +117,10 @@ namespace UiPathOrchestrator
             if (!string.IsNullOrEmpty(password))
             {
                 Password = password;
+            }
+            if (string.IsNullOrWhiteSpace(login) || string.IsNullOrWhiteSpace(password))
+            {
+                throw new ArgumentException("Login or Password is empty.");
             }
 
             SeleniumAuthorizeToUiPath();

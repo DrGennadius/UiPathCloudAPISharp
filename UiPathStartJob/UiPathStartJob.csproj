@@ -66,6 +66,6 @@
     </PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>xcopy /y "$(SolutionDir)UiPathCloudAPI\$(OutDir)chromedriver.exe" "$(ProjectDir)$(OutDir)"</PostBuildEvent>
+    <PostBuildEvent>if not exist "$(ProjectDir)$(OutDir)chromedriver.exe" xcopy /y "$(SolutionDir)UiPathCloudAPI\$(OutDir)chromedriver.exe" "$(ProjectDir)$(OutDir)"</PostBuildEvent>
   </PropertyGroup>
 </Project>
