@@ -30,8 +30,7 @@ namespace UiPathCloudAPISharpStartJob
             bool authenticated = false;
 
             Console.WriteLine("Authentication...");
-
-            // authenticated = TryAuthorize(uiPathCloudAPI, "", "");
+            
             if (!authenticated)
             {
                 string login = ConfigurationManager.AppSettings["login"];
@@ -282,31 +281,43 @@ namespace UiPathCloudAPISharpStartJob
         static void PrintRobots(List<Robot> robots, string title = "Robots:")
         {
             Console.WriteLine(title);
-            int maxLength = robots.Max(x => x.Name.Length);
-            string blankName = new string(' ', maxLength);
-
+            ConsoleHelper.UpdateWidth();
+            ConsoleHelper.PrintLine();
+            ConsoleHelper.PrintRow(nameof(Robot.Id), nameof(Robot.Name), nameof(Process.Description));
+            ConsoleHelper.PrintLine();
             foreach (var item in robots)
             {
-                Console.WriteLine("\t{0} {1} {2}", item.Id, blankName.Insert(0, item.Name), item.Description.MaxLength(25));
+                ConsoleHelper.PrintRow(item.Id.ToString(), item.Name, item.Description);
             }
+            ConsoleHelper.PrintLine();
         }
 
         static void PrintProcesses(List<Process> proccess, string title = "Processes:")
         {
             Console.WriteLine(title);
+            ConsoleHelper.UpdateWidth();
+            ConsoleHelper.PrintLine();
+            ConsoleHelper.PrintRow(nameof(Process.Id), nameof(Process.Key), nameof(Process.Description));
+            ConsoleHelper.PrintLine();
             foreach (var item in proccess)
             {
-                Console.WriteLine("\t{0} {1} {2}", item.Id, item.Name, item.Description.MaxLength(25));
+                ConsoleHelper.PrintRow(item.Id.ToString(), item.Key, item.Description);
             }
+            ConsoleHelper.PrintLine();
         }
 
         static void PrintJobs(List<Job> jobs, string title = "Jobs:")
         {
             Console.WriteLine(title);
+            ConsoleHelper.UpdateWidth();
+            ConsoleHelper.PrintLine();
+            ConsoleHelper.PrintRow(nameof(Job.Id), nameof(Job.Key), nameof(Job.State), nameof(Job.StartTime), nameof(Job.EndTime));
+            ConsoleHelper.PrintLine();
             foreach (var item in jobs)
             {
-                Console.WriteLine("\t{0} {1} {2} {3} {4}", item.Id, item.Key, item.State, item.StartTime, item.EndTime);
+                ConsoleHelper.PrintRow(item.Id.ToString(), item.Key, item.State, item.StartTime.ToString(), item.EndTime.ToString());
             }
+            ConsoleHelper.PrintLine();
         }
     }
 }
