@@ -362,6 +362,7 @@ namespace UiPathCloudAPISharp
             }
 
             WebDriver.Close();
+            WebDriver.Quit();
         }
 
         private void ComputeCodes()
