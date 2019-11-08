@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace UiPathOrchestrator
+namespace UiPathCloudAPISharp
 {
     public static class ExtensionMethods
     {

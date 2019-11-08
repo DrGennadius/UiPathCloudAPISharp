@@ -11,7 +11,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 
-namespace UiPathOrchestrator
+namespace UiPathCloudAPISharp
 {
     public class UiPathCloudAPI
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace UiPathOrchestrator
+namespace UiPathCloudAPISharp
 {
     public class Job
     {

@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace UiPathOrchestrator
+namespace UiPathCloudAPISharp
 {
     internal class AuthToken
     {

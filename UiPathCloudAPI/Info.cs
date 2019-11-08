@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
 
-namespace UiPathOrchestrator
+namespace UiPathCloudAPISharp
 {
     public class Info<T>
     {

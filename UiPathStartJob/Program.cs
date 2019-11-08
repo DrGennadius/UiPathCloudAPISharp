@@ -9,9 +9,9 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using UiPathOrchestrator;
+using UiPathCloudAPISharp;
 
-namespace UiPathOrchestratorStartJob
+namespace UiPathCloudAPISharpStartJob
 {
     class Program
     {
