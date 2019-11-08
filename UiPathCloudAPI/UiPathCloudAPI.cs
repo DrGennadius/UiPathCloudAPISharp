@@ -52,6 +52,8 @@ namespace UiPathOrchestrator
 
         private List<ServiceInstance> ServiceInstances { get; set; }
 
+        private IWebDriver WebDriver { get; set; }
+
         private readonly string patternCode = @"(?<=code=).*(?=&state)";
 
         private readonly string urlGetCodeBase = "https://account.uipath.com/authorize?response_type=code&nonce=b0f368cbc59c6b99ccc8e9b66a30b4a6&state=47441df4d0f0a89da08d43b6dfdc4be2&code_challenge={0}&code_challenge_method=S256&scope=openid+profile+offline_access+email &audience=https%3A%2F%2Forchestrator.cloud.uipath.com&client_id={1}&redirect_uri=https%3A%2F%2Faccount.uipath.com%2Fmobile";
@@ -79,7 +81,18 @@ namespace UiPathOrchestrator
 
         public UiPathCloudAPI()
         {
+            ChromeOptions chromeOptions = new ChromeOptions();
+            chromeOptions.AddArgument("headless");
+            chromeOptions.AddArgument("--log-level=3");
+            ChromeDriverService service = ChromeDriverService.CreateDefaultService();
+            service.HideCommandPromptWindow = true;
+            WebDriver = new ChromeDriver(service, chromeOptions);
             ComputeCodes();
+        }
+
+        ~UiPathCloudAPI()
+        {
+            WebDriver.Dispose();
         }
 
         /// <summary>
@@ -109,7 +122,7 @@ namespace UiPathOrchestrator
                 Password = password;
             }
 
-            SeleniumAuthorize();
+            SeleniumAuthorizeToUiPath();
 
             var authParametr = new AuthParameters
             {
@@ -317,15 +330,14 @@ namespace UiPathOrchestrator
             return result;
         }
 
-        private void SeleniumAuthorize()
+        private void SeleniumAuthorizeToUiPath()
         {
-            IWebDriver driver = new ChromeDriver(Environment.CurrentDirectory);
-            driver.Url = string.Format(urlGetCodeBase, CodeChallenge, ClientId);
-            driver.Manage().Window.Maximize();
+            WebDriver.Url = string.Format(urlGetCodeBase, CodeChallenge, ClientId);
+            WebDriver.Manage().Window.Maximize();
 
-            IWebElement emailField = driver.FindElement(By.XPath("//input[@id='text-field-hero-input'][@class='mdc-text-field__input marginNone loginFormEmailText']"));
-            IWebElement passwordField = driver.FindElement(By.XPath("//input[@id='text-field-hero-input'][@type='password'][@class='mdc-text-field__input marginNone loginFormPasswordTextField']"));
-            IWebElement loginButton = driver.FindElement(By.Id("loginButton"));
+            IWebElement emailField = WebDriver.FindElement(By.XPath("//input[@id='text-field-hero-input'][@class='mdc-text-field__input marginNone loginFormEmailText']"));
+            IWebElement passwordField = WebDriver.FindElement(By.XPath("//input[@id='text-field-hero-input'][@type='password'][@class='mdc-text-field__input marginNone loginFormPasswordTextField']"));
+            IWebElement loginButton = WebDriver.FindElement(By.Id("loginButton"));
 
             emailField.SendKeys(Login);
             passwordField.SendKeys(Password);
@@ -337,7 +349,7 @@ namespace UiPathOrchestrator
                 Thread.Sleep(2000);
 
                 Regex regex = new Regex(patternCode);
-                Match match = regex.Match(driver.Url);
+                Match match = regex.Match(WebDriver.Url);
                 if (match.Success)
                 {
                     Code = match.Value;
@@ -348,71 +360,7 @@ namespace UiPathOrchestrator
                 tryCount--;
             }
 
-            driver.Close();
-        }
-
-        private void RunBrowserThread(string url)
-        {
-            var th = new Thread(() =>
-            {
-                WebBrowser webBrowser = new WebBrowser();
-                webBrowser.ScriptErrorsSuppressed = true;
-                webBrowser.DocumentCompleted += browser_DocumentCompleted;
-                webBrowser.Navigate(url);
-                Application.Run();
-            });
-            th.SetApartmentState(ApartmentState.STA);
-            th.Start();
-            th.Join();
-        }
-
-        private void browser_DocumentCompleted(object sender, WebBrowserDocumentCompletedEventArgs e)
-        {
-            var webBrowser = sender as WebBrowser;
-            Regex regex = new Regex(patternCode);
-            Match match = regex.Match(e.Url.OriginalString);
-            if (match.Success)
-            {
-                Code = match.Value;
-                Authenticated = true;
-                Application.ExitThread();   // Stops the thread
-            }
-            if (!Authenticated && webBrowser.Url == e.Url)
-            {
-                HtmlElement emailField = null;
-                HtmlElement passwordField = null;
-                var elements = webBrowser.Document.GetElementsByTagName("input");
-                foreach (HtmlElement element in elements)
-                {
-                    if (element.Id == "text-field-hero-input")
-                    {
-                        if (element.GetAttribute("type") == "password" && element.GetAttribute("className") == "mdc-text-field__input marginNone loginFormPasswordTextField")
-                        {
-                            passwordField = element;
-                        }
-                        else if (element.GetAttribute("className") == "mdc-text-field__input marginNone loginFormEmailText")
-                        {
-                            emailField = element;
-                        }
-                        if (emailField != null && passwordField != null)
-                        {
-                            break;
-                        }
-                    }
-                }
-                if (emailField != null && passwordField != null)
-                {
-                    emailField.SetAttribute("value", Login);
-                    passwordField.SetAttribute("value", Password);
-                    HtmlElement loginButton = webBrowser.Document.GetElementById("loginButton");
-                    loginButton.InvokeMember("login");
-                    Authenticated = true;
-                }
-                else
-                {
-                    Application.ExitThread();   // Stops the thread
-                }
-            }
+            WebDriver.Close();
         }
 
         private void ComputeCodes()
