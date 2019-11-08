@@ -61,12 +61,18 @@
       <Name>UiPathCloudAPIOld</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Selenium.WebDriver.ChromeDriver">
+      <Version>78.0.3904.7000</Version>
+    </PackageReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>
     </PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>if not exist "$(ProjectDir)$(OutDir)chromedriver.exe" xcopy /y "$(SolutionDir)UiPathCloudAPI\$(OutDir)chromedriver.exe" "$(ProjectDir)$(OutDir)"</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
 </Project>
