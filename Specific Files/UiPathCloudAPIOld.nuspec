@@ -1,17 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+<package >
   <metadata>
-    <id>UiPathCloudAPI</id>
-    <version>1.0.2</version>
-    <title></title>
+    <id>UiPathCloudAPI.net40</id>
+    <version>0.1.2</version>
+    <title>Specific UiPathCloudAPI .NET40</title>
     <authors>Gennady Zykov</authors>
-    <owners>Gennady Zykov</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>UiPathCloudAPI</description>
-    <dependencies>
-      <group targetFramework=".NETFramework4.0">
-        <dependency id="Newtonsoft.Json" version="11.0.2" />
-      </group>
-    </dependencies>
+    <description>Specific version of package UiPathCloudAPI .NET40</description>
   </metadata>
+  <files>
+    <file src="bin\Release\chromedriver.exe" target="lib\net40\chromedriver.exe" />
+	<file src="bin\Release\WebDriver.dll" target="lib\net40\WebDriver.dll" />
+  </files>
 </package>

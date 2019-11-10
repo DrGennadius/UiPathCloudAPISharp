@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>UiPathCloudAPI.net40</id>
+    <version>0.1.2</version>
+    <title>UiPathCloudAPI .NET40</title>
+    <authors>Gennady Zykov</authors>
+    <licenseUrl>https://raw.githubusercontent.com/DrGennadius/UiPathCloudAPISharp/master/LICENSE</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+	<description>Package for example C# library for UiPath Cloud API</description>
+    <copyright>Copyright 2019</copyright>
+    <tags>uipath orchestrator</tags>
+	<dependencies>
+      <group targetFramework=".NETFramework4.0">
+        <dependency id="Newtonsoft.Json" version="12.0.3" />
+        <dependency id="Selenium.WebDriver" version="3.141.0" />
+        <dependency id="Selenium.WebDriver.ChromeDriver" version="78.0.3904.7000" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>
