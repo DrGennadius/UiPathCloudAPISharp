@@ -281,6 +281,56 @@ namespace UiPathCloudAPISharp
         }
 
         /// <summary>
+        /// Get Assets.
+        /// </summary>
+        /// <returns></returns>
+        public List<Asset> GetAssets()
+        {
+            string response = SendRequestGetForOdata("Assets");
+            return JsonConvert.DeserializeObject<Info<Asset>>(response).Items;
+        }
+
+        /// <summary>
+        /// Get robot Asset.
+        /// </summary>
+        /// <param name="robot"></param>
+        /// <param name="assetName"></param>
+        /// <returns></returns>
+        public Asset GetRobotAsset(Robot robot, string assetName)
+        {
+            return GetRobotAssetByRobotId(robot.Id, assetName);
+        }
+
+        /// <summary>
+        /// Get robot Asset.
+        /// </summary>
+        /// <param name="robotName"></param>
+        /// <param name="assetName"></param>
+        /// <returns></returns>
+        public Asset GetRobotAsset(string robotName, string assetName)
+        {
+            Robot robot = GetRobots().Where(x => x.Name == robotName).FirstOrDefault();
+            if (robot == null)
+            {
+                LastErrorMessage = "The specified robot was not found.";
+                return null;
+            }
+            return GetRobotAssetByRobotId(robot.Id, assetName);
+        }
+
+        /// <summary>
+        /// Get robot Asset.
+        /// </summary>
+        /// <param name="robotId"></param>
+        /// <param name="assetName"></param>
+        /// <returns></returns>
+        public Asset GetRobotAssetByRobotId(int robotId, string assetName)
+        {
+            string response = SendRequestGetForOdata(string.Format("Assets/UiPath.Server.Configuration.OData.GetRobotAssetByRobotId(robotId={0},assetName='{1}')", robotId, assetName));
+            return JsonConvert.DeserializeObject<Asset>(response);
+        }
+
+        /// <summary>
         /// Robot list
         /// </summary>
         /// <returns></returns>
@@ -296,7 +346,8 @@ namespace UiPathCloudAPISharp
         /// <returns></returns>
         public List<Job> GetJobs()
         {
-            return JsonConvert.DeserializeObject<Info<Job>>(SendRequestGetForOdata("Jobs")).Items;
+            string response = SendRequestGetForOdata("Jobs");
+            return JsonConvert.DeserializeObject<Info<Job>>(response).Items;
         }
 
         /// <summary>
@@ -305,7 +356,7 @@ namespace UiPathCloudAPISharp
         /// <returns></returns>
         public List<Process> GetProcesses()
         {
-            var response = SendRequestGetForOdata("Releases");
+            string response = SendRequestGetForOdata("Releases");
             return JsonConvert.DeserializeObject<Info<Process>>(response).Items;
         }
 

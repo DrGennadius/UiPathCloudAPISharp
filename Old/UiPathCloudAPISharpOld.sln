@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.902
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UiPathCloudAPI", "..\UiPathCloudAPI\Old\UiPathCloudAPIOld.csproj", "{4E5269ED-041D-4B1E-8E01-960189B39EC3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UiPathCloudAPIOld", "..\UiPathCloudAPI\Old\UiPathCloudAPIOld.csproj", "{4E5269ED-041D-4B1E-8E01-960189B39EC3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UiPathStartJobOld", "..\UiPathStartJob\Old\UiPathStartJobOld.csproj", "{FDD929C3-E241-473D-BE3E-9827A5432772}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UiPathOrchestratorConsoleOld", "..\UiPathStartJob\Old\UiPathOrchestratorConsoleOld.csproj", "{FDD929C3-E241-473D-BE3E-9827A5432772}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
