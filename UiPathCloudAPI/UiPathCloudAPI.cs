@@ -38,16 +38,22 @@ namespace UiPathCloudAPISharp
         /// </summary>
         public string LastErrorMessage { get; private set; }
 
-        public string LogicalName { get; private set; }
+        public string TargetLogicalName { get; private set; }
 
         /// <summary>
         /// Passed an authentication?
         /// </summary>
-        public bool Authenticated { get; private set; } = false;
+        public bool Authorized { get; private set; } = false;
 
         internal AuthToken Token { get; set; }
 
         private List<ServiceInstance> ServiceInstances { get; set; }
+
+        private ServiceInstance TargetServiceInstance { get; set; }
+
+        private AccountsForUser TargetUser { get; set; }
+
+        private Account TargetAccount { get; set; }
 
         private IWebDriver WebDriver { get; set; }
 
@@ -104,7 +110,7 @@ namespace UiPathCloudAPISharp
         }
 
         /// <summary>
-        /// UiPath authorize
+        /// UiPath authorize.
         /// </summary>
         /// <param name="login"></param>
         /// <param name="password"></param>
@@ -137,13 +143,17 @@ namespace UiPathCloudAPISharp
         }
 
         /// <summary>
-        /// Get main data for next operations
+        /// Get main data for next operations.
         /// </summary>
         public void GetMainData()
         {
-            AccountsForUser accountsForUser = GetAccountsForUser();
-            LogicalName = accountsForUser.Accounts.FirstOrDefault()?.LogicalName;
-            if (string.IsNullOrWhiteSpace(LogicalName))
+            TargetUser = GetAccountsForUser();
+            if (!TargetUser.Accounts.Any())
+            {
+                throw new Exception("Accounts for target user is empty.");
+            }
+            TargetLogicalName = TargetUser.Accounts.First().LogicalName;
+            if (string.IsNullOrWhiteSpace(TargetLogicalName))
             {
                 throw new Exception("LogicalName is null, empty or white space filled.");
             }
@@ -152,33 +162,122 @@ namespace UiPathCloudAPISharp
             {
                 throw new Exception("ServiceInstances is empty.");
             }
+            TargetServiceInstance = ServiceInstances.First();
         }
 
         /// <summary>
-        /// Start new job by robot id and proccess key.
+        /// Get accounts for target user.
+        /// </summary>
+        /// <returns></returns>
+        public List<Account> GetAccountsForTargetUser()
+        {
+            List<Account> accounts = new List<Account>();
+
+            if (Authorized)
+            {
+                accounts.AddRange(TargetUser.Accounts);
+            }
+            else
+            {
+                LastErrorMessage = "No authorized";
+            }
+
+            return accounts;
+        }
+
+        /// <summary>
+        /// Set target account.
+        /// </summary>
+        /// <param name="account"></param>
+        /// <returns></returns>
+        public bool SetTargetAccount(Account account)
+        {
+            bool result = false;
+
+            if (Authorized)
+            {
+                if (TargetUser.Accounts.Contains(account))
+                {
+                    TargetAccount = account;
+                    result = true;
+                }
+                else
+                {
+                    LastErrorMessage = "The specified account does not belong to the target user.";
+                }
+            }
+            else
+            {
+                LastErrorMessage = "No authorized";
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Start new job by robot and proccess release.
+        /// </summary>
+        /// <param name="robot"></param>
+        /// <param name="process"></param>
+        /// <returns></returns>
+        public List<Job> StartJob(Robot robot, Process process)
+        {
+            return StartJob(robot.Id, process.Key);
+        }
+
+        /// <summary>
+        /// Start new job by robot name and proccess name.
+        /// </summary>
+        /// <param name="robotName"></param>
+        /// <param name="processName"></param>
+        /// <returns></returns>
+        public List<Job> StartJob(string robotName, string processName)
+        {
+            Robot robot = GetRobots().Where(x => x.Name == robotName).FirstOrDefault();
+            if (robot == null)
+            {
+                LastErrorMessage = "The specified robot was not found.";
+                return new List<Job>();
+            }
+            Process process = GetProcesses().Where(x => x.Name == processName).FirstOrDefault();
+            if (process == null)
+            {
+                LastErrorMessage = "The specified proccess was not found.";
+                return new List<Job>();
+            }
+            return StartJob(robot.Name, process.Name);
+        }
+
+        /// <summary>
+        /// Start new job by robot id and proccess release key.
         /// </summary>
         /// <param name="robotId">Robot ID</param>
-        /// <param name="releaseKey"></param>
+        /// <param name="releaseKey">Proccess release key</param>
         /// <returns></returns>
-        public List<Job> StartJob(int robotId, string releaseKey = null)
+        public List<Job> StartJob(int robotId, string releaseKey)
         {
+            List<Job> jobs = new List<Job>();
             if (string.IsNullOrEmpty(releaseKey))
             {
-                releaseKey = GetProcesses().FirstOrDefault()?.Key;
+                LastErrorMessage = "Proccess release key is empty.";
             }
-            var startInfo = new StartInfoContainer<StartJobsInfo>
+            else
             {
-                StartJobsInfo = new StartJobsInfo
+                var startInfo = new StartInfoContainer<StartJobsInfo>
                 {
-                    ReleaseKey = releaseKey,
-                    Strategy = "Specific",
-                    RobotIds = new int[] { robotId }
-                }
-            };
-            string output = JsonConvert.SerializeObject(startInfo);
-            var sentData = Encoding.UTF8.GetBytes(output);
-            var returnStr = SendRequestPostForOdata("Jobs/UiPath.Server.Configuration.OData.StartJobs", sentData);
-            return JsonConvert.DeserializeObject<Info<Job>>(returnStr).Items;
+                    StartJobsInfo = new StartJobsInfo
+                    {
+                        ReleaseKey = releaseKey,
+                        Strategy = "Specific",
+                        RobotIds = new int[] { robotId }
+                    }
+                };
+                string output = JsonConvert.SerializeObject(startInfo);
+                byte[] sentData = Encoding.UTF8.GetBytes(output);
+                string returnStr = SendRequestPostForOdata("Jobs/UiPath.Server.Configuration.OData.StartJobs", sentData);
+                jobs.AddRange(JsonConvert.DeserializeObject<Info<Job>>(returnStr).Items);
+            }
+            return jobs;
         }
 
         /// <summary>
@@ -206,8 +305,8 @@ namespace UiPathCloudAPISharp
         /// <returns></returns>
         public List<Process> GetProcesses()
         {
-            var str = SendRequestGetForOdata("Releases");
-            return JsonConvert.DeserializeObject<Info<Process>>(str).Items;
+            var response = SendRequestGetForOdata("Releases");
+            return JsonConvert.DeserializeObject<Info<Process>>(response).Items;
         }
 
         private string SendRequestGetForOdata(string operationPart)
@@ -215,7 +314,7 @@ namespace UiPathCloudAPISharp
             return SendRequestGet(
                 string.Format(
                     "https://platform.uipath.com/{0}/{1}/odata/{2}",
-                    LogicalName,
+                    TargetLogicalName,
                     ServiceInstances.FirstOrDefault().LogicalName,
                     operationPart
                     )
@@ -228,7 +327,7 @@ namespace UiPathCloudAPISharp
             return SendRequestPost(
                 string.Format(
                     "https://platform.uipath.com/{0}/{1}/odata/{2}",
-                    LogicalName,
+                    TargetLogicalName,
                     ServiceInstances.FirstOrDefault().LogicalName,
                     operationPart
                     )
@@ -239,7 +338,7 @@ namespace UiPathCloudAPISharp
 
         private void GetAllServiceInstances()
         {
-            ServiceInstances = JsonConvert.DeserializeObject<List<ServiceInstance>>(SendRequestGet(string.Format("https://platform.uipath.com/cloudrpa/api/account/{0}/getAllServiceInstances", LogicalName)));
+            ServiceInstances = JsonConvert.DeserializeObject<List<ServiceInstance>>(SendRequestGet(string.Format("https://platform.uipath.com/cloudrpa/api/account/{0}/getAllServiceInstances", TargetLogicalName)));
         }
 
         private AccountsForUser GetAccountsForUser()
@@ -354,7 +453,7 @@ namespace UiPathCloudAPISharp
                 if (match.Success)
                 {
                     Code = match.Value;
-                    Authenticated = true;
+                    Authorized = true;
                     break;
                 }
 

@@ -81,7 +81,7 @@ namespace UiPathCloudAPISharpStartJob
             try
             {
                 uiPathCloudAPI.Authorize(login, password);
-                result = uiPathCloudAPI.Authenticated;
+                result = uiPathCloudAPI.Authorized;
             }
             catch (WebException)
             {
@@ -100,7 +100,7 @@ namespace UiPathCloudAPISharpStartJob
             while (true)
             {
                 Console.Clear();
-                Console.WriteLine("Welcome, {0}!", uiPath.LogicalName);
+                Console.WriteLine("Welcome, {0}!", uiPath.TargetLogicalName);
                 Console.WriteLine("Select number:");
                 Console.WriteLine("0. Exit.");
                 Console.WriteLine("1. Robots.");
@@ -248,11 +248,13 @@ namespace UiPathCloudAPISharpStartJob
                         Console.ReadKey();
                         break;
                     case 2:
-                        Console.Write("Enter robot id: ");
                         try
                         {
-                            int robotId = Convert.ToInt32(Console.ReadLine());
-                            var newJobs = uiPath.StartJob(robotId);
+                            Console.Write("Enter robot name: ");
+                            string robotName = Console.ReadLine();
+                            Console.Write("Enter proccess name: ");
+                            string proccessName = Console.ReadLine();
+                            var newJobs = uiPath.StartJob(robotName, proccessName);
                             PrintJobs(newJobs, "New Jobs:");
                         }
                         catch (WebException)
