@@ -311,7 +311,7 @@ namespace UiPathCloudAPISharpStartJob
                     case 1:
                         try
                         {
-                            PrintAssets(uiPath.GetAssets());
+                            PrintConcreteAssets(uiPath.GetConcreteAssets());
                         }
                         catch (WebException)
                         {
@@ -413,6 +413,20 @@ namespace UiPathCloudAPISharpStartJob
             ConsoleHelper.PrintLine();
         }
 
+        static void PrintConcreteAssets(List<ConcreteAsset> assets, string title = "Assets:")
+        {
+            Console.WriteLine(title);
+            ConsoleHelper.UpdateWidth();
+            ConsoleHelper.PrintLine();
+            ConsoleHelper.PrintRow("Name", "Value");
+            ConsoleHelper.PrintLine();
+            foreach (var item in assets)
+            {
+                ConsoleHelper.PrintRow(item.Name, item.ForceStringValue());
+            }
+            ConsoleHelper.PrintLine();
+        }
+
         static void PrintAssets(List<Asset> assets, string title = "Assets:")
         {
             Console.WriteLine(title);
@@ -432,9 +446,9 @@ namespace UiPathCloudAPISharpStartJob
         {
             return new KeyValuePair<string, string>(
                 asset.Name,
-                asset.ValueType == "Text" ? asset.StringValue :
-                asset.ValueType == "Integer" ? asset.IntValue.ToString() :
-                asset.ValueType == "Bool" ? asset.BoolValue.ToString() :
+                asset.ValueType == AssetValueType.Text ? asset.StringValue :
+                asset.ValueType == AssetValueType.Integer ? asset.IntValue.ToString() :
+                asset.ValueType == AssetValueType.Bool ? asset.BoolValue.ToString() :
                 asset.CredentialUsername
                 );
         }

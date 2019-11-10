@@ -284,6 +284,15 @@ namespace UiPathCloudAPISharp
         /// Get Assets.
         /// </summary>
         /// <returns></returns>
+        public List<ConcreteAsset> GetConcreteAssets()
+        {
+            return GetAssets().Select(x => x.Concrete()).ToList();
+        }
+
+        /// <summary>
+        /// Get Assets.
+        /// </summary>
+        /// <returns></returns>
         public List<Asset> GetAssets()
         {
             string response = SendRequestGetForOdata("Assets");
