@@ -4,6 +4,6 @@ namespace UiPathCloudAPISharp
 {
     public class StartJobsWithArgumentsInfo : StartJobsInfo
     {
-        public Dictionary<string, object> InputArguments { get; set; }
+        public string InputArguments { get; set; }
     }
 }

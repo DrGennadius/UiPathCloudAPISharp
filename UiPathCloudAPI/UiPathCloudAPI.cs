@@ -302,6 +302,16 @@ namespace UiPathCloudAPISharp
                 string output = "";
                 if (inputArguments.Any())
                 {
+                    int incount = inputArguments.Count;
+                    string correctedInputArguments = "{";
+                    foreach (var item in inputArguments)
+                    {
+                        incount--;
+                        correctedInputArguments += '"' + item.Key + "\":\"" + item.Value.ToString() + '"';
+                        if (incount > 0)
+                            correctedInputArguments += ',';
+                    }
+                    correctedInputArguments += '}';
                     var startInfo = new StartInfoContainer<StartJobsWithArgumentsInfo>
                     {
                         StartJobsInfo = new StartJobsWithArgumentsInfo
@@ -309,7 +319,7 @@ namespace UiPathCloudAPISharp
                             ReleaseKey = releaseKey,
                             Strategy = "Specific",
                             RobotIds = new int[] { robotId },
-                            InputArguments = inputArguments
+                            InputArguments = correctedInputArguments
                         }
                     };
                     output = JsonConvert.SerializeObject(startInfo);
