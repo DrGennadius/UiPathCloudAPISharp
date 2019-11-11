@@ -12,10 +12,13 @@
     <tags>uipath orchestrator</tags>
 	<dependencies>
       <group targetFramework=".NETFramework4.0">
-        <dependency id="Newtonsoft.Json" version="12.0.3" />
+        <dependency id="Newtonsoft.Json" version="11.0.2" />
         <dependency id="Selenium.WebDriver" version="3.141.0" />
         <dependency id="Selenium.WebDriver.ChromeDriver" version="78.0.3904.7000" />
       </group>
     </dependencies>
   </metadata>
+  <files>
+	<file src="bin\Release\UiPathCloudAPI.net40.dll" target="lib\net40\UiPathCloudAPI.net40.dll" />
+  </files>
 </package>

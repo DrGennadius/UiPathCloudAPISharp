@@ -11,5 +11,6 @@
   <files>
     <file src="bin\Release\chromedriver.exe" target="lib\net40\chromedriver.exe" />
 	<file src="bin\Release\WebDriver.dll" target="lib\net40\WebDriver.dll" />
+	<file src="bin\Release\UiPathCloudAPI.net40.dll" target="lib\net40\UiPathCloudAPI.net40.dll" />
   </files>
 </package>
