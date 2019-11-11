@@ -390,11 +390,11 @@ namespace UiPathCloudAPISharpStartJob
             Console.WriteLine(title);
             ConsoleHelper.UpdateWidth();
             ConsoleHelper.PrintLine();
-            ConsoleHelper.PrintRow(nameof(Process.Id), nameof(Process.Key), nameof(Process.Description));
+            ConsoleHelper.PrintRow(nameof(Process.Id), nameof(Process.Name), nameof(Process.Key), nameof(Process.Description));
             ConsoleHelper.PrintLine();
             foreach (var item in proccess)
             {
-                ConsoleHelper.PrintRow(item.Id.ToString(), item.Key, item.Description);
+                ConsoleHelper.PrintRow(item.Id.ToString(), item.Name, item.Key, item.Description);
             }
             ConsoleHelper.PrintLine();
         }

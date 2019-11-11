@@ -226,12 +226,36 @@ namespace UiPathCloudAPISharp
         }
 
         /// <summary>
+        /// Start new job by robot and proccess release.
+        /// </summary>
+        /// <param name="robot"></param>
+        /// <param name="process"></param>
+        /// <param name="inputArguments">Input Arguments</param>
+        /// <returns></returns>
+        public List<Job> StartJob(Robot robot, Process process, Dictionary<string, object> inputArguments)
+        {
+            return StartJob(robot.Id, process.Key, inputArguments);
+        }
+
+        /// <summary>
         /// Start new job by robot name and proccess name.
         /// </summary>
         /// <param name="robotName"></param>
         /// <param name="processName"></param>
         /// <returns></returns>
         public List<Job> StartJob(string robotName, string processName)
+        {
+            return StartJob(robotName, processName, new Dictionary<string, object>());
+        }
+
+        /// <summary>
+        /// Start new job by robot name and proccess name.
+        /// </summary>
+        /// <param name="robotName"></param>
+        /// <param name="processName"></param>
+        /// <param name="inputArguments">Input Arguments</param>
+        /// <returns></returns>
+        public List<Job> StartJob(string robotName, string processName, Dictionary<string, object> inputArguments)
         {
             Robot robot = GetRobots().Where(x => x.Name == robotName).FirstOrDefault();
             if (robot == null)
@@ -245,7 +269,7 @@ namespace UiPathCloudAPISharp
                 LastErrorMessage = "The specified proccess was not found.";
                 return new List<Job>();
             }
-            return StartJob(robot.Name, process.Name);
+            return StartJob(robot.Id, process.Key, inputArguments);
         }
 
         /// <summary>
@@ -256,6 +280,18 @@ namespace UiPathCloudAPISharp
         /// <returns></returns>
         public List<Job> StartJob(int robotId, string releaseKey)
         {
+            return StartJob(robotId, releaseKey, new Dictionary<string, object>());
+        }
+
+        /// <summary>
+        /// Start new job by robot id and proccess release key.
+        /// </summary>
+        /// <param name="robotId">Robot ID</param>
+        /// <param name="releaseKey">Proccess release key</param>
+        /// <param name="inputArguments">Input Arguments</param>
+        /// <returns></returns>
+        public List<Job> StartJob(int robotId, string releaseKey, Dictionary<string, object> inputArguments)
+        {
             List<Job> jobs = new List<Job>();
             if (string.IsNullOrEmpty(releaseKey))
             {
@@ -263,16 +299,34 @@ namespace UiPathCloudAPISharp
             }
             else
             {
-                var startInfo = new StartInfoContainer<StartJobsInfo>
+                string output = "";
+                if (inputArguments.Any())
                 {
-                    StartJobsInfo = new StartJobsInfo
+                    var startInfo = new StartInfoContainer<StartJobsWithArgumentsInfo>
                     {
-                        ReleaseKey = releaseKey,
-                        Strategy = "Specific",
-                        RobotIds = new int[] { robotId }
-                    }
-                };
-                string output = JsonConvert.SerializeObject(startInfo);
+                        StartJobsInfo = new StartJobsWithArgumentsInfo
+                        {
+                            ReleaseKey = releaseKey,
+                            Strategy = "Specific",
+                            RobotIds = new int[] { robotId },
+                            InputArguments = inputArguments
+                        }
+                    };
+                    output = JsonConvert.SerializeObject(startInfo);
+                }
+                else
+                {
+                    var startInfo = new StartInfoContainer<StartJobsInfo>
+                    {
+                        StartJobsInfo = new StartJobsInfo
+                        {
+                            ReleaseKey = releaseKey,
+                            Strategy = "Specific",
+                            RobotIds = new int[] { robotId }
+                        }
+                    };
+                    output = JsonConvert.SerializeObject(startInfo);
+                }
                 byte[] sentData = Encoding.UTF8.GetBytes(output);
                 string returnStr = SendRequestPostForOdata("Jobs/UiPath.Server.Configuration.OData.StartJobs", sentData);
                 jobs.AddRange(JsonConvert.DeserializeObject<Info<Job>>(returnStr).Items);

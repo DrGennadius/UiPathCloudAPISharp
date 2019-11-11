@@ -7,7 +7,7 @@
     <ProjectGuid>{FDD929C3-E241-473D-BE3E-9827A5432772}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>UiPathOrchestrator</RootNamespace>
-    <AssemblyName>UiPathStartJob</AssemblyName>
+    <AssemblyName>UiPathOrchestratorConsole</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>

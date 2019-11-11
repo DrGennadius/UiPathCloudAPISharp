@@ -58,6 +58,7 @@
     <Compile Include="..\StartInfoContainer.cs" />
     <Compile Include="..\StartJobsInfo.cs" />
     <Compile Include="..\UiPathCloudAPI.cs" />
+	<Compile Include="..\StartJobsWithArgumentsInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json">
