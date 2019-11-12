@@ -64,11 +64,17 @@ namespace UiPathCloudAPISharpStartJob
                 catch (WebException)
                 {
                     Console.WriteLine(uiPathCloudAPI.LastErrorMessage);
+                    Console.ReadKey();
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-
+                    Console.WriteLine(ex.Message);
+                    Console.ReadKey();
                 }
+            }
+            else
+            {
+                Console.ReadKey();
             }
 
             return result;

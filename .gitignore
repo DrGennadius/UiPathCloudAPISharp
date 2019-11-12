@@ -328,3 +328,4 @@ ASALocalRun/
 
 # MFractors (Xamarin productivity tool) working folder 
 .mfractor/
+/UiPathCloudAPI/Old/UiPathCloudAPI.net40.nuspec
