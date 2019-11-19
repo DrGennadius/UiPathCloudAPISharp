@@ -45,6 +45,11 @@ namespace UiPathCloudAPISharp
         /// </summary>
         public bool Authorized { get; private set; } = false;
 
+        /// <summary>
+        /// Store for sent JSON data.
+        /// </summary>
+        public Queue<string> SentDataStore { get; private set; }
+
         internal AuthToken Token { get; set; }
 
         private List<ServiceInstance> ServiceInstances { get; set; }
@@ -84,6 +89,7 @@ namespace UiPathCloudAPISharp
 
         public UiPathCloudAPI()
         {
+            SentDataStore = new Queue<string>();
             ChromeOptions chromeOptions = new ChromeOptions();
             chromeOptions.AddArgument("headless");
             chromeOptions.AddArgument("--log-level=3");
@@ -337,9 +343,22 @@ namespace UiPathCloudAPISharp
                     };
                     output = JsonConvert.SerializeObject(startInfo);
                 }
+                SentDataStore.Enqueue(output);
                 byte[] sentData = Encoding.UTF8.GetBytes(output);
-                string returnStr = SendRequestPostForOdata("Jobs/UiPath.Server.Configuration.OData.StartJobs", sentData);
-                jobs.AddRange(JsonConvert.DeserializeObject<Info<Job>>(returnStr).Items);
+                string returnStr = null;
+                try
+                {
+                    returnStr = SendRequestPostForOdata("Jobs/UiPath.Server.Configuration.OData.StartJobs", sentData);
+                    jobs.AddRange(JsonConvert.DeserializeObject<Info<Job>>(returnStr).Items);
+                }
+                catch (Exception ex)
+                {
+                    LastErrorMessage += "\nException message:\n" + ex.Message;
+                    if (!string.IsNullOrEmpty(returnStr))
+                    {
+                        LastErrorMessage += "\nReturn string:\n" + returnStr;
+                    }
+                }
             }
             return jobs;
         }
@@ -559,15 +578,22 @@ namespace UiPathCloudAPISharp
             WebDriver.Url = string.Format(urlGetCodeBase, CodeChallenge, ClientId);
             WebDriver.Manage().Window.Maximize();
 
-            IWebElement emailField = WebDriver.FindElement(By.XPath("//input[@id='text-field-hero-input'][@class='mdc-text-field__input marginNone loginFormEmailText']"));
-            IWebElement passwordField = WebDriver.FindElement(By.XPath("//input[@id='text-field-hero-input'][@type='password'][@class='mdc-text-field__input marginNone loginFormPasswordTextField']"));
-            IWebElement loginButton = WebDriver.FindElement(By.Id("loginButton"));
+            try
+            {
+                IWebElement emailField = WebDriver.FindElement(By.XPath("//input[@id='text-field-hero-input'][@class='mdc-text-field__input marginNone loginFormEmailText']"));
+                IWebElement passwordField = WebDriver.FindElement(By.XPath("//input[@id='text-field-hero-input'][@type='password'][@class='mdc-text-field__input marginNone loginFormPasswordTextField']"));
+                IWebElement loginButton = WebDriver.FindElement(By.Id("loginButton"));
 
-            emailField.SendKeys(Login);
-            passwordField.SendKeys(Password);
-            loginButton.Click();
+                emailField.SendKeys(Login);
+                passwordField.SendKeys(Password);
+                loginButton.Click();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
 
-            int tryCount = 5;
+            int tryCount = 10;
             while (tryCount > 0)
             {
                 Thread.Sleep(2000);
@@ -584,8 +610,13 @@ namespace UiPathCloudAPISharp
                 tryCount--;
             }
 
+            string url = WebDriver.Url;
             WebDriver.Close();
             WebDriver.Quit();
+            if (!Authorized)
+            {
+                throw new Exception("Error for Selenium Authorize.\nLast ChromeDriver URL: " + url);
+            }
         }
 
         private void ComputeCodes()
