@@ -19,7 +19,7 @@ namespace UiPathCloudAPISharp
                 }
                 else
                 {
-                    return string.Format("Name%20eq%20%27{0}%27", Name);
+                    return string.Format("$filter=Name%20eq%20%27{0}%27", Name);
                 }
             }
         }

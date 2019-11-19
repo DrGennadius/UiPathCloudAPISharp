@@ -15,6 +15,8 @@ namespace UiPathCloudAPISharp
 {
     public class UiPathCloudAPI
     {
+        #region Public fields
+
         /// <summary>
         /// UiPath login/email
         /// </summary>
@@ -50,6 +52,10 @@ namespace UiPathCloudAPISharp
         /// </summary>
         public Queue<string> SentDataStore { get; private set; }
 
+        #endregion Public fields
+
+        #region Private and internal fields
+
         internal AuthToken Token { get; set; }
 
         private List<ServiceInstance> ServiceInstances { get; set; }
@@ -67,6 +73,10 @@ namespace UiPathCloudAPISharp
         private readonly string urlGetCodeBase = "https://account.uipath.com/authorize?response_type=code&nonce=b0f368cbc59c6b99ccc8e9b66a30b4a6&state=47441df4d0f0a89da08d43b6dfdc4be2&code_challenge={0}&code_challenge_method=S256&scope=openid+profile+offline_access+email &audience=https%3A%2F%2Forchestrator.cloud.uipath.com&client_id={1}&redirect_uri=https%3A%2F%2Faccount.uipath.com%2Fmobile";
 
         private readonly string urlUipathAuth = "https://account.uipath.com/oauth/token";
+
+        #endregion Private and internal fields
+
+        #region Constructors, initiation, etc.
 
         public UiPathCloudAPI(string login, string password, string clientId, string codeVerifier)
             : this(login, password, clientId)
@@ -171,6 +181,10 @@ namespace UiPathCloudAPISharp
             TargetServiceInstance = ServiceInstances.First();
         }
 
+        #endregion Constructors, initiation, etc.
+
+        #region Accounts
+
         /// <summary>
         /// Get accounts for target user.
         /// </summary>
@@ -219,6 +233,10 @@ namespace UiPathCloudAPISharp
 
             return result;
         }
+
+        #endregion Accounts
+
+        #region Jobs
 
         /// <summary>
         /// Start new job by robot and proccess release.
@@ -364,6 +382,20 @@ namespace UiPathCloudAPISharp
         }
 
         /// <summary>
+        /// Job list
+        /// </summary>
+        /// <returns></returns>
+        public List<Job> GetJobs()
+        {
+            string response = SendRequestGetForOdata("Jobs");
+            return JsonConvert.DeserializeObject<Info<Job>>(response).Items;
+        }
+
+        #endregion Jobs
+
+        #region Assets
+
+        /// <summary>
         /// Get Assets.
         /// </summary>
         /// <returns></returns>
@@ -422,25 +454,58 @@ namespace UiPathCloudAPISharp
             return JsonConvert.DeserializeObject<Asset>(response);
         }
 
+        #endregion Assets
+
+        #region Robots
+
         /// <summary>
-        /// Robot list
+        /// Get robot by id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public Robot GetRobot(int id)
+        {
+            string response = SendRequestGetForOdata(string.Format("Robots({0})", id));
+            return JsonConvert.DeserializeObject<Robot>(response);
+        }
+
+        /// <summary>
+        /// Get robot list using sessions (extended robots information)
         /// </summary>
         /// <returns></returns>
         public List<Robot> GetRobots()
         {
-            string response = SendRequestGetForOdata("Sessions?$select=Robot&$expand=Robot");
-            return JsonConvert.DeserializeObject<Info<RobotContainer>>(response).Items.Select(x => x.Robot).ToList();
+            return GetExtendedRobotsInfo().Select(x => x.Robot).ToList();
         }
 
         /// <summary>
-        /// Job list
+        /// Get robot list
         /// </summary>
         /// <returns></returns>
-        public List<Job> GetJobs()
+        public List<Robot> GetRobots2()
         {
-            string response = SendRequestGetForOdata("Jobs");
-            return JsonConvert.DeserializeObject<Info<Job>>(response).Items;
+            string response = SendRequestGetForOdata("Robots");
+            return JsonConvert.DeserializeObject<Info<Robot>>(response).Items;
         }
+
+        /// <summary>
+        /// Get extended robots information
+        /// </summary>
+        /// <returns></returns>
+        public List<RobotInfo> GetExtendedRobotsInfo()
+        {
+            SessionFilter filter = new SessionFilter
+            {
+                Select = "Robot",
+                Expand = "Robot"
+            };
+            string response = SendRequestGetForOdata("Sessions", filter);
+            return JsonConvert.DeserializeObject<Info<RobotInfo>>(response).Items;
+        }
+
+        #endregion Robots
+
+        #region Processes
 
         /// <summary>
         /// Process list
@@ -477,9 +542,12 @@ namespace UiPathCloudAPISharp
             return JsonConvert.DeserializeObject<Info<Process>>(response).Items;
         }
 
+        #endregion Processes
+
+        #region Private
         private string SendRequestGetForOdata(string operationPart, IFilter filter)
         {
-            return SendRequestGetForOdata(string.Format("{0}?$filter={1}", operationPart, filter.Value));
+            return SendRequestGetForOdata(string.Format("{0}?{1}", operationPart, filter.Value));
         }
 
         private string SendRequestGetForOdata(string operationPart)
@@ -674,5 +742,6 @@ namespace UiPathCloudAPISharp
             Regex regex = new Regex("=");
             return regex.Replace(Convert.ToBase64String(rawData).Replace('+', '-').Replace('/', '_'), "");
         }
+        #endregion Private
     }
 }
