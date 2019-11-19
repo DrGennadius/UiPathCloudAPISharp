@@ -452,6 +452,36 @@ namespace UiPathCloudAPISharp
             return JsonConvert.DeserializeObject<Info<Process>>(response).Items;
         }
 
+        /// <summary>
+        /// Process list
+        /// </summary>
+        /// <param name="name">Name</param>
+        /// <returns></returns>
+        public List<Process> GetProcesses(string name)
+        {
+            ReleaseFilter filter = new ReleaseFilter
+            {
+                Name = name
+            };
+            return GetProcesses(filter);
+        }
+
+        /// <summary>
+        /// Process list
+        /// </summary>
+        /// <param name="filter">Filter</param>
+        /// <returns></returns>
+        public List<Process> GetProcesses(ReleaseFilter filter)
+        {
+            string response = SendRequestGetForOdata("Releases", filter);
+            return JsonConvert.DeserializeObject<Info<Process>>(response).Items;
+        }
+
+        private string SendRequestGetForOdata(string operationPart, IFilter filter)
+        {
+            return SendRequestGetForOdata(string.Format("{0}?$filter={1}", operationPart, filter.Value));
+        }
+
         private string SendRequestGetForOdata(string operationPart)
         {
             return SendRequestGet(

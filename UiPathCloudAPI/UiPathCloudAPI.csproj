@@ -1,10 +1,11 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>net40;net461;netstandard2.0</TargetFrameworks>
-    <Version>0.1.10</Version>
+    <Version>0.1.11</Version>
     <Authors>Gennady Zykov</Authors>
     <Company />
+    <RootNamespace>UiPathCloudAPISharp</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

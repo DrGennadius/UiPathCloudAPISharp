@@ -103,6 +103,9 @@ namespace UiPathCloudAPISharpStartJob
 
         static void MenuLoop(UiPathCloudAPI uiPath)
         {
+            PrintProcesses(uiPath.GetProcesses("Demo Process"));
+            Console.ReadKey();
+            return;
             while (true)
             {
                 Console.Clear();
