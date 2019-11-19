@@ -103,9 +103,18 @@ namespace UiPathCloudAPISharpStartJob
 
         static void MenuLoop(UiPathCloudAPI uiPath)
         {
-            var robots = uiPath.GetRobots();
-            var robots2 = uiPath.GetRobots2();
-            var robot = uiPath.GetRobot(robots.First().Id);
+            DateRange reportingTimeRange = new DateRange();
+            reportingTimeRange.SetMinValue(new DateTime(2019, 11, 19));
+            SessionFilter sessionFilter = new SessionFilter
+            {
+                ReportingTimeRange = reportingTimeRange
+            };
+            var robotsInfo = uiPath.GetExtendedRobotsInfo(sessionFilter);
+            SessionClauses clauses = new SessionClauses
+            {
+                Filter = sessionFilter
+            };
+            var robotsInfo2 = uiPath.GetExtendedRobotsInfo(clauses);
             Console.ReadKey();
             return;
             while (true)

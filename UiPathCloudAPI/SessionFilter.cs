@@ -19,29 +19,43 @@ namespace UiPathCloudAPISharp
                 {
                     _resultBuilder.Clear();
                 }
+                
+                if (RobotId != -1)
+                {
+                    AppendToResult(string.Format("Robot/Id%20eq%20%27{0}%27", RobotId));
+                }
+                if (!string.IsNullOrEmpty(RobotName))
+                {
+                    AppendToResult(string.Format("Robot/Name%20eq%20%27{0}%27", RobotName));
+                }
+                if (!string.IsNullOrEmpty(State))
+                {
+                    AppendToResult(string.Format("State%20eq%20%27{0}", State));
+                }
+                if (ReportingTimeRange != null)
+                {
+                    AppendToResult(ReportingTimeRange.GetString("ReportingTime"));
+                }
 
-                if (Top != -1)
+                string result = _resultBuilder.ToString();
+                if (string.IsNullOrEmpty(result))
                 {
-                    AppendToResult(string.Format("$top={0}", Top));
+                    return result;
                 }
-                if (!string.IsNullOrEmpty(Select))
+                else
                 {
-                    AppendToResult(string.Format("$select={0}", Select));
+                    return "$filter=" + result;
                 }
-                if (!string.IsNullOrEmpty(Expand))
-                {
-                    AppendToResult(string.Format("$expand={0}", Expand));
-                }
-
-                return _resultBuilder.ToString();
             }
         }
 
-        public int Top { get; set; } = -1;
+        public int RobotId { get; set; } = -1;
 
-        public string Select { get; set; }
+        public string RobotName { get; set; }
 
-        public string Expand { get; set; }
+        public string State { get; set; }
+
+        public DateRange ReportingTimeRange { get; set; }
 
         private StringBuilder _resultBuilder;
 
@@ -49,7 +63,7 @@ namespace UiPathCloudAPISharp
         {
             if (_resultBuilder.Length > 0)
             {
-                _resultBuilder.Append(string.Format("&{0}", element));
+                _resultBuilder.Append(string.Format("%20and%20", element));
             }
             else
             {
