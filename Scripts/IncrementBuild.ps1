@@ -13,10 +13,10 @@ param (
 function IncrementMajor($versionString, $partCount) {
 	$version = [version] $versionString
 	if ($partCount -eq 4) {
-		"{0}.{1}.{2}.{3}" -f ($version.Major + 1), $version.Minor, $version.Build, $version.Revision
+		"{0}.{1}.{2}.{3}" -f ($version.Major + 1), 0, 0, $version.Revision
 	}
 	else {
-		"{0}.{1}.{2}" -f ($version.Major + 1), $version.Minor, $version.Build, 0
+		"{0}.{1}.{2}" -f ($version.Major + 1), 0, $version.Build, 0
 	}
 	return
 }
@@ -24,10 +24,10 @@ function IncrementMajor($versionString, $partCount) {
 function IncrementMinor($versionString, $partCount) {
 	$version = [version] $versionString
 	if ($partCount -eq 4) {
-		"{0}.{1}.{2}.{3}" -f $version.Major, ($version.Minor + 1), $version.Build, $version.Revision
+		"{0}.{1}.{2}.{3}" -f $version.Major, ($version.Minor + 1), 0, $version.Revision
 	}
 	else {
-		"{0}.{1}.{2}" -f $version.Major, ($version.Minor + 1), $version.Build
+		"{0}.{1}.{2}" -f $version.Major, ($version.Minor + 1), 0
 	}
 	return
 }
