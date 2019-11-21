@@ -503,9 +503,9 @@ namespace UiPathCloudAPISharp
             return JsonConvert.DeserializeObject<Info<RobotInfo>>(response).Items;
         }
 
-        public List<RobotInfo> GetExtendedRobotsInfo(SessionFilter filter)
+        public List<RobotInfo> GetExtendedRobotsInfo(CommonFilter filter)
         {
-            SessionClauses clauses = new SessionClauses
+            ODataClauses clauses = new ODataClauses
             {
                 Filter = filter,
                 Select = "Robot",
@@ -525,7 +525,7 @@ namespace UiPathCloudAPISharp
         /// <param name="orderby">OrderBy</param>
         /// <param name="skip">Skip</param>
         /// <returns></returns>
-        public List<RobotInfo> GetExtendedRobotsInfo(int top = -1, IFilter filter = null, string select = null, string expand = null, string orderby = null, string skip = null)
+        public List<RobotInfo> GetExtendedRobotsInfo(int top = -1, CommonFilter filter = null, string select = null, string expand = null, string orderby = null, string skip = null)
         {
             string response = SendRequestGetForOdata("Sessions", top, filter, select, expand, orderby, skip);
             return JsonConvert.DeserializeObject<Info<RobotInfo>>(response).Items;
@@ -601,7 +601,7 @@ namespace UiPathCloudAPISharp
         #endregion Processes
 
         #region Private
-        private string SendRequestGetForOdata(string operationPart, int top = -1, IFilter filter = null, string select = null, string expand = null, string orderby = null, string skip = null)
+        private string SendRequestGetForOdata(string operationPart, int top = -1, CommonFilter filter = null, string select = null, string expand = null, string orderby = null, string skip = null)
         {
             ODataClauses clauses = new ODataClauses(top, filter, select, expand, orderby, skip);
             return SendRequestGetForOdata(string.Format("{0}?{1}", operationPart, clauses.Value));

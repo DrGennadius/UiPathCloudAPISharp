@@ -7,7 +7,7 @@ namespace UiPathCloudAPISharp
 {
     public class ODataClauses : IClause
     {
-        public ODataClauses(int top = -1, IFilter filter = null, string select = null, string expand = null, string orderby = null, string skip = null)
+        public ODataClauses(int top = -1, CommonFilter filter = null, string select = null, string expand = null, string orderby = null, string skip = null)
         {
             Top = top;
             Filter = filter;
@@ -34,7 +34,7 @@ namespace UiPathCloudAPISharp
                 {
                     AppendToResult(string.Format("$top={0}", Top));
                 }
-                string filterString = Filter.Value;
+                string filterString = Filter?.Value;
                 if (!string.IsNullOrEmpty(filterString))
                 {
                     AppendToResult(filterString);
@@ -70,7 +70,7 @@ namespace UiPathCloudAPISharp
 
         public string Skip { get; set; }
 
-        public IFilter Filter { get; set; }
+        public CommonFilter Filter { get; set; }
 
         private StringBuilder _resultBuilder;
 
