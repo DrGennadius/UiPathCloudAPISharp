@@ -536,9 +536,9 @@ namespace UiPathCloudAPISharp
         /// </summary>
         /// <param name="clauses">Session clauses</param>
         /// <returns></returns>
-        public List<RobotInfo> GetExtendedRobotsInfo(SessionClauses clauses)
+        public List<RobotInfo> GetExtendedRobotsInfo(ODataClauses clauses)
         {
-            SessionClauses sessionClauses = clauses;
+            ODataClauses sessionClauses = clauses;
             if (string.IsNullOrEmpty(sessionClauses.Select))
             {
                 sessionClauses.Select = "Robot";
@@ -651,6 +651,11 @@ namespace UiPathCloudAPISharp
 
         private string SendRequestGet(string url, bool access = false)
         {
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                throw new ArgumentException("Empty url");
+            }
+
             string result = "";
 
             HttpWebRequest req = WebRequest.Create(url) as HttpWebRequest;

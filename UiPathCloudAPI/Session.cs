@@ -16,7 +16,7 @@ namespace UiPathCloudAPISharp
 
         public string State { get; set; }
 
-        public string ReportingTime { get; set; }
+        public DateTime ReportingTime { get; set; }
 
         public string Info { get; set; }
 

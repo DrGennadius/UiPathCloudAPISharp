@@ -5,7 +5,7 @@ using System.Text;
 
 namespace UiPathCloudAPISharp
 {
-    public class DateRange
+    public class DateTimeRange
     {
         private DateTime? _minValue;
 

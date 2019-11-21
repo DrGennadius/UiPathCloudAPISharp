@@ -103,6 +103,18 @@ namespace UiPathCloudAPISharpStartJob
 
         static void MenuLoop(UiPathCloudAPI uiPath)
         {
+            DateTimeRange reportingTimeRange = new DateTimeRange();
+            reportingTimeRange.SetMinValue(new DateTime(2019, 11, 19));
+            CommonFilter filter = new CommonFilter();
+            filter.AddCondition(typeof(Session), nameof(Session.ReportingTime), reportingTimeRange);
+            var robotsInfo = uiPath.GetExtendedRobotsInfo(filter);
+            ODataClauses clauses = new ODataClauses
+            {
+                Filter = filter
+            };
+            var robotsInfo2 = uiPath.GetExtendedRobotsInfo(clauses);
+            Console.ReadKey();
+            return;
             while (true)
             {
                 Console.Clear();

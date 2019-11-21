@@ -55,7 +55,7 @@ namespace UiPathCloudAPISharp
 
         public string State { get; set; }
 
-        public DateRange ReportingTimeRange { get; set; }
+        public DateTimeRange ReportingTimeRange { get; set; }
 
         private StringBuilder _resultBuilder;
 

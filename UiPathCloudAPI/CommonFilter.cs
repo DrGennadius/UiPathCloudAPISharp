@@ -26,65 +26,47 @@ namespace UiPathCloudAPISharp
             _resultBuilder.Clear();
         }
 
-        public void AddCondition(ConditionOp condition, Type objectType, string propertyName, object objectValue)
+        public void AddCondition(Type objectType, string propertyName, object objectValue, ConditionOp condition = ConditionOp.EQ)
         {
-            var propertyInfo = objectType.GetProperty(propertyName);
-            if (propertyInfo != null)
-            {
-                if (propertyInfo.PropertyType == objectValue.GetType())
-                {
-                    AddCondition(condition, objectType.Name, propertyName, objectValue.ToString());
-                }
-                else
-                {
-                    throw new ArgumentException("Property type and value type for this property are different.");
-                }
-            }
-            else
-            {
-                throw new ArgumentException("The property is not found.");
-            }
+            CheckProperty(objectType, propertyName, objectValue);
+            AddCondition(objectType.Name, propertyName, objectValue.ToString(), condition);
         }
 
-        public void AddCondition(ConditionOp condition, Type objectType, string propertyName, string objectValue)
+        public void AddCondition(Type objectType, string propertyName, string objectValue, ConditionOp condition = ConditionOp.EQ)
         {
-            AddCondition(condition, objectType.Name, propertyName, objectValue);
+            CheckProperty(objectType, propertyName, objectValue);
+            AddCondition(objectType.Name, propertyName, objectValue, condition);
         }
 
-        public void AddCondition(ConditionOp condition, string objectName, string propertyName, string objectValue)
+        public void AddCondition(Type objectType, string propertyName, DateTimeRange dateTimeRange)
+        {
+            CheckProperty(objectType, propertyName, typeof(DateTime));
+            AddCondition(objectType.Name, propertyName, dateTimeRange);
+        }
+        
+        public void AddCondition(string objectName, string propertyName, string objectValue, ConditionOp condition = ConditionOp.EQ)
         {
             string objectFullName = objectName + '/' + propertyName;
-            AddCondition(condition, objectFullName, objectValue);
+            AddCondition(objectFullName, objectValue, condition);
         }
 
-        public void AddCondition(string condition, object objectBase, object objectValue)
-        {
-            string objectName = "";
-            if (objectBase == null)
-            {
-                throw new ArgumentNullException("object is null");
-            }
-            if (objectBase.GetType().IsClass)
-            {
-                objectName = objectBase.GetType().Name;
-            }
-            else if (objectBase.ToString() == "System.RuntimeType")
-            {
-                objectName = objectBase.ToString();
-            }
-            else
-            {
-                throw new ArgumentException("object has incorect type");
-            }
-            AddCondition(condition, "", "");
-        }
-
-        public void AddCondition(ConditionOp condition, string objectName, string objectValue)
+        public void AddCondition(string objectName, string objectValue, ConditionOp condition = ConditionOp.EQ)
         {
             AddCondition(condition.ToString(), objectName, objectValue);
         }
 
-        public void AddCondition(string condition, string objectName, string objectValue)
+        public void AddCondition(string objectName, string propertyName, DateTimeRange dateTimeRange)
+        {
+            string objectFullName = objectName + '/' + propertyName;
+            AddCondition(objectFullName, dateTimeRange);
+        }
+
+        public void AddCondition(string objectName, DateTimeRange dateTimeRange)
+        {
+            AppendToResult(dateTimeRange.GetString(objectName));
+        }
+
+        public void AddCondition(string objectName, string objectValue, string condition)
         {
             AppendToResult(string.Format("{0}%20{1}%20%27{2}%27", objectName, condition, objectValue));
         }
@@ -100,6 +82,44 @@ namespace UiPathCloudAPISharp
             else
             {
                 _resultBuilder.Append(element);
+            }
+        }
+
+        private void CheckProperty(Type objectType, string propertyName, DateTimeRange dateTimeRange)
+        {
+            CheckTypes(CheckProperty(objectType, propertyName), typeof(DateTime));
+        }
+
+        private void CheckProperty(Type objectType, string propertyName, Type valueType)
+        {
+            CheckTypes(CheckProperty(objectType, propertyName), valueType);
+        }
+
+        private void CheckProperty(Type objectType, string propertyName, object objectValue)
+        {
+            CheckTypes(CheckProperty(objectType, propertyName), objectValue.GetType());
+        }
+
+        private PropertyInfo CheckProperty(Type objectType, string propertyName)
+        {
+            var propertyInfo = objectType.GetProperty(propertyName);
+            if (propertyInfo == null)
+            {
+                throw new ArgumentException("The property is not found.");
+            }
+            return propertyInfo;
+        }
+
+        private void CheckTypes(PropertyInfo propertyInfo, Type valueType)
+        {
+            CheckTypes(propertyInfo.PropertyType, valueType);
+        }
+
+        private void CheckTypes(Type propertyType, Type valueType)
+        {
+            if (propertyType != valueType)
+            {
+                throw new ArgumentException("Property type and value type for this property are different.");
             }
         }
     }
