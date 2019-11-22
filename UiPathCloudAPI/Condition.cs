@@ -42,12 +42,12 @@ namespace UiPathCloudAPISharp
         /// <summary>
         /// Element base name
         /// </summary>
-        public string BaseName { get; set; }
+        public string BaseName { get; set; } = "";
 
         /// <summary>
         /// Element property Name
         /// </summary>
-        public string PropertyName { get; set; }
+        public string PropertyName { get; set; } = "";
 
         /// <summary>
         /// Element full name
@@ -84,7 +84,7 @@ namespace UiPathCloudAPISharp
         /// <summary>
         /// Element value
         /// </summary>
-        public object Value { get; set; }
+        public object Value { get; set; } = "";
 
         /// <summary>
         /// Condition operation
@@ -93,7 +93,19 @@ namespace UiPathCloudAPISharp
 
         public string GetODataString()
         {
-            return string.Format("{0}%20{1}%20%27{2}%27", Name, ConditionOperation.ToString().ToLower(), Value);
+            string name = Name;
+            if (!string.IsNullOrEmpty(name))
+            {
+                if (Value is string)
+                {
+                    return string.Format("{0}%20{1}%20%27{2}%27", Name, ConditionOperation.ToString().ToLower(), Value);
+                }
+                else
+                {
+                    return string.Format("{0}%20{1}%20{2}", Name, ConditionOperation.ToString().ToLower(), GetNormalizeValue(Value));
+                }
+            }
+            return "";
         }
 
         public PrimitiveCondition[] GetPrimitives()
@@ -149,6 +161,18 @@ namespace UiPathCloudAPISharp
             if (propertyType != valueType)
             {
                 throw new ArgumentException("Property type and value type for this property are different.");
+            }
+        }
+
+        private string GetNormalizeValue(object value)
+        {
+            if (value is DateTime)
+            {
+                return ((DateTime)value).ToString("yyyy-MM-ddTHH:mm:ssZ");
+            }
+            else
+            {
+                return value.ToString();
             }
         }
     }

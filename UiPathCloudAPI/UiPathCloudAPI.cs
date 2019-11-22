@@ -382,12 +382,34 @@ namespace UiPathCloudAPISharp
         }
 
         /// <summary>
-        /// Job list
+        /// Get job list
         /// </summary>
         /// <returns></returns>
         public List<Job> GetJobs()
         {
             string response = SendRequestGetForOdata("Jobs");
+            return JsonConvert.DeserializeObject<Info<Job>>(response).Items;
+        }
+
+        /// <summary>
+        /// Get job list
+        /// </summary>
+        /// <param name="filter">Filter</param>
+        /// <returns></returns>
+        public List<Job> GetJobs(Filter filter)
+        {
+            string response = SendRequestGetForOdata("Jobs", filter);
+            return JsonConvert.DeserializeObject<Info<Job>>(response).Items;
+        }
+
+        /// <summary>
+        /// Get job list
+        /// </summary>
+        /// <param name="clauses">Clauses</param>
+        /// <returns></returns>
+        public List<Job> GetJobs(ODataClauses clauses)
+        {
+            string response = SendRequestGetForOdata("Jobs", clauses);
             return JsonConvert.DeserializeObject<Info<Job>>(response).Items;
         }
 
@@ -479,6 +501,26 @@ namespace UiPathCloudAPISharp
         }
 
         /// <summary>
+        /// Get robot list using sessions (extended robots information)
+        /// </summary>
+        /// <param name="filter"></param>
+        /// <returns></returns>
+        public List<Robot> GetRobots(Filter filter)
+        {
+            return GetExtendedRobotsInfo(filter).Select(x => x.Robot).ToList();
+        }
+
+        /// <summary>
+        /// Get robot list using sessions (extended robots information)
+        /// </summary>
+        /// <param name="clauses"></param>
+        /// <returns></returns>
+        public List<Robot> GetRobots(ODataClauses clauses)
+        {
+            return GetExtendedRobotsInfo(clauses).Select(x => x.Robot).ToList();
+        }
+
+        /// <summary>
         /// Get robot list
         /// </summary>
         /// <returns></returns>
@@ -494,23 +536,14 @@ namespace UiPathCloudAPISharp
         /// <returns></returns>
         public List<RobotInfo> GetExtendedRobotsInfo()
         {
-            ODataClauses clauses = new ODataClauses
-            {
-                Select = "Robot",
-                Expand = "Robot"
-            };
+            ODataClauses clauses = new ODataClauses(select: "Robot", expand: "Robot");
             string response = SendRequestGetForOdata("Sessions", clauses);
             return JsonConvert.DeserializeObject<Info<RobotInfo>>(response).Items;
         }
 
         public List<RobotInfo> GetExtendedRobotsInfo(Filter filter)
         {
-            ODataClauses clauses = new ODataClauses
-            {
-                Filter = filter,
-                Select = "Robot",
-                Expand = "Robot"
-            };
+            ODataClauses clauses = new ODataClauses(filter: filter, select: "Robot", expand: "Robot");
             string response = SendRequestGetForOdata("Sessions", clauses);
             return JsonConvert.DeserializeObject<Info<RobotInfo>>(response).Items;
         }
@@ -525,9 +558,9 @@ namespace UiPathCloudAPISharp
         /// <param name="orderby">OrderBy</param>
         /// <param name="skip">Skip</param>
         /// <returns></returns>
-        public List<RobotInfo> GetExtendedRobotsInfo(int top = -1, Filter filter = null, string select = null, string expand = null, string orderby = null, string skip = null)
+        public List<RobotInfo> GetExtendedRobotsInfo(int top = -1, Filter filter = null, string orderby = null, string skip = null)
         {
-            string response = SendRequestGetForOdata("Sessions", top, filter, select, expand, orderby, skip);
+            string response = SendRequestGetForOdata("Sessions", top, filter, "Robot", "Robot", orderby, skip);
             return JsonConvert.DeserializeObject<Info<RobotInfo>>(response).Items;
         }
 
@@ -564,7 +597,7 @@ namespace UiPathCloudAPISharp
         #region Processes
 
         /// <summary>
-        /// Process list
+        /// Get a list of all processes
         /// </summary>
         /// <returns></returns>
         public List<Process> GetProcesses()
@@ -574,7 +607,7 @@ namespace UiPathCloudAPISharp
         }
 
         /// <summary>
-        /// Process list
+        /// Get a list of all processes by name
         /// </summary>
         /// <param name="name">Name</param>
         /// <returns></returns>
@@ -587,13 +620,51 @@ namespace UiPathCloudAPISharp
         }
 
         /// <summary>
-        /// Process list
+        /// Get a list of all processes by condition
+        /// </summary>
+        /// <param name="objectName"></param>
+        /// <param name="objectValue"></param>
+        /// <param name="conditionOperation"></param>
+        /// <returns></returns>
+        public List<Process> GetProcesses(string objectName, object objectValue, ConditionOperation conditionOperation = ConditionOperation.EQ)
+        {
+            Filter filter = new Filter(objectName, objectValue, conditionOperation);
+            return GetProcesses(filter);
+        }
+
+        /// <summary>
+        /// Get a list of all processes by condition
+        /// </summary>
+        /// <param name="objectBaseName"></param>
+        /// <param name="objectPropertyName"></param>
+        /// <param name="objectValue"></param>
+        /// <param name="conditionOperation"></param>
+        /// <returns></returns>
+        public List<Process> GetProcesses(string objectBaseName, string objectPropertyName, object objectValue, ConditionOperation conditionOperation = ConditionOperation.EQ)
+        {
+            Filter filter = new Filter(objectBaseName, objectPropertyName, objectValue, conditionOperation);
+            return GetProcesses(filter);
+        }
+
+        /// <summary>
+        /// Get a list of all processes by filter
         /// </summary>
         /// <param name="filter">Filter</param>
         /// <returns></returns>
         public List<Process> GetProcesses(Filter filter)
         {
             string response = SendRequestGetForOdata("Releases", filter);
+            return JsonConvert.DeserializeObject<Info<Process>>(response).Items;
+        }
+
+        /// <summary>
+        /// Get a list of all processes by OData clauses
+        /// </summary>
+        /// <param name="clauses"></param>
+        /// <returns></returns>
+        public List<Process> GetProcesses(ODataClauses clauses)
+        {
+            string response = SendRequestGetForOdata("Releases", clauses);
             return JsonConvert.DeserializeObject<Info<Process>>(response).Items;
         }
 

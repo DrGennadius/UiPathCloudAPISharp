@@ -103,40 +103,7 @@ namespace UiPathCloudAPISharpStartJob
 
         static void MenuLoop(UiPathCloudAPI uiPath)
         {
-            Interval<DateTime> interval2 = new Interval<DateTime>();
-            interval2.Start = new DateTime(2019, 11, 22);
-            Console.WriteLine(interval2);
-            Console.WriteLine(interval2.GetODataString("smth"));
-            PrimitiveCondition[] primitiveConditions3 = interval2.GeneratePrimitiveConditions("smth");
-            foreach (var item in primitiveConditions3)
-            {
-                Console.WriteLine(item.GetODataString());
-            }
-            interval2.End = new DateTime(2020, 11, 22);
-            Console.WriteLine(interval2);
-            Console.WriteLine(interval2.GetODataString("smth"));
-            PrimitiveCondition[] primitiveConditions4 = interval2.GeneratePrimitiveConditions("smth");
-            foreach (var item in primitiveConditions4)
-            {
-                Console.WriteLine(item.GetODataString());
-            }
-            interval2.IncludeStart = false;
-            Console.WriteLine(interval2);
-            Console.WriteLine(interval2.GetODataString("smth"));
-            PrimitiveCondition[] primitiveConditions5 = interval2.GeneratePrimitiveConditions("smth");
-            foreach (var item in primitiveConditions5)
-            {
-                Console.WriteLine(item.GetODataString());
-            }
-            interval2.IncludeStart = true;
-            interval2.End = new DateTime(2019, 11, 22);
-            Console.WriteLine(interval2);
-            Console.WriteLine(interval2.GetODataString("smth"));
-            PrimitiveCondition[] primitiveConditions6 = interval2.GeneratePrimitiveConditions("smth");
-            foreach (var item in primitiveConditions6)
-            {
-                Console.WriteLine(item.GetODataString());
-            }
+            var processes = uiPath.GetProcesses("Id", 223382);
             Console.ReadKey();
             return;
             while (true)
