@@ -604,12 +604,12 @@ namespace UiPathCloudAPISharp
         private string SendRequestGetForOdata(string operationPart, int top = -1, CommonFilter filter = null, string select = null, string expand = null, string orderby = null, string skip = null)
         {
             ODataClauses clauses = new ODataClauses(top, filter, select, expand, orderby, skip);
-            return SendRequestGetForOdata(string.Format("{0}?{1}", operationPart, clauses.Value));
+            return SendRequestGetForOdata(string.Format("{0}?{1}", operationPart, clauses.GetODataString()));
         }
 
         private string SendRequestGetForOdata(string operationPart, IClause clauses)
         {
-            return SendRequestGetForOdata(string.Format("{0}?{1}", operationPart, clauses.Value));
+            return SendRequestGetForOdata(string.Format("{0}?{1}", operationPart, clauses.GetODataString()));
         }
 
         private string SendRequestGetForOdata(string operationPart)

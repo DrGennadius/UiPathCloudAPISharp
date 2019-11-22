@@ -5,8 +5,8 @@ using System.Text;
 
 namespace UiPathCloudAPISharp
 {
-    public interface IClause
+    public interface IClause : IOData
     {
-        string Value { get; }
+
     }
 }

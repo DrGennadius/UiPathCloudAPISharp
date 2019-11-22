@@ -12,15 +12,7 @@ namespace UiPathCloudAPISharp
         {
             _resultBuilder = new StringBuilder();
         }
-
-        public string Value
-        {
-            get
-            {
-                return _resultBuilder.ToString();
-            }
-        }
-
+        
         public void Clear()
         {
             _resultBuilder.Clear();
@@ -121,6 +113,11 @@ namespace UiPathCloudAPISharp
             {
                 throw new ArgumentException("Property type and value type for this property are different.");
             }
+        }
+
+        public string GetODataString()
+        {
+            return _resultBuilder.ToString();
         }
     }
 

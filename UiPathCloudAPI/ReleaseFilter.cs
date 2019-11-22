@@ -9,18 +9,15 @@ namespace UiPathCloudAPISharp
     {
         public string Name { get; set; }
 
-        public string Value
+        public string GetODataString()
         {
-            get
+            if (string.IsNullOrWhiteSpace(Name))
             {
-                if (string.IsNullOrWhiteSpace(Name))
-                {
-                    return "";
-                }
-                else
-                {
-                    return string.Format("$filter=Name%20eq%20%27{0}%27", Name);
-                }
+                return "";
+            }
+            else
+            {
+                return string.Format("$filter=Name%20eq%20%27{0}%27", Name);
             }
         }
     }

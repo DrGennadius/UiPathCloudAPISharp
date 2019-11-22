@@ -17,49 +17,6 @@ namespace UiPathCloudAPISharp
             Skip = Skip;
         }
 
-        public string Value
-        {
-            get
-            {
-                if (_resultBuilder == null)
-                {
-                    _resultBuilder = new StringBuilder();
-                }
-                else
-                {
-                    _resultBuilder.Clear();
-                }
-
-                if (Top != -1)
-                {
-                    AppendToResult(string.Format("$top={0}", Top));
-                }
-                string filterString = Filter?.Value;
-                if (!string.IsNullOrEmpty(filterString))
-                {
-                    AppendToResult(filterString);
-                }
-                if (!string.IsNullOrEmpty(Select))
-                {
-                    AppendToResult(string.Format("$select={0}", Select));
-                }
-                if (!string.IsNullOrEmpty(Expand))
-                {
-                    AppendToResult(string.Format("$expand={0}", Expand));
-                }
-                if (!string.IsNullOrEmpty(OrderBy))
-                {
-                    AppendToResult(string.Format("orderby={0}", OrderBy));
-                }
-                if (!string.IsNullOrEmpty(Skip))
-                {
-                    AppendToResult(string.Format("skip={0}", Skip));
-                }
-
-                return _resultBuilder.ToString();
-            }
-        }
-
         public int Top { get; set; } = -1;
 
         public string Select { get; set; }
@@ -84,6 +41,46 @@ namespace UiPathCloudAPISharp
             {
                 _resultBuilder.Append(element);
             }
+        }
+
+        public string GetODataString()
+        {
+            if (_resultBuilder == null)
+            {
+                _resultBuilder = new StringBuilder();
+            }
+            else
+            {
+                _resultBuilder.Clear();
+            }
+
+            if (Top != -1)
+            {
+                AppendToResult(string.Format("$top={0}", Top));
+            }
+            string filterString = Filter?.GetODataString();
+            if (!string.IsNullOrEmpty(filterString))
+            {
+                AppendToResult(filterString);
+            }
+            if (!string.IsNullOrEmpty(Select))
+            {
+                AppendToResult(string.Format("$select={0}", Select));
+            }
+            if (!string.IsNullOrEmpty(Expand))
+            {
+                AppendToResult(string.Format("$expand={0}", Expand));
+            }
+            if (!string.IsNullOrEmpty(OrderBy))
+            {
+                AppendToResult(string.Format("orderby={0}", OrderBy));
+            }
+            if (!string.IsNullOrEmpty(Skip))
+            {
+                AppendToResult(string.Format("skip={0}", Skip));
+            }
+
+            return _resultBuilder.ToString();
         }
     }
 }

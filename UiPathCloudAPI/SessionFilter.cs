@@ -7,48 +7,6 @@ namespace UiPathCloudAPISharp
 {
     public class SessionFilter : IFilter
     {
-        public string Value
-        {
-            get
-            {
-                if (_resultBuilder == null)
-                {
-                    _resultBuilder = new StringBuilder();
-                }
-                else
-                {
-                    _resultBuilder.Clear();
-                }
-                
-                if (RobotId != -1)
-                {
-                    AppendToResult(string.Format("Robot/Id%20eq%20%27{0}%27", RobotId));
-                }
-                if (!string.IsNullOrEmpty(RobotName))
-                {
-                    AppendToResult(string.Format("Robot/Name%20eq%20%27{0}%27", RobotName));
-                }
-                if (!string.IsNullOrEmpty(State))
-                {
-                    AppendToResult(string.Format("State%20eq%20%27{0}", State));
-                }
-                if (ReportingTimeRange != null)
-                {
-                    AppendToResult(ReportingTimeRange.GetString("ReportingTime"));
-                }
-
-                string result = _resultBuilder.ToString();
-                if (string.IsNullOrEmpty(result))
-                {
-                    return result;
-                }
-                else
-                {
-                    return "$filter=" + result;
-                }
-            }
-        }
-
         public int RobotId { get; set; } = -1;
 
         public string RobotName { get; set; }
@@ -68,6 +26,45 @@ namespace UiPathCloudAPISharp
             else
             {
                 _resultBuilder.Append(element);
+            }
+        }
+
+        public string GetODataString()
+        {
+            if (_resultBuilder == null)
+            {
+                _resultBuilder = new StringBuilder();
+            }
+            else
+            {
+                _resultBuilder.Clear();
+            }
+
+            if (RobotId != -1)
+            {
+                AppendToResult(string.Format("Robot/Id%20eq%20%27{0}%27", RobotId));
+            }
+            if (!string.IsNullOrEmpty(RobotName))
+            {
+                AppendToResult(string.Format("Robot/Name%20eq%20%27{0}%27", RobotName));
+            }
+            if (!string.IsNullOrEmpty(State))
+            {
+                AppendToResult(string.Format("State%20eq%20%27{0}", State));
+            }
+            if (ReportingTimeRange != null)
+            {
+                AppendToResult(ReportingTimeRange.GetString("ReportingTime"));
+            }
+
+            string result = _resultBuilder.ToString();
+            if (string.IsNullOrEmpty(result))
+            {
+                return result;
+            }
+            else
+            {
+                return "$filter=" + result;
             }
         }
     }

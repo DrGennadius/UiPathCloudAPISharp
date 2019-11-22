@@ -103,22 +103,34 @@ namespace UiPathCloudAPISharpStartJob
 
         static void MenuLoop(UiPathCloudAPI uiPath)
         {
-            int[] numbers = { 0, 1, 2, 3, 4 };
             Interval<int> interval = new Interval<int>();
             interval.Start = 1;
-            interval.End = 3;
             Console.WriteLine(interval);
-            foreach (var item in numbers)
-            {
-                Console.WriteLine("{0} in: {1}", item, interval.ContainsValue(item));
-            }
-            interval.IncludeEnd = false;
+            Console.WriteLine(interval.GetODataString("smth"));
+            interval.End = 1;
+            Console.WriteLine(interval);
+            Console.WriteLine(interval.GetODataString("smth"));
             interval.IncludeStart = false;
             Console.WriteLine(interval);
-            foreach (var item in numbers)
-            {
-                Console.WriteLine("{0} in: {1}", item, interval.ContainsValue(item));
-            }
+            Console.WriteLine(interval.GetODataString("smth"));
+            interval.IncludeStart = true;
+            interval.End = 3;
+            Console.WriteLine(interval);
+            Console.WriteLine(interval.GetODataString("smth"));
+            Interval<DateTime> interval2 = new Interval<DateTime>();
+            interval2.Start = new DateTime(2019, 11, 22);
+            Console.WriteLine(interval2);
+            Console.WriteLine(interval2.GetODataString("smth"));
+            interval2.End = new DateTime(2020, 11, 22);
+            Console.WriteLine(interval2);
+            Console.WriteLine(interval2.GetODataString("smth"));
+            interval2.IncludeStart = false;
+            Console.WriteLine(interval2);
+            Console.WriteLine(interval2.GetODataString("smth"));
+            interval2.IncludeStart = true;
+            interval2.End = new DateTime(2019, 11, 22);
+            Console.WriteLine(interval2);
+            Console.WriteLine(interval2.GetODataString("smth"));
             Console.ReadKey();
             return;
             while (true)
