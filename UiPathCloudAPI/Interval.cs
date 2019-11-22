@@ -91,48 +91,88 @@ namespace UiPathCloudAPISharp
 
         public string GetODataString(string input)
         {
-            string startPart = "", endPart = "";
+            PrimitiveCondition[] primitiveConditions = GeneratePrimitiveConditions(input);
 
+            if (primitiveConditions.Length == 1)
+            {
+                return primitiveConditions[0].GetODataString();
+            }
+            else if (primitiveConditions.Length == 2)
+            {
+                return string.Format("{0}%20and%20{1}", primitiveConditions[0].GetODataString(), primitiveConditions[1].GetODataString());
+            }
+
+            return "";
+        }
+
+        public PrimitiveCondition[] GeneratePrimitiveConditions(string input)
+        {
+            PrimitiveCondition[] primitiveConditions = new PrimitiveCondition[0];
             if (Start.HasValue && End.HasValue && Start.Value.CompareTo(End.Value) == 0)
             {
                 if (IncludeStart && IncludeEnd)
                 {
-                    startPart = string.Format("{0}%20eq%20{1}", input, GetNormalizeValue(Start.Value));
+                    primitiveConditions = new PrimitiveCondition[] { new PrimitiveCondition(input, GetNormalizeValue(Start.Value)) };
                 }
                 else if (!IncludeStart && !IncludeEnd)
                 {
-                    startPart = string.Format("{0}%20ne%20{1}", input, GetNormalizeValue(Start.Value));
+                    primitiveConditions = new PrimitiveCondition[] { new PrimitiveCondition(input, GetNormalizeValue(Start.Value), ConditionOperation.NE) };
                 }
             }
             else
             {
-                startPart = GetStartPart(input);
-                endPart = GetEndPart(input);
+                PrimitiveCondition startCondition = GeneratePrimitiveConditionForStart(input);
+                PrimitiveCondition endCondition = GeneratePrimitiveConditionForEnd(input);
+                if (startCondition != null && endCondition != null)
+                {
+                    primitiveConditions = new PrimitiveCondition[] { startCondition, endCondition };
+                }
+                else if (startCondition != null && endCondition == null)
+                {
+                    primitiveConditions = new PrimitiveCondition[] { startCondition };
+                }
+                else if (startCondition == null && endCondition != null)
+                {
+                    primitiveConditions = new PrimitiveCondition[] { endCondition };
+                }
             }
-            if (!string.IsNullOrEmpty(startPart) && !string.IsNullOrEmpty(endPart))
-            {
-                startPart += "%20and%20";
-            }
-
-            return startPart + endPart;
+            return primitiveConditions;
         }
 
-        private string GetStartPart(string valueName)
+        public string GetNormalizeStart()
         {
             if (Start.HasValue)
             {
-                return string.Format("{0}%20{1}%20{2}", valueName, GetOperationForStart(), GetNormalizeValue(Start.Value));
+                return GetNormalizeValue(Start.Value);
             }
             return "";
         }
 
-        private string GetEndPart(string valueName)
+        public string GetNormalizeEnd()
         {
             if (End.HasValue)
             {
-                return string.Format("{0}%20{1}%20{2}", valueName, GetOperationForEnd(), GetNormalizeValue(End.Value));
+                return GetNormalizeValue(End.Value);
             }
             return "";
+        }
+
+        private PrimitiveCondition GeneratePrimitiveConditionForStart(string valueName)
+        {
+            if (Start.HasValue)
+            {
+                return new PrimitiveCondition(valueName, GetNormalizeValue(Start.Value), GetConditionOperationForStart());
+            }
+            return null;
+        }
+
+        private PrimitiveCondition GeneratePrimitiveConditionForEnd(string valueName)
+        {
+            if (End.HasValue)
+            {
+                return new PrimitiveCondition(valueName, GetNormalizeValue(End.Value), GetConditionOperationForEnd());
+            }
+            return null;
         }
 
         private string GetOperationForStart()
@@ -156,6 +196,30 @@ namespace UiPathCloudAPISharp
             else
             {
                 return "lt";
+            }
+        }
+
+        private ConditionOperation GetConditionOperationForStart()
+        {
+            if (IncludeStart)
+            {
+                return ConditionOperation.GE;
+            }
+            else
+            {
+                return ConditionOperation.GT;
+            }
+        }
+
+        private ConditionOperation GetConditionOperationForEnd()
+        {
+            if (IncludeEnd)
+            {
+                return ConditionOperation.LE;
+            }
+            else
+            {
+                return ConditionOperation.LT;
             }
         }
 
