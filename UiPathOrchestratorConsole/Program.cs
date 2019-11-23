@@ -103,7 +103,8 @@ namespace UiPathCloudAPISharpStartJob
 
         static void MenuLoop(UiPathCloudAPI uiPath)
         {
-            var processes = uiPath.GetProcesses("Id", 223382);
+            var processes1 = uiPath.GetProcesses();
+            var processes2 = uiPath.GetProcesses(string.Format("Name != '{0}'", processes1.First().Name));
             Console.ReadKey();
             return;
             while (true)

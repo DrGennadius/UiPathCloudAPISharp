@@ -26,6 +26,12 @@ namespace UiPathCloudAPISharp
             AddCondition(condition);
         }
 
+        public Filter(string condition)
+            : this()
+        {
+            AddCondition(condition);
+        }
+
         public Filter()
         {
             _resultBuilder = new StringBuilder();
@@ -44,6 +50,11 @@ namespace UiPathCloudAPISharp
         public void AddCondition(string name, object value, ConditionOperation conditionOperation = ConditionOperation.EQ)
         {
             AddCondition(new Condition(name, value, conditionOperation));
+        }
+
+        public void AddCondition(string condition)
+        {
+            AddCondition(new Condition(condition));
         }
 
         public void AddCondition(ICondition condition)

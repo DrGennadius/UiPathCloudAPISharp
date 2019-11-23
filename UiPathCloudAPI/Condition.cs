@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace UiPathCloudAPISharp
 {
@@ -33,6 +34,11 @@ namespace UiPathCloudAPISharp
             Name = name;
             Value = value;
             ConditionOperation = conditionOperation;
+        }
+
+        public Condition(string condition)
+        {
+            Set(condition);
         }
 
         public Condition()
@@ -126,6 +132,44 @@ namespace UiPathCloudAPISharp
             BaseName = objectClass.Name;
         }
 
+        public void Set(string condition)
+        {
+            Regex regex = new Regex("(!=|=|>=|<=|>|<)");
+            string[] elements = regex.Split(condition);
+            if (elements.Count() == 3)
+            {
+                regex = new Regex("\\w+");
+                var matches = regex.Matches(elements[0]);
+                if (matches.Count == 1)
+                {
+                    object value = TryCast(elements[2]);
+                    if (value != null)
+                    {
+                        Value = value;
+                        Name = matches[0].Value;
+                        ConditionOperation = (ConditionOperation)Enum.Parse(typeof(ConditionOperation), GetODataConditionOperation(elements[1]).ToUpper());
+                    }
+                    else
+                    {
+                        throw new ArgumentException("Incorrect the condition string.");
+                    }
+                }
+                else
+                {
+                    throw new ArgumentException("Incorrect the condition string.");
+                }
+            }
+            else
+            {
+                throw new ArgumentException("Incorrect the condition string.");
+            }
+        }
+
+        public override string ToString()
+        {
+            return string.Format("{0} {1} {2}", Name, ConditionOperationToString(), ValueToString());
+        }
+
         private void CheckProperty(Type objectType, string propertyName, Interval<DateTime> dateTimeInterval)
         {
             CheckTypes(CheckProperty(objectType, propertyName), typeof(DateTime));
@@ -174,6 +218,129 @@ namespace UiPathCloudAPISharp
             {
                 return value.ToString();
             }
+        }
+
+        private object TryCast(string value)
+        {
+            object obj = null;
+
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                string obviouslyString = TryCastObviouslyString(value);
+                if (!string.IsNullOrEmpty(obviouslyString))
+                {
+                    obj = obviouslyString;
+                }
+                else
+                {
+                    try
+                    {
+                        obj = Convert.ToInt32(value);
+                    }
+                    catch { }
+                    if (obj == null)
+                    {
+                        try
+                        {
+                            obj = Convert.ToBoolean(value);
+                        }
+                        catch { }
+                    }
+                    if (obj == null)
+                    {
+                        obj = value;
+                    }
+                }
+            }
+            return obj;
+        }
+
+        private string TryCastObviouslyString(string value)
+        {
+            string result = null;
+
+            Regex regex = new Regex("(?<=').*(?=')");
+            var match = regex.Match(value);
+            if (match.Success)
+            {
+                result = match.Value;
+            }
+
+            return result;
+        }
+
+        private string ConditionOperationToString()
+        {
+            if (ConditionOperation == ConditionOperation.EQ)
+            {
+                return "=";
+            }
+            else if (ConditionOperation == ConditionOperation.NE)
+            {
+                return "!=";
+            }
+            else if (ConditionOperation == ConditionOperation.GE)
+            {
+                return ">=";
+            }
+            else if (ConditionOperation == ConditionOperation.GT)
+            {
+                return ">";
+            }
+            else if (ConditionOperation == ConditionOperation.LE)
+            {
+                return "<=";
+            }
+            else if (ConditionOperation == ConditionOperation.LT)
+            {
+                return "<";
+            }
+            return "";
+        }
+
+        private string GetODataConditionOperation(string conditionOperation)
+        {
+            if (conditionOperation == "=")
+            {
+                return "eq";
+            }
+            else if (conditionOperation == "!=")
+            {
+                return "ne";
+            }
+            else if (conditionOperation == ">=")
+            {
+                return "ge";
+            }
+            else if (conditionOperation == ">")
+            {
+                return "gt";
+            }
+            else if (conditionOperation == "<=")
+            {
+                return "le";
+            }
+            else if (conditionOperation == "<")
+            {
+                return "lt";
+            }
+            return "";
+        }
+
+        private string ValueToString()
+        {
+            string result = "";
+
+            if (Value is string && !string.IsNullOrEmpty(Value as string))
+            {
+                result = "'" + Value as string + "'";
+            }
+            else
+            {
+                result = Value.ToString();
+            }
+
+            return result;
         }
     }
 }

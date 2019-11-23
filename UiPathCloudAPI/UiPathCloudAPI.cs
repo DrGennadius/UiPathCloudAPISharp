@@ -607,15 +607,13 @@ namespace UiPathCloudAPISharp
         }
 
         /// <summary>
-        /// Get a list of all processes by name
+        /// Get a list of all processes by condition string
         /// </summary>
         /// <param name="name">Name</param>
         /// <returns></returns>
-        public List<Process> GetProcesses(string name)
+        public List<Process> GetProcesses(string condition)
         {
-            Filter filter = new Filter();
-            Condition condition = new Condition("Name", name);
-            filter.AddCondition(condition);
+            Filter filter = new Filter(condition);
             return GetProcesses(filter);
         }
 
@@ -666,6 +664,17 @@ namespace UiPathCloudAPISharp
         {
             string response = SendRequestGetForOdata("Releases", clauses);
             return JsonConvert.DeserializeObject<Info<Process>>(response).Items;
+        }
+
+        /// <summary>
+        /// Get a list of all processes by name
+        /// </summary>
+        /// <param name="name">Name</param>
+        /// <returns></returns>
+        public List<Process> GetProcessesByName(string name)
+        {
+            Filter filter = new Filter("Name", name);
+            return GetProcesses(filter);
         }
 
         #endregion Processes
