@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace UiPathCloudAPISharp
+namespace UiPathCloudAPISharp.OData
 {
     public class Condition : ICondition
     {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace UiPathCloudAPISharp
+namespace UiPathCloudAPISharp.OData
 {
     public class IntervalCondition<T> : ICondition where T : struct, IComparable<T>
     {

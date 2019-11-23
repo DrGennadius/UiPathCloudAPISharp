@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace UiPathCloudAPISharp
+namespace UiPathCloudAPISharp.OData
 {
-    public interface IClause : IOData
+    public interface IFilter : IClause
     {
 
     }

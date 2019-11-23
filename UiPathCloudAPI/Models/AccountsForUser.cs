@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
 
-namespace UiPathCloudAPISharp
+namespace UiPathCloudAPISharp.Models
 {
     public class AccountsForUser
     {

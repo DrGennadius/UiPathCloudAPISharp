@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace UiPathCloudAPISharp
+namespace UiPathCloudAPISharp.Models
 {
     public class Job
     {

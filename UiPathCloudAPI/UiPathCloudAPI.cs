@@ -10,6 +10,8 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using UiPathCloudAPISharp.Models;
+using UiPathCloudAPISharp.OData;
 
 namespace UiPathCloudAPISharp
 {

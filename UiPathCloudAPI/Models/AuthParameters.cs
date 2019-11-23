@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace UiPathCloudAPISharp
+namespace UiPathCloudAPISharp.Models
 {
     public class AuthParameters
     {

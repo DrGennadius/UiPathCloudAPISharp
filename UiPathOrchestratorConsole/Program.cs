@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using UiPathCloudAPISharp;
+using UiPathCloudAPISharp.Models;
 
 namespace UiPathCloudAPISharpStartJob
 {

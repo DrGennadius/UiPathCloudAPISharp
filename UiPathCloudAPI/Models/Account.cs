@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace UiPathCloudAPISharp
+namespace UiPathCloudAPISharp.Models
 {
     public class Account
     {

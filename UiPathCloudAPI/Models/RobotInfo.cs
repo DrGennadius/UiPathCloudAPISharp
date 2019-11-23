@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace UiPathCloudAPISharp
+namespace UiPathCloudAPISharp.Models
 {
     /// <summary>
     /// Extended information about the robot

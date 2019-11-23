@@ -1,4 +1,4 @@
-﻿namespace UiPathCloudAPISharp
+﻿namespace UiPathCloudAPISharp.Models
 {
     public class Process
     {

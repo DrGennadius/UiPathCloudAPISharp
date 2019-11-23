@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 
-namespace UiPathCloudAPISharp
+namespace UiPathCloudAPISharp.OData
 {
     public class Filter : IFilter
     {

@@ -1,4 +1,4 @@
-﻿namespace UiPathCloudAPISharp
+﻿namespace UiPathCloudAPISharp.OData
 {
     public interface IOData
     {

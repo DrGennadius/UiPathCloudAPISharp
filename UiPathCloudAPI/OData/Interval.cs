@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 
-namespace UiPathCloudAPISharp
+namespace UiPathCloudAPISharp.OData
 {
     public class Interval<T> : IODataTransform where T : struct, IComparable<T>
     {

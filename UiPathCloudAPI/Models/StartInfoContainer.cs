@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
-namespace UiPathCloudAPISharp
+
+namespace UiPathCloudAPISharp.Models
 {
     class StartInfoContainer<T>
     {
