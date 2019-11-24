@@ -396,11 +396,11 @@ namespace UiPathCloudAPISharp
         /// <summary>
         /// Get job list
         /// </summary>
-        /// <param name="filter">Filter</param>
+        /// <param name="clauses">Clauses</param>
         /// <returns></returns>
-        public List<Job> GetJobs(Filter filter)
+        public List<Job> GetJobs(IClause clauses)
         {
-            string response = SendRequestGetForOdata("Jobs", filter);
+            string response = SendRequestGetForOdata("Jobs", clauses);
             return JsonConvert.DeserializeObject<Info<Job>>(response).Items;
         }
 
@@ -409,9 +409,10 @@ namespace UiPathCloudAPISharp
         /// </summary>
         /// <param name="clauses">Clauses</param>
         /// <returns></returns>
-        public List<Job> GetJobs(ODataClauses clauses)
+        public List<Job> GetJobs(string conditions)
         {
-            string response = SendRequestGetForOdata("Jobs", clauses);
+            Filter filter = new Filter(conditions);
+            string response = SendRequestGetForOdata("Jobs", filter);
             return JsonConvert.DeserializeObject<Info<Job>>(response).Items;
         }
 
@@ -613,9 +614,9 @@ namespace UiPathCloudAPISharp
         /// </summary>
         /// <param name="name">Name</param>
         /// <returns></returns>
-        public List<Process> GetProcesses(string condition)
+        public List<Process> GetProcesses(string conditions)
         {
-            Filter filter = new Filter(condition);
+            Filter filter = new Filter(conditions);
             return GetProcesses(filter);
         }
 
@@ -647,22 +648,11 @@ namespace UiPathCloudAPISharp
         }
 
         /// <summary>
-        /// Get a list of all processes by filter
-        /// </summary>
-        /// <param name="filter">Filter</param>
-        /// <returns></returns>
-        public List<Process> GetProcesses(Filter filter)
-        {
-            string response = SendRequestGetForOdata("Releases", filter);
-            return JsonConvert.DeserializeObject<Info<Process>>(response).Items;
-        }
-
-        /// <summary>
         /// Get a list of all processes by OData clauses
         /// </summary>
         /// <param name="clauses"></param>
         /// <returns></returns>
-        public List<Process> GetProcesses(ODataClauses clauses)
+        public List<Process> GetProcesses(IClause clauses)
         {
             string response = SendRequestGetForOdata("Releases", clauses);
             return JsonConvert.DeserializeObject<Info<Process>>(response).Items;
@@ -681,7 +671,7 @@ namespace UiPathCloudAPISharp
 
         #endregion Processes
 
-        #region Private
+        #region Private methods
         private string SendRequestGetForOdata(string operationPart, int top = -1, Filter filter = null, string select = null, string expand = null, string orderby = null, string skip = null)
         {
             ODataClauses clauses = new ODataClauses(top, filter, select, expand, orderby, skip);
@@ -890,6 +880,6 @@ namespace UiPathCloudAPISharp
             Regex regex = new Regex("=");
             return regex.Replace(Convert.ToBase64String(rawData).Replace('+', '-').Replace('/', '_'), "");
         }
-        #endregion Private
+        #endregion Private methods
     }
 }

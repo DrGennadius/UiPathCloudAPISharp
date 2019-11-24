@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace UiPathCloudAPISharp.OData
 {
@@ -54,7 +55,11 @@ namespace UiPathCloudAPISharp.OData
 
         public void AddCondition(string condition)
         {
-            AddCondition(new Condition(condition));
+            string[] conditions = condition.Split(new string[] { "and" }, StringSplitOptions.None);
+            foreach (var item in conditions)
+            {
+                AddCondition(new Condition(item));
+            }
         }
 
         public void AddCondition(ICondition condition)
@@ -73,7 +78,7 @@ namespace UiPathCloudAPISharp.OData
         {
             if (_resultBuilder.Length > 0)
             {
-                _resultBuilder.Append(string.Format("%20and%20", element));
+                _resultBuilder.Append(string.Format("%20and%20{0}", element));
             }
             else
             {
