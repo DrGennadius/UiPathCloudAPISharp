@@ -9,31 +9,31 @@ namespace UiPathCloudAPISharp.OData
 {
     public class Condition : ICondition
     {
-        public Condition(Type objectType, string propertyName, object objectValue, ConditionOperation conditionOperation = ConditionOperation.EQ)
+        public Condition(Type objectType, string propertyName, object objectValue, ComparisonOperator comparisonOperator = ComparisonOperator.EQ)
         {
             SetNameAndValue(objectType, propertyName, objectValue);
-            ConditionOperation = conditionOperation;
+            ComparisonOperator = comparisonOperator;
         }
 
-        public Condition(Type objectClass, object objectValue, ConditionOperation conditionOperation = ConditionOperation.EQ)
+        public Condition(Type objectClass, object objectValue, ComparisonOperator comparisonOperator = ComparisonOperator.EQ)
         {
             SetNameAndValue(objectClass, objectValue);
-            ConditionOperation = conditionOperation;
+            ComparisonOperator = comparisonOperator;
         }
 
-        public Condition(string baseName, string propertyName, object value, ConditionOperation conditionOperation = ConditionOperation.EQ)
+        public Condition(string baseName, string propertyName, object value, ComparisonOperator comparisonOperator = ComparisonOperator.EQ)
         {
             BaseName = baseName;
             PropertyName = propertyName;
             Value = value;
-            ConditionOperation = conditionOperation;
+            ComparisonOperator = comparisonOperator;
         }
 
-        public Condition(string name, object value, ConditionOperation conditionOperation = ConditionOperation.EQ)
+        public Condition(string name, object value, ComparisonOperator comparisonOperator = ComparisonOperator.EQ)
         {
             Name = name;
             Value = value;
-            ConditionOperation = conditionOperation;
+            ComparisonOperator = comparisonOperator;
         }
 
         public Condition(string condition)
@@ -95,7 +95,7 @@ namespace UiPathCloudAPISharp.OData
         /// <summary>
         /// Condition operation
         /// </summary>
-        public ConditionOperation ConditionOperation { get; set; } = ConditionOperation.EQ;
+        public ComparisonOperator ComparisonOperator { get; set; } = ComparisonOperator.EQ;
 
         public string GetODataString()
         {
@@ -104,11 +104,11 @@ namespace UiPathCloudAPISharp.OData
             {
                 if (Value is string)
                 {
-                    return string.Format("{0}%20{1}%20%27{2}%27", Name, ConditionOperation.ToString().ToLower(), Value);
+                    return string.Format("{0}%20{1}%20%27{2}%27", Name, ComparisonOperator.ToString().ToLower(), Value);
                 }
                 else
                 {
-                    return string.Format("{0}%20{1}%20{2}", Name, ConditionOperation.ToString().ToLower(), GetNormalizeValue(Value));
+                    return string.Format("{0}%20{1}%20{2}", Name, ComparisonOperator.ToString().ToLower(), GetNormalizeValue(Value));
                 }
             }
             return "";
@@ -116,7 +116,7 @@ namespace UiPathCloudAPISharp.OData
 
         public PrimitiveCondition[] GetPrimitives()
         {
-            return new PrimitiveCondition[] { new PrimitiveCondition(Name, Value.ToString(), ConditionOperation) };
+            return new PrimitiveCondition[] { new PrimitiveCondition(Name, Value.ToString(), ComparisonOperator) };
         }
 
         public void SetNameAndValue(Type objectType, string propertyName, object objectValue)
@@ -147,7 +147,7 @@ namespace UiPathCloudAPISharp.OData
                     {
                         Value = value;
                         Name = matches[0].Value;
-                        ConditionOperation = (ConditionOperation)Enum.Parse(typeof(ConditionOperation), GetODataConditionOperation(elements[1]).ToUpper());
+                        ComparisonOperator = (ComparisonOperator)Enum.Parse(typeof(ComparisonOperator), GetODataComparisonOperator(elements[1]).ToUpper());
                     }
                     else
                     {
@@ -167,7 +167,7 @@ namespace UiPathCloudAPISharp.OData
 
         public override string ToString()
         {
-            return string.Format("{0} {1} {2}", Name, ConditionOperationToString(), ValueToString());
+            return string.Format("{0} {1} {2}", Name, ComparisonOperatorToString(), ValueToString());
         }
 
         private void CheckProperty(Type objectType, string propertyName, Interval<DateTime> dateTimeInterval)
@@ -269,58 +269,58 @@ namespace UiPathCloudAPISharp.OData
             return result;
         }
 
-        private string ConditionOperationToString()
+        private string ComparisonOperatorToString()
         {
-            if (ConditionOperation == ConditionOperation.EQ)
+            if (ComparisonOperator == ComparisonOperator.EQ)
             {
                 return "=";
             }
-            else if (ConditionOperation == ConditionOperation.NE)
+            else if (ComparisonOperator == ComparisonOperator.NE)
             {
                 return "!=";
             }
-            else if (ConditionOperation == ConditionOperation.GE)
+            else if (ComparisonOperator == ComparisonOperator.GE)
             {
                 return ">=";
             }
-            else if (ConditionOperation == ConditionOperation.GT)
+            else if (ComparisonOperator == ComparisonOperator.GT)
             {
                 return ">";
             }
-            else if (ConditionOperation == ConditionOperation.LE)
+            else if (ComparisonOperator == ComparisonOperator.LE)
             {
                 return "<=";
             }
-            else if (ConditionOperation == ConditionOperation.LT)
+            else if (ComparisonOperator == ComparisonOperator.LT)
             {
                 return "<";
             }
             return "";
         }
 
-        private string GetODataConditionOperation(string conditionOperation)
+        private string GetODataComparisonOperator(string comparisonOperator)
         {
-            if (conditionOperation == "=")
+            if (comparisonOperator == "=")
             {
                 return "eq";
             }
-            else if (conditionOperation == "!=")
+            else if (comparisonOperator == "!=")
             {
                 return "ne";
             }
-            else if (conditionOperation == ">=")
+            else if (comparisonOperator == ">=")
             {
                 return "ge";
             }
-            else if (conditionOperation == ">")
+            else if (comparisonOperator == ">")
             {
                 return "gt";
             }
-            else if (conditionOperation == "<=")
+            else if (comparisonOperator == "<=")
             {
                 return "le";
             }
-            else if (conditionOperation == "<")
+            else if (comparisonOperator == "<")
             {
                 return "lt";
             }

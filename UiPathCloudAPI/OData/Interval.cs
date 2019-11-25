@@ -116,7 +116,7 @@ namespace UiPathCloudAPISharp.OData
                 }
                 else if (!IncludeStart && !IncludeEnd)
                 {
-                    primitiveConditions = new PrimitiveCondition[] { new PrimitiveCondition(input, GetNormalizeValue(Start.Value), ConditionOperation.NE) };
+                    primitiveConditions = new PrimitiveCondition[] { new PrimitiveCondition(input, GetNormalizeValue(Start.Value), ComparisonOperator.NE) };
                 }
             }
             else
@@ -161,7 +161,7 @@ namespace UiPathCloudAPISharp.OData
         {
             if (Start.HasValue)
             {
-                return new PrimitiveCondition(valueName, GetNormalizeValue(Start.Value), GetConditionOperationForStart());
+                return new PrimitiveCondition(valueName, GetNormalizeValue(Start.Value), GetComparisonOperatorForStart());
             }
             return null;
         }
@@ -170,7 +170,7 @@ namespace UiPathCloudAPISharp.OData
         {
             if (End.HasValue)
             {
-                return new PrimitiveCondition(valueName, GetNormalizeValue(End.Value), GetConditionOperationForEnd());
+                return new PrimitiveCondition(valueName, GetNormalizeValue(End.Value), GetComparisonOperatorForEnd());
             }
             return null;
         }
@@ -199,27 +199,27 @@ namespace UiPathCloudAPISharp.OData
             }
         }
 
-        private ConditionOperation GetConditionOperationForStart()
+        private ComparisonOperator GetComparisonOperatorForStart()
         {
             if (IncludeStart)
             {
-                return ConditionOperation.GE;
+                return ComparisonOperator.GE;
             }
             else
             {
-                return ConditionOperation.GT;
+                return ComparisonOperator.GT;
             }
         }
 
-        private ConditionOperation GetConditionOperationForEnd()
+        private ComparisonOperator GetComparisonOperatorForEnd()
         {
             if (IncludeEnd)
             {
-                return ConditionOperation.LE;
+                return ComparisonOperator.LE;
             }
             else
             {
-                return ConditionOperation.LT;
+                return ComparisonOperator.LT;
             }
         }
 

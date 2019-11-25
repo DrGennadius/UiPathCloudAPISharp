@@ -625,11 +625,11 @@ namespace UiPathCloudAPISharp
         /// </summary>
         /// <param name="objectName"></param>
         /// <param name="objectValue"></param>
-        /// <param name="conditionOperation"></param>
+        /// <param name="comparisonOperator"></param>
         /// <returns></returns>
-        public List<Process> GetProcesses(string objectName, object objectValue, ConditionOperation conditionOperation = ConditionOperation.EQ)
+        public List<Process> GetProcesses(string objectName, object objectValue, ComparisonOperator comparisonOperator = ComparisonOperator.EQ)
         {
-            Filter filter = new Filter(objectName, objectValue, conditionOperation);
+            Filter filter = new Filter(objectName, objectValue, comparisonOperator);
             return GetProcesses(filter);
         }
 
@@ -639,11 +639,11 @@ namespace UiPathCloudAPISharp
         /// <param name="objectBaseName"></param>
         /// <param name="objectPropertyName"></param>
         /// <param name="objectValue"></param>
-        /// <param name="conditionOperation"></param>
+        /// <param name="comparisonOperator"></param>
         /// <returns></returns>
-        public List<Process> GetProcesses(string objectBaseName, string objectPropertyName, object objectValue, ConditionOperation conditionOperation = ConditionOperation.EQ)
+        public List<Process> GetProcesses(string objectBaseName, string objectPropertyName, object objectValue, ComparisonOperator comparisonOperator = ComparisonOperator.EQ)
         {
-            Filter filter = new Filter(objectBaseName, objectPropertyName, objectValue, conditionOperation);
+            Filter filter = new Filter(objectBaseName, objectPropertyName, objectValue, comparisonOperator);
             return GetProcesses(filter);
         }
 

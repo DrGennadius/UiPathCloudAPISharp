@@ -7,11 +7,11 @@ namespace UiPathCloudAPISharp.OData
 {
     public class PrimitiveCondition : ICondition
     {
-        public PrimitiveCondition(string name, string value, ConditionOperation conditionOperation = ConditionOperation.EQ)
+        public PrimitiveCondition(string name, string value, ComparisonOperator comparisonOperator = ComparisonOperator.EQ)
         {
             Name = name;
             Value = value;
-            ConditionOperation = conditionOperation;
+            ComparisonOperator = comparisonOperator;
         }
 
         public PrimitiveCondition()
@@ -31,11 +31,11 @@ namespace UiPathCloudAPISharp.OData
         /// <summary>
         /// Condition operation
         /// </summary>
-        public ConditionOperation ConditionOperation { get; set; } = ConditionOperation.EQ;
+        public ComparisonOperator ComparisonOperator { get; set; } = ComparisonOperator.EQ;
 
         public string GetODataString()
         {
-            return string.Format("{0}%20{1}%20%27{2}%27", Name, ConditionOperation.ToString().ToLower(), Value);
+            return string.Format("{0}%20{1}%20%27{2}%27", Name, ComparisonOperator.ToString().ToLower(), Value);
         }
 
         public PrimitiveCondition[] GetPrimitives()
@@ -44,7 +44,7 @@ namespace UiPathCloudAPISharp.OData
         }
     }
 
-    public enum ConditionOperation
+    public enum ComparisonOperator
     {
         /// <summary>
         /// Equal
