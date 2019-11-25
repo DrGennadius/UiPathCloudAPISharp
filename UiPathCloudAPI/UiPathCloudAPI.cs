@@ -54,6 +54,8 @@ namespace UiPathCloudAPISharp
         /// </summary>
         public Queue<string> SentDataStore { get; private set; }
 
+        public Response LastIssueResponse { get; private set; }
+
         #endregion Public fields
 
         #region Private and internal fields
@@ -727,8 +729,6 @@ namespace UiPathCloudAPISharp
                 throw new ArgumentException("Empty url");
             }
 
-            string result = "";
-
             HttpWebRequest req = WebRequest.Create(url) as HttpWebRequest;
             req.Method = "GET";
             req.Timeout = 10000;
@@ -738,36 +738,11 @@ namespace UiPathCloudAPISharp
                 req.Headers.Add("X-UIPATH-TenantName", ServiceInstances.FirstOrDefault().LogicalName);
             }
 
-            try
-            {
-                var res = req.GetResponse() as HttpWebResponse;
-                var resStream = res.GetResponseStream();
-                result = new StreamReader(resStream, Encoding.UTF8).ReadToEnd();
-            }
-            catch (WebException ex)
-            {
-                using (var stream = ex.Response.GetResponseStream())
-                {
-                    using (var reader = new StreamReader(stream))
-                    {
-                        LastErrorMessage = reader.ReadToEnd();
-                    }
-                }
-                throw ex;
-            }
-            catch (Exception ex)
-            {
-                LastErrorMessage = ex.Message;
-                throw ex;
-            }
-
-            return result;
+            return SendRequest(req);
         }
 
         private string SendRequestPost(string url, byte[] sentData, bool access = false)
         {
-            string result = "";
-
             HttpWebRequest req = WebRequest.Create(url) as HttpWebRequest;
             req.Method = "POST";
             req.Timeout = 10000;
@@ -783,11 +758,16 @@ namespace UiPathCloudAPISharp
             Stream sendStream = req.GetRequestStream();
             sendStream.Write(sentData, 0, sentData.Length);
 
+            return SendRequest(req);
+        }
+
+        private string SendRequest(HttpWebRequest httpWebRequest)
+        {
             try
             {
-                var res = req.GetResponse() as HttpWebResponse;
+                var res = httpWebRequest.GetResponse() as HttpWebResponse;
                 var resStream = res.GetResponseStream();
-                result = new StreamReader(resStream, Encoding.UTF8).ReadToEnd();
+                return new StreamReader(resStream, Encoding.UTF8).ReadToEnd();
             }
             catch (WebException ex)
             {
@@ -796,6 +776,11 @@ namespace UiPathCloudAPISharp
                     using (var reader = new StreamReader(stream))
                     {
                         LastErrorMessage = reader.ReadToEnd();
+                        try
+                        {
+                            LastIssueResponse = JsonConvert.DeserializeObject<Response>(LastErrorMessage);
+                        }
+                        catch { }
                     }
                 }
                 throw ex;
@@ -805,8 +790,6 @@ namespace UiPathCloudAPISharp
                 LastErrorMessage = ex.Message;
                 throw ex;
             }
-
-            return result;
         }
 
         private void SeleniumAuthorizeToUiPath()
