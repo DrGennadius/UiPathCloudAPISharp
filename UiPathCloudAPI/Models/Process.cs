@@ -1,4 +1,6 @@
-﻿namespace UiPathCloudAPISharp.Models
+﻿using Newtonsoft.Json;
+
+namespace UiPathCloudAPISharp.Models
 {
     public class Process
     {
@@ -24,6 +26,20 @@
 
         public int Id { get; set; }
 
-        //public Arguments Arguments { get; set; }
+        [JsonProperty(PropertyName = "Arguments")]
+        public BasicArgumentsInfo BasicArguments { get; set; }
+
+        [JsonIgnore]
+        public ArgumentsInfo Arguments
+        {
+            get
+            {
+                return new ArgumentsInfo(BasicArguments);
+            }
+            set
+            {
+                BasicArguments = value.GetBaseArguments();
+            }
+        }
     }
 }

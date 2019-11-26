@@ -7,7 +7,7 @@ namespace UiPathCloudAPISharp.OData
 {
     public class ODataClauses : IClause
     {
-        public ODataClauses(int top = -1, Filter filter = null, string select = null, string expand = null, string orderby = null, string skip = null)
+        public ODataClauses(int top = -1, Filter filter = null, string select = null, string expand = null, OrderBy orderby = null, string skip = null)
         {
             Top = top;
             Filter = filter;
@@ -23,7 +23,7 @@ namespace UiPathCloudAPISharp.OData
 
         public string Expand { get; set; }
 
-        public string OrderBy { get; set; }
+        public OrderBy OrderBy { get; set; }
 
         public string Skip { get; set; }
 
@@ -71,9 +71,10 @@ namespace UiPathCloudAPISharp.OData
             {
                 AppendToResult(string.Format("$expand={0}", Expand));
             }
-            if (!string.IsNullOrEmpty(OrderBy))
+            string orderByString = OrderBy?.GetODataString();
+            if (!string.IsNullOrEmpty(orderByString))
             {
-                AppendToResult(string.Format("orderby={0}", OrderBy));
+                AppendToResult(orderByString);
             }
             if (!string.IsNullOrEmpty(Skip))
             {

@@ -340,14 +340,14 @@ namespace UiPathCloudAPISharp
                             correctedInputArguments += ',';
                     }
                     correctedInputArguments += '}';
-                    var startInfo = new StartInfoContainer<StartJobsWithArgumentsInfo>
+                    var startInfo = new StartInfoContainer<StartJobsInfoWithArguments>
                     {
-                        StartJobsInfo = new StartJobsWithArgumentsInfo
+                        StartJobsInfo = new StartJobsInfoWithArguments
                         {
                             ReleaseKey = releaseKey,
                             Strategy = "Specific",
                             RobotIds = new int[] { robotId },
-                            InputArguments = correctedInputArguments
+                            InputArgumentsAsString = correctedInputArguments
                         }
                     };
                     output = JsonConvert.SerializeObject(startInfo);
@@ -563,9 +563,9 @@ namespace UiPathCloudAPISharp
         /// <param name="orderby">OrderBy</param>
         /// <param name="skip">Skip</param>
         /// <returns></returns>
-        public List<RobotInfo> GetExtendedRobotsInfo(int top = -1, Filter filter = null, string orderby = null, string skip = null)
+        public List<RobotInfo> GetExtendedRobotsInfo(int top = -1, Filter filter = null, OrderBy orderBy = null, string skip = null)
         {
-            string response = SendRequestGetForOdata("Sessions", top, filter, "Robot", "Robot", orderby, skip);
+            string response = SendRequestGetForOdata("Sessions", top, filter, "Robot", "Robot", orderBy, skip);
             return JsonConvert.DeserializeObject<Info<RobotInfo>>(response).Items;
         }
 
@@ -674,9 +674,9 @@ namespace UiPathCloudAPISharp
         #endregion Processes
 
         #region Private methods
-        private string SendRequestGetForOdata(string operationPart, int top = -1, Filter filter = null, string select = null, string expand = null, string orderby = null, string skip = null)
+        private string SendRequestGetForOdata(string operationPart, int top = -1, Filter filter = null, string select = null, string expand = null, OrderBy orderBy = null, string skip = null)
         {
-            ODataClauses clauses = new ODataClauses(top, filter, select, expand, orderby, skip);
+            ODataClauses clauses = new ODataClauses(top, filter, select, expand, orderBy, skip);
             return SendRequestGetForOdata(string.Format("{0}?{1}", operationPart, clauses.GetODataString()));
         }
 
