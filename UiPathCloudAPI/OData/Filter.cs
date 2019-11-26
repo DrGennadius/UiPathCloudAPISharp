@@ -21,6 +21,19 @@ namespace UiPathCloudAPISharp.OData
             AddCondition(name, value, comparisonOperator);
         }
 
+        public Filter(string name, IODataTransform oDataTransform)
+            : this()
+        {
+            AddCondition(name, oDataTransform);
+        }
+
+        public Filter(string name, DateTime start, DateTime end)
+            : this()
+        {
+            Interval<DateTime> interval = new Interval<DateTime>(start, end);
+            AddCondition(name, interval);
+        }
+
         public Filter(ICondition condition)
             : this()
         {
@@ -53,10 +66,15 @@ namespace UiPathCloudAPISharp.OData
             AddCondition(new Condition(name, value, comparisonOperator));
         }
 
-        public void AddCondition(string condition)
+        public void AddCondition(string name, IODataTransform oDataTransform)
+        {
+            AppendToResult(oDataTransform.GetODataString(name));
+        }
+
+        public void AddCondition(string conditionalExpression)
         {
             Regex regex = new Regex("((?<= )and|or(?= ))");
-            string[] elements = regex.Split(condition);
+            string[] elements = regex.Split(conditionalExpression);
             string lastLogicalOperator = "and";
             bool isFirst = true;
             foreach (var item in elements)
@@ -65,7 +83,7 @@ namespace UiPathCloudAPISharp.OData
                 bool isLogicalOperator = lowItem == "and" || lowItem == "or";
                 if (isLogicalOperator && isFirst || isLogicalOperator && !string.IsNullOrEmpty(lastLogicalOperator))
                 {
-                    throw new ArgumentException("Condition string is incorrected:\n\"{0}\"", condition);
+                    throw new ArgumentException("Condition string is incorrected:\n\"{0}\"", conditionalExpression);
                 }
                 if (isLogicalOperator)
                 {
@@ -80,7 +98,7 @@ namespace UiPathCloudAPISharp.OData
             }
             if (!string.IsNullOrEmpty(lastLogicalOperator))
             {
-                throw new ArgumentException("Condition string is incorrected:\n\"{0}\"", condition);
+                throw new ArgumentException("Condition string is incorrected:\n\"{0}\"", conditionalExpression);
             }
         }
 
@@ -97,6 +115,11 @@ namespace UiPathCloudAPISharp.OData
         public string GetODataString()
         {
             return "$filter=" + _resultBuilder.ToString();
+        }
+
+        public override string ToString()
+        {
+            return GetODataString();
         }
 
         private StringBuilder _resultBuilder;

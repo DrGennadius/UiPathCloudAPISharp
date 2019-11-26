@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using UiPathCloudAPISharp;
 using UiPathCloudAPISharp.Models;
+using UiPathCloudAPISharp.OData;
 
 namespace UiPathCloudAPISharpStartJob
 {
@@ -104,11 +105,11 @@ namespace UiPathCloudAPISharpStartJob
 
         static void MenuLoop(UiPathCloudAPI uiPath)
         {
-            var processes1 = uiPath.GetProcesses();
-            ArgumentsInfo argumentsInfo = processes1[2].Arguments;
-            var processes2 = uiPath.GetProcesses(
-                string.Format("Name = '{0}' or Name = '{1}' or Name = '{2}'", processes1[0].Name, processes1[1].Name, processes1[2].Name)
-                );
+            var libraries = uiPath.GetLibraries();
+            Filter filter = new Filter("Published", new DateTime(2019, 2, 2), new DateTime(2019, 8, 8));
+            var libraries2 = uiPath.GetLibraries(filter);
+            var schedules = uiPath.GetProcessSchedules();
+            var schedules2 = uiPath.GetProcessSchedules("UseCalendar = true");
             Console.ReadKey();
             return;
             while (true)

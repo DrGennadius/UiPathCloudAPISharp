@@ -35,7 +35,7 @@ namespace UiPathCloudAPISharp.OData
 
         public string GetODataString()
         {
-            return string.Format("{0}%20{1}%20%27{2}%27", Name, ComparisonOperator.ToString().ToLower(), Value);
+            return string.Format("{0}%20{1}%20{2}", Name, ComparisonOperator.ToString().ToLower(), Value);
         }
 
         public PrimitiveCondition[] GetPrimitives()

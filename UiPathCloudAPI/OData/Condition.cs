@@ -102,21 +102,14 @@ namespace UiPathCloudAPISharp.OData
             string name = Name;
             if (!string.IsNullOrEmpty(name))
             {
-                if (Value is string)
-                {
-                    return string.Format("{0}%20{1}%20%27{2}%27", Name, ComparisonOperator.ToString().ToLower(), Value);
-                }
-                else
-                {
-                    return string.Format("{0}%20{1}%20{2}", Name, ComparisonOperator.ToString().ToLower(), GetNormalizeValue(Value));
-                }
+                return string.Format("{0}%20{1}%20{2}", Name, ComparisonOperator.ToString().ToLower(), GetNormalizeValue(Value));
             }
             return "";
         }
 
         public PrimitiveCondition[] GetPrimitives()
         {
-            return new PrimitiveCondition[] { new PrimitiveCondition(Name, Value.ToString(), ComparisonOperator) };
+            return new PrimitiveCondition[] { new PrimitiveCondition(Name, GetNormalizeValue(Value), ComparisonOperator) };
         }
 
         public void SetNameAndValue(Type objectType, string propertyName, object objectValue)
@@ -213,6 +206,10 @@ namespace UiPathCloudAPISharp.OData
             if (value is DateTime)
             {
                 return ((DateTime)value).ToString("yyyy-MM-ddTHH:mm:ssZ");
+            }
+            else if (value is string)
+            {
+                return "%27" + value.ToString() + "%27";
             }
             else
             {

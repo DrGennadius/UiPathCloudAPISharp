@@ -17,7 +17,7 @@ namespace UiPathCloudAPISharp
 {
     public class UiPathCloudAPI
     {
-        #region Public fields
+        #region Public properties
 
         /// <summary>
         /// UiPath login/email
@@ -58,7 +58,7 @@ namespace UiPathCloudAPISharp
 
         #endregion Public fields
 
-        #region Private and internal fields
+        #region Private and internal properties
 
         internal AuthToken Token { get; set; }
 
@@ -672,6 +672,56 @@ namespace UiPathCloudAPISharp
         }
 
         #endregion Processes
+
+        #region Libraries
+
+        public List<Library> GetLibraries()
+        {
+            string response = SendRequestGetForOdata("Libraries");
+            return JsonConvert.DeserializeObject<Info<Library>>(response).Items;
+        }
+
+        public List<Library> GetLibraries(string conditions)
+        {
+            Filter filter = new Filter(conditions);
+            return GetLibraries(filter);
+        }
+
+        public List<Library> GetLibraries(string objectName, object objectValue, ComparisonOperator comparisonOperator = ComparisonOperator.EQ)
+        {
+            Filter filter = new Filter(objectName, objectValue, comparisonOperator);
+            return GetLibraries(filter);
+        }
+        
+        public List<Library> GetLibraries(string objectBaseName, string objectPropertyName, object objectValue, ComparisonOperator comparisonOperator = ComparisonOperator.EQ)
+        {
+            Filter filter = new Filter(objectBaseName, objectPropertyName, objectValue, comparisonOperator);
+            return GetLibraries(filter);
+        }
+
+        public List<Library> GetLibraries(IClause clauses)
+        {
+            string response = SendRequestGetForOdata("Libraries", clauses);
+            return JsonConvert.DeserializeObject<Info<Library>>(response).Items;
+        }
+
+        #endregion Libraries
+
+        #region Process Schedules
+
+        public List<Schedule> GetProcessSchedules()
+        {
+            string response = SendRequestGetForOdata("ProcessSchedules");
+            return JsonConvert.DeserializeObject<Info<Schedule>>(response).Items;
+        }
+
+        public Schedule GetProcessSchedule(int id)
+        {
+            string response = SendRequestGetForOdata(string.Format("ProcessSchedules({0})", id));
+            return JsonConvert.DeserializeObject<Schedule>(response);
+        }
+
+        #endregion Process Schedules
 
         #region Private methods
         private string SendRequestGetForOdata(string operationPart, int top = -1, Filter filter = null, string select = null, string expand = null, OrderBy orderBy = null, string skip = null)
