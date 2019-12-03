@@ -88,7 +88,7 @@ namespace UiPathCloudAPISharpStartJob
 
             try
             {
-                uiPathCloudAPI.Authorize(login, password);
+                uiPathCloudAPI.Authorization(login, password);
                 result = uiPathCloudAPI.Authorized;
             }
             catch (WebException)
@@ -105,13 +105,6 @@ namespace UiPathCloudAPISharpStartJob
 
         static void MenuLoop(UiPathCloudAPI uiPath)
         {
-            var libraries = uiPath.GetLibraries();
-            Filter filter = new Filter("Published", new DateTime(2019, 2, 2), new DateTime(2019, 8, 8));
-            var libraries2 = uiPath.GetLibraries(filter);
-            var schedules = uiPath.GetProcessSchedules();
-            var schedules2 = uiPath.GetProcessSchedules("UseCalendar = true");
-            Console.ReadKey();
-            return;
             while (true)
             {
                 Console.Clear();

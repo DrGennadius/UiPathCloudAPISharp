@@ -45,6 +45,13 @@ namespace UiPathCloudAPISharp
         public string TargetLogicalName { get; private set; }
 
         /// <summary>
+        /// Gets or sets the time-out value in milliseconds for the <see cref="HttpWebRequest.GetResponse"/> 
+        /// and <see cref="HttpWebRequest.GetRequestStream"/> methods.
+        /// <para >The default value is 30,000 milliseconds (30 seconds).</para>
+        /// </summary>
+        public int RequestTimeout { get; set; } = 30000;
+
+        /// <summary>
         /// Passed an authentication?
         /// </summary>
         public bool Authorized { get; private set; } = false;
@@ -125,7 +132,7 @@ namespace UiPathCloudAPISharp
         /// <param name="password"></param>
         public void Initiation(string login = null, string password = null)
         {
-            Authorize(login, password);
+            Authorization(login, password);
             GetMainData();
         }
 
@@ -134,7 +141,7 @@ namespace UiPathCloudAPISharp
         /// </summary>
         /// <param name="login"></param>
         /// <param name="password"></param>
-        public void Authorize(string login = null, string password = null)
+        public void Authorization(string login = null, string password = null)
         {
             if (!string.IsNullOrEmpty(login))
             {
@@ -149,7 +156,7 @@ namespace UiPathCloudAPISharp
                 throw new ArgumentException("Login or Password is empty.");
             }
 
-            SeleniumAuthorizeToUiPath();
+            SeleniumAuthenticationToUiPath();
 
             var authParametr = new AuthParameters
             {
@@ -737,6 +744,10 @@ namespace UiPathCloudAPISharp
 
         private string SendRequestGetForOdata(string operationPart)
         {
+            if (!Authorized)
+            {
+                throw new Exception("Not authorized.");
+            }
             return SendRequestGet(
                 string.Format(
                     "https://platform.uipath.com/{0}/{1}/odata/{2}",
@@ -750,6 +761,10 @@ namespace UiPathCloudAPISharp
 
         private string SendRequestPostForOdata(string operationPart, byte[] sentData)
         {
+            if (!Authorized)
+            {
+                throw new Exception("Not authorized.");
+            }
             return SendRequestPost(
                 string.Format(
                     "https://platform.uipath.com/{0}/{1}/odata/{2}",
@@ -776,12 +791,12 @@ namespace UiPathCloudAPISharp
         {
             if (string.IsNullOrWhiteSpace(url))
             {
-                throw new ArgumentException("Empty url");
+                throw new ArgumentException("Empty url.");
             }
 
             HttpWebRequest req = WebRequest.Create(url) as HttpWebRequest;
             req.Method = "GET";
-            req.Timeout = 10000;
+            req.Timeout = RequestTimeout;
             req.Headers.Add("Authorization", Token.TokenType + " " + (access ? Token.AccessToken : Token.IdToken));
             if (access)
             {
@@ -793,9 +808,14 @@ namespace UiPathCloudAPISharp
 
         private string SendRequestPost(string url, byte[] sentData, bool access = false)
         {
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                throw new ArgumentException("Empty url.");
+            }
+
             HttpWebRequest req = WebRequest.Create(url) as HttpWebRequest;
             req.Method = "POST";
-            req.Timeout = 10000;
+            req.Timeout = RequestTimeout;
             req.ContentType = "application/json";
             req.Accept = "application/json";
             if (access)
@@ -821,16 +841,19 @@ namespace UiPathCloudAPISharp
             }
             catch (WebException ex)
             {
-                using (var stream = ex.Response.GetResponseStream())
+                if (ex.Response != null)
                 {
-                    using (var reader = new StreamReader(stream))
+                    using (var stream = ex.Response.GetResponseStream())
                     {
-                        LastErrorMessage = reader.ReadToEnd();
-                        try
+                        using (var reader = new StreamReader(stream))
                         {
-                            LastIssueResponse = JsonConvert.DeserializeObject<Response>(LastErrorMessage);
+                            LastErrorMessage = reader.ReadToEnd();
+                            try
+                            {
+                                LastIssueResponse = JsonConvert.DeserializeObject<Response>(LastErrorMessage);
+                            }
+                            catch { }
                         }
-                        catch { }
                     }
                 }
                 throw ex;
@@ -842,7 +865,7 @@ namespace UiPathCloudAPISharp
             }
         }
 
-        private void SeleniumAuthorizeToUiPath()
+        private void SeleniumAuthenticationToUiPath()
         {
             WebDriver.Url = string.Format(urlGetCodeBase, CodeChallenge, ClientId);
             WebDriver.Manage().Window.Maximize();
