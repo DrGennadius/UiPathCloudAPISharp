@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>UiPathCloudAPI.net40</id>
-    <version>0.3.1</version>
+    <version>0.4.0</version>
     <title>UiPathCloudAPI .NET40</title>
     <authors>Gennady Zykov</authors>
     <licenseUrl>https://raw.githubusercontent.com/DrGennadius/UiPathCloudAPISharp/master/LICENSE</licenseUrl>
@@ -13,8 +13,6 @@
 	<dependencies>
       <group targetFramework=".NETFramework4.0">
         <dependency id="Newtonsoft.Json" version="11.0.2" />
-        <dependency id="Selenium.WebDriver" version="3.141.0" />
-        <dependency id="Selenium.WebDriver.ChromeDriver" version="78.0.3904.7000" />
       </group>
     </dependencies>
   </metadata>

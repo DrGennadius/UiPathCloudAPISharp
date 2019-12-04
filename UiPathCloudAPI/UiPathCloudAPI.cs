@@ -1,6 +1,4 @@
 ﻿using Newtonsoft.Json;
-using OpenQA.Selenium;
-using OpenQA.Selenium.Chrome;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -19,30 +17,16 @@ namespace UiPathCloudAPISharp
     {
         #region Public properties
 
-        /// <summary>
-        /// UiPath login/email
-        /// </summary>
-        public string Login { get; set; }
+        public string ClientId { get; set; }
 
-        /// <summary>
-        /// UiPath Password
-        /// </summary>
-        public string Password { get; set; }
-
-        public string Code { get; set; }
-
-        public string CodeVerifier { get; set; }
-
-        public string CodeChallenge { get; set; }
-
-        public string ClientId { get; set; } = "5v7PmPJL6FOGu6RB8I1Y4adLBhIwovQN";
+        public string TenantLogicalName { get; private set; }
 
         /// <summary>
         /// Last error message that occurred
         /// </summary>
         public string LastErrorMessage { get; private set; }
-
-        public string TargetLogicalName { get; private set; }
+        
+        public string RefreshToken { get; set; }
 
         /// <summary>
         /// Gets or sets the time-out value in milliseconds for the <see cref="HttpWebRequest.GetResponse"/> 
@@ -77,52 +61,27 @@ namespace UiPathCloudAPISharp
 
         private Account TargetAccount { get; set; }
 
-        private IWebDriver WebDriver { get; set; }
-
-        private readonly string patternCode = @"(?<=code=).*(?=&state)";
-
-        private readonly string urlGetCodeBase = "https://account.uipath.com/authorize?response_type=code&nonce=b0f368cbc59c6b99ccc8e9b66a30b4a6&state=47441df4d0f0a89da08d43b6dfdc4be2&code_challenge={0}&code_challenge_method=S256&scope=openid+profile+offline_access+email &audience=https%3A%2F%2Forchestrator.cloud.uipath.com&client_id={1}&redirect_uri=https%3A%2F%2Faccount.uipath.com%2Fmobile";
-
         private readonly string urlUipathAuth = "https://account.uipath.com/oauth/token";
 
         #endregion Private and internal fields
 
         #region Constructors, initiation, etc.
 
-        public UiPathCloudAPI(string login, string password, string clientId, string codeVerifier)
-            : this(login, password, clientId)
-        {
-            CodeVerifier = codeVerifier;
-        }
-
-        public UiPathCloudAPI(string login, string password, string clientId)
-            : this(login, password)
-        {
-            ClientId = clientId;
-        }
-
-        public UiPathCloudAPI(string login, string password)
+        public UiPathCloudAPI(string tenantLogicalName, string clientId, string refreshToken)
             : this()
         {
-            Login = login;
-            Password = password;
+            TenantLogicalName = tenantLogicalName;
+            ClientId = clientId;
+            RefreshToken = refreshToken;
         }
 
         public UiPathCloudAPI()
         {
             SentDataStore = new Queue<string>();
-            ChromeOptions chromeOptions = new ChromeOptions();
-            chromeOptions.AddArgument("headless");
-            chromeOptions.AddArgument("--log-level=3");
-            ChromeDriverService service = ChromeDriverService.CreateDefaultService();
-            service.HideCommandPromptWindow = true;
-            WebDriver = new ChromeDriver(service, chromeOptions);
-            ComputeCodes();
         }
 
         ~UiPathCloudAPI()
         {
-            WebDriver.Dispose();
         }
 
         /// <summary>
@@ -130,9 +89,9 @@ namespace UiPathCloudAPISharp
         /// </summary>
         /// <param name="login"></param>
         /// <param name="password"></param>
-        public void Initiation(string login = null, string password = null)
+        public void Initiation(string tenantLogicalName, string clientId = null, string refreshToken = null)
         {
-            Authorization(login, password);
+            Authorization(tenantLogicalName, clientId, refreshToken);
             GetMainData();
         }
 
@@ -141,32 +100,34 @@ namespace UiPathCloudAPISharp
         /// </summary>
         /// <param name="login"></param>
         /// <param name="password"></param>
-        public void Authorization(string login = null, string password = null)
+        public void Authorization(string tenantLogicalName = null, string clientId = null, string refreshToken = null)
         {
-            if (!string.IsNullOrEmpty(login))
+            if (!string.IsNullOrEmpty(tenantLogicalName))
             {
-                Login = login;
+                TenantLogicalName = tenantLogicalName;
             }
-            if (!string.IsNullOrEmpty(password))
+            if (!string.IsNullOrEmpty(clientId))
             {
-                Password = password;
+                ClientId = clientId;
             }
-            if (string.IsNullOrWhiteSpace(login) || string.IsNullOrWhiteSpace(password))
+            if (!string.IsNullOrEmpty(refreshToken))
             {
-                throw new ArgumentException("Login or Password is empty.");
+                RefreshToken = refreshToken;
             }
-
-            SeleniumAuthenticationToUiPath();
+            if (string.IsNullOrWhiteSpace(TenantLogicalName) || string.IsNullOrWhiteSpace(ClientId) || string.IsNullOrWhiteSpace(RefreshToken))
+            {
+                throw new ArgumentException("Tenant Logical Name or Client Id or Refresh Token is empty.");
+            }
 
             var authParametr = new AuthParameters
             {
-                code = Code,
-                code_verifier = CodeVerifier,
-                client_id = ClientId
+                ClientId = ClientId,
+                RefreshToken = RefreshToken
             };
             string output = JsonConvert.SerializeObject(authParametr);
             var sentData = Encoding.UTF8.GetBytes(output);
-            Token = JsonConvert.DeserializeObject<AuthToken>(SendRequestPost(urlUipathAuth, sentData));
+            Token = JsonConvert.DeserializeObject<AuthToken>(SendRequestPost(urlUipathAuth, sentData, true));
+            Authorized = true;
         }
 
         /// <summary>
@@ -179,8 +140,8 @@ namespace UiPathCloudAPISharp
             {
                 throw new Exception("Accounts for target user is empty.");
             }
-            TargetLogicalName = TargetUser.Accounts.First().LogicalName;
-            if (string.IsNullOrWhiteSpace(TargetLogicalName))
+            TenantLogicalName = TargetUser.Accounts.First().LogicalName;
+            if (string.IsNullOrWhiteSpace(TenantLogicalName))
             {
                 throw new Exception("LogicalName is null, empty or white space filled.");
             }
@@ -751,7 +712,7 @@ namespace UiPathCloudAPISharp
             return SendRequestGet(
                 string.Format(
                     "https://platform.uipath.com/{0}/{1}/odata/{2}",
-                    TargetLogicalName,
+                    TenantLogicalName,
                     ServiceInstances.FirstOrDefault().LogicalName,
                     operationPart
                     )
@@ -768,7 +729,7 @@ namespace UiPathCloudAPISharp
             return SendRequestPost(
                 string.Format(
                     "https://platform.uipath.com/{0}/{1}/odata/{2}",
-                    TargetLogicalName,
+                    TenantLogicalName,
                     ServiceInstances.FirstOrDefault().LogicalName,
                     operationPart
                     )
@@ -779,7 +740,7 @@ namespace UiPathCloudAPISharp
 
         private void GetAllServiceInstances()
         {
-            ServiceInstances = JsonConvert.DeserializeObject<List<ServiceInstance>>(SendRequestGet(string.Format("https://platform.uipath.com/cloudrpa/api/account/{0}/getAllServiceInstances", TargetLogicalName)));
+            ServiceInstances = JsonConvert.DeserializeObject<List<ServiceInstance>>(SendRequestGet(string.Format("https://platform.uipath.com/cloudrpa/api/account/{0}/getAllServiceInstances", TenantLogicalName)));
         }
 
         private AccountsForUser GetAccountsForUser()
@@ -820,8 +781,11 @@ namespace UiPathCloudAPISharp
             req.Accept = "application/json";
             if (access)
             {
-                req.Headers.Add("Authorization", Token.TokenType + " " + Token.AccessToken);
-                req.Headers.Add("X-UIPATH-TenantName", ServiceInstances.FirstOrDefault().LogicalName);
+                if (Authorized)
+                {
+                    req.Headers.Add("Authorization", Token.TokenType + " " + Token.AccessToken);
+                }
+                req.Headers.Add("X-UIPATH-TenantName", TenantLogicalName);
             }
 
             req.ContentLength = sentData.Length;
@@ -865,77 +829,6 @@ namespace UiPathCloudAPISharp
             }
         }
 
-        private void SeleniumAuthenticationToUiPath()
-        {
-            WebDriver.Url = string.Format(urlGetCodeBase, CodeChallenge, ClientId);
-            WebDriver.Manage().Window.Maximize();
-
-            try
-            {
-                IWebElement emailField = WebDriver.FindElement(By.XPath("//input[@id='text-field-hero-input'][@class='mdc-text-field__input marginNone loginFormEmailText']"));
-                IWebElement passwordField = WebDriver.FindElement(By.XPath("//input[@id='text-field-hero-input'][@type='password'][@class='mdc-text-field__input marginNone loginFormPasswordTextField']"));
-                IWebElement loginButton = WebDriver.FindElement(By.Id("loginButton"));
-
-                emailField.SendKeys(Login);
-                passwordField.SendKeys(Password);
-                loginButton.Click();
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-
-            int tryCount = 10;
-            while (tryCount > 0)
-            {
-                Thread.Sleep(2000);
-
-                Regex regex = new Regex(patternCode);
-                Match match = regex.Match(WebDriver.Url);
-                if (match.Success)
-                {
-                    Code = match.Value;
-                    Authorized = true;
-                    break;
-                }
-
-                tryCount--;
-            }
-
-            string url = WebDriver.Url;
-            WebDriver.Close();
-            WebDriver.Quit();
-            if (!Authorized)
-            {
-                throw new Exception("Error for Selenium Authorize.\nLast ChromeDriver URL: " + url);
-            }
-        }
-
-        private void ComputeCodes()
-        {
-            if (string.IsNullOrWhiteSpace(CodeVerifier))
-            {
-                RNGCryptoServiceProvider rngCsp = new RNGCryptoServiceProvider();
-                byte[] randomBytes = new byte[32];
-                rngCsp.GetBytes(randomBytes);
-                CodeVerifier = Base64URLEncode(randomBytes);
-            }
-            CodeChallenge = Base64URLEncode(ComputeSha256Hash(CodeVerifier));
-        }
-
-        private byte[] ComputeSha256Hash(string rawData)
-        { 
-            using (SHA256 sha256Hash = SHA256.Create())
-            {
-                return sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(rawData));
-            }
-        }
-
-        private string Base64URLEncode(byte[] rawData)
-        {
-            Regex regex = new Regex("=");
-            return regex.Replace(Convert.ToBase64String(rawData).Replace('+', '-').Replace('/', '_'), "");
-        }
         #endregion Private methods
     }
 }

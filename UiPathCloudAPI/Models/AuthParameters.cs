@@ -1,21 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Newtonsoft.Json;
 
 namespace UiPathCloudAPISharp.Models
 {
     public class AuthParameters
     {
-        public string grant_type => "authorization_code";
+        [JsonProperty(PropertyName = "grant_type")]
+        public string GrantType => "refresh_token";
 
-        public string code { get; set; }
+        [JsonProperty(PropertyName = "refresh_token")]
+        public string RefreshToken { get; set; }
 
-        public string redirect_uri => "https://account.uipath.com/mobile";
-
-        public string code_verifier { get; set; }
-
-        public string client_id { get; set; }
+        [JsonProperty(PropertyName = "client_id")]
+        public string ClientId { get; set; }
     }
 }

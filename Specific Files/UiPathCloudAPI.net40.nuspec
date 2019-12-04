@@ -2,15 +2,13 @@
 <package >
   <metadata>
     <id>UiPathCloudAPI.net40</id>
-    <version>0.3.1</version>
+    <version>0.4.0</version>
     <title>Specific UiPathCloudAPI .NET40</title>
     <authors>Gennady Zykov</authors>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Specific version of package UiPathCloudAPI .NET40</description>
   </metadata>
   <files>
-    <file src="bin\Release\chromedriver.exe" target="lib\net40\chromedriver.exe" />
-	<file src="bin\Release\WebDriver.dll" target="lib\net40\WebDriver.dll" />
-	<file src="bin\Release\UiPathCloudAPI.net40.dll" target="lib\net40\UiPathCloudAPI.net40.dll" />
+		<file src="bin\Release\UiPathCloudAPI.net40.dll" target="lib\net40\UiPathCloudAPI.net40.dll" />
   </files>
 </package>

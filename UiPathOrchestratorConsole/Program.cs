@@ -31,30 +31,28 @@ namespace UiPathCloudAPISharpStartJob
             bool authenticated = false;
 
             Console.WriteLine("Authentication...");
-            
-            if (!authenticated)
-            {
-                string login = ConfigurationManager.AppSettings["login"];
-                string password = ConfigurationManager.AppSettings["password"];
 
-                if (string.IsNullOrWhiteSpace(login) || string.IsNullOrWhiteSpace(password))
+            string tenantLogicalName = ConfigurationManager.AppSettings["TenantLogicalName"];
+            string clientId = ConfigurationManager.AppSettings["ClientId"];
+            string refreshToken = ConfigurationManager.AppSettings["UserKey"];
+
+            if (string.IsNullOrWhiteSpace(clientId) || string.IsNullOrWhiteSpace(refreshToken))
+            {
+                int tryCount = 3;
+                while (tryCount > 0 && !authenticated)
                 {
-                    int tryCount = 3;
-                    while (tryCount > 0 && !authenticated)
-                    {
-                        Console.WriteLine("Attempt #{0}", 4 - tryCount);
-                        Console.Write(" Enter login: ");
-                        login = Console.ReadLine();
-                        Console.Write(" Enter password: ");
-                        password = Console.ReadLine();
-                        authenticated = TryAuthorize(uiPathCloudAPI, login, password);
-                        tryCount--;
-                    }
+                    Console.WriteLine("Attempt #{0}", 4 - tryCount);
+                    Console.Write(" Enter login: ");
+                    clientId = Console.ReadLine();
+                    Console.Write(" Enter password: ");
+                    refreshToken = Console.ReadLine();
+                    authenticated = TryAuthorize(uiPathCloudAPI, tenantLogicalName, clientId, refreshToken);
+                    tryCount--;
                 }
-                else
-                {
-                    authenticated = TryAuthorize(uiPathCloudAPI, login, password);
-                }
+            }
+            else
+            {
+                authenticated = TryAuthorize(uiPathCloudAPI, tenantLogicalName, clientId, refreshToken);
             }
             if (authenticated)
             {
@@ -82,13 +80,13 @@ namespace UiPathCloudAPISharpStartJob
             return result;
         }
 
-        static bool TryAuthorize(UiPathCloudAPI uiPathCloudAPI, string login, string password)
+        static bool TryAuthorize(UiPathCloudAPI uiPathCloudAPI, string tenantLogicalName, string clientId, string refreshToken)
         {
             bool result = false;
 
             try
             {
-                uiPathCloudAPI.Authorization(login, password);
+                uiPathCloudAPI.Authorization(tenantLogicalName, clientId, refreshToken);
                 result = uiPathCloudAPI.Authorized;
             }
             catch (WebException)
@@ -108,7 +106,7 @@ namespace UiPathCloudAPISharpStartJob
             while (true)
             {
                 Console.Clear();
-                Console.WriteLine("Welcome, {0}!", uiPath.TargetLogicalName);
+                Console.WriteLine("Welcome, {0}!", uiPath.TenantLogicalName);
                 Console.WriteLine("Select number:");
                 Console.WriteLine("0. Exit.");
                 Console.WriteLine("1. Robots.");

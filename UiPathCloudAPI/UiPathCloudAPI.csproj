@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>net40;net461;netstandard2.0</TargetFrameworks>
-    <Version>0.3.1</Version>
+    <Version>0.4.0</Version>
     <Authors>Gennady Zykov</Authors>
     <Company />
     <RootNamespace>UiPathCloudAPISharp</RootNamespace>
@@ -16,8 +16,6 @@
   
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="Selenium.WebDriver" Version="3.141.0" />
-    <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="78.0.3.34.7000" />
   </ItemGroup>
   
   <ItemGroup>

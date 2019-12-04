@@ -61,11 +61,6 @@
       <Name>UiPathCloudAPIOld</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Selenium.WebDriver.ChromeDriver">
-      <Version>78.0.3904.7000</Version>
-    </PackageReference>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>
