@@ -133,6 +133,7 @@ namespace UiPathCloudAPISharp
         /// <param name="password"></param>
         public void Authorization(string tenantLogicalName = null, string clientId = null, string userKey = null)
         {
+            Authorized = false;
             if (!string.IsNullOrEmpty(tenantLogicalName))
             {
                 TenantLogicalName = tenantLogicalName;
