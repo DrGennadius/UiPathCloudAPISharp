@@ -13,20 +13,33 @@ using UiPathCloudAPISharp.OData;
 
 namespace UiPathCloudAPISharp
 {
+    /// <summary>
+    /// A class that provides access to Orchestrator operations via the Cloud API.
+    /// </summary>
     public class UiPathCloudAPI
     {
         #region Public properties
 
+        /// <summary>
+        /// User Key for connect to UiPath Orchestrator via Cloud API.
+        /// Used as refresh_token for Authorization.
+        /// </summary>
+        public string UserKey { get; set; }
+
+        /// <summary>
+        /// Client Id for connect to UiPath Orchestrator via Cloud API.
+        /// </summary>
         public string ClientId { get; set; }
 
+        /// <summary>
+        /// Tenant Logical Name for connect to UiPath Orchestrator via Cloud API.
+        /// </summary>
         public string TenantLogicalName { get; private set; }
 
         /// <summary>
         /// Last error message that occurred
         /// </summary>
         public string LastErrorMessage { get; private set; }
-        
-        public string RefreshToken { get; set; }
 
         /// <summary>
         /// Gets or sets the time-out value in milliseconds for the <see cref="HttpWebRequest.GetResponse"/> 
@@ -45,7 +58,20 @@ namespace UiPathCloudAPISharp
         /// </summary>
         public Queue<string> SentDataStore { get; private set; }
 
+        /// <summary>
+        /// Last issue response (deserialized).
+        /// </summary>
         public Response LastIssueResponse { get; private set; }
+
+        /// <summary>
+        /// Current target account.
+        /// </summary>
+        public Account TargetAccount { get; private set; }
+
+        /// <summary>
+        /// Current target service instance.
+        /// </summary>
+        public ServiceInstance TargetServiceInstance { get; private set; }
 
         #endregion Public fields
 
@@ -55,11 +81,7 @@ namespace UiPathCloudAPISharp
 
         private List<ServiceInstance> ServiceInstances { get; set; }
 
-        private ServiceInstance TargetServiceInstance { get; set; }
-
-        private AccountsForUser TargetUser { get; set; }
-
-        private Account TargetAccount { get; set; }
+        private AccountsForUser TargetUser { get; set; }        
 
         private readonly string urlUipathAuth = "https://account.uipath.com/oauth/token";
 
@@ -67,14 +89,23 @@ namespace UiPathCloudAPISharp
 
         #region Constructors, initiation, etc.
 
-        public UiPathCloudAPI(string tenantLogicalName, string clientId, string refreshToken)
+        /// <summary>
+        /// Create instance by Access data.
+        /// </summary>
+        /// <param name="tenantLogicalName"></param>
+        /// <param name="clientId"></param>
+        /// <param name="userKey"></param>
+        public UiPathCloudAPI(string tenantLogicalName, string clientId, string userKey)
             : this()
         {
             TenantLogicalName = tenantLogicalName;
             ClientId = clientId;
-            RefreshToken = refreshToken;
+            UserKey = userKey;
         }
 
+        /// <summary>
+        /// Create instance.
+        /// </summary>
         public UiPathCloudAPI()
         {
             SentDataStore = new Queue<string>();
@@ -89,9 +120,9 @@ namespace UiPathCloudAPISharp
         /// </summary>
         /// <param name="login"></param>
         /// <param name="password"></param>
-        public void Initiation(string tenantLogicalName, string clientId = null, string refreshToken = null)
+        public void Initiation(string tenantLogicalName, string clientId = null, string userKey = null)
         {
-            Authorization(tenantLogicalName, clientId, refreshToken);
+            Authorization(tenantLogicalName, clientId, userKey);
             GetMainData();
         }
 
@@ -100,7 +131,7 @@ namespace UiPathCloudAPISharp
         /// </summary>
         /// <param name="login"></param>
         /// <param name="password"></param>
-        public void Authorization(string tenantLogicalName = null, string clientId = null, string refreshToken = null)
+        public void Authorization(string tenantLogicalName = null, string clientId = null, string userKey = null)
         {
             if (!string.IsNullOrEmpty(tenantLogicalName))
             {
@@ -110,19 +141,19 @@ namespace UiPathCloudAPISharp
             {
                 ClientId = clientId;
             }
-            if (!string.IsNullOrEmpty(refreshToken))
+            if (!string.IsNullOrEmpty(userKey))
             {
-                RefreshToken = refreshToken;
+                UserKey = userKey;
             }
-            if (string.IsNullOrWhiteSpace(TenantLogicalName) || string.IsNullOrWhiteSpace(ClientId) || string.IsNullOrWhiteSpace(RefreshToken))
+            if (string.IsNullOrWhiteSpace(TenantLogicalName) || string.IsNullOrWhiteSpace(ClientId) || string.IsNullOrWhiteSpace(UserKey))
             {
-                throw new ArgumentException("Tenant Logical Name or Client Id or Refresh Token is empty.");
+                throw new ArgumentException("Tenant Logical Name or Client Id or User Key is empty.");
             }
 
             var authParametr = new AuthParameters
             {
                 ClientId = ClientId,
-                RefreshToken = RefreshToken
+                RefreshToken = UserKey
             };
             string output = JsonConvert.SerializeObject(authParametr);
             var sentData = Encoding.UTF8.GetBytes(output);
@@ -140,7 +171,7 @@ namespace UiPathCloudAPISharp
             {
                 throw new Exception("Accounts for target user is empty.");
             }
-            TenantLogicalName = TargetUser.Accounts.First().LogicalName;
+            TargetAccount = TargetUser.Accounts.First();
             if (string.IsNullOrWhiteSpace(TenantLogicalName))
             {
                 throw new Exception("LogicalName is null, empty or white space filled.");
@@ -712,8 +743,8 @@ namespace UiPathCloudAPISharp
             return SendRequestGet(
                 string.Format(
                     "https://platform.uipath.com/{0}/{1}/odata/{2}",
-                    TenantLogicalName,
-                    ServiceInstances.FirstOrDefault().LogicalName,
+                    TargetAccount.LogicalName,
+                    TargetServiceInstance.LogicalName,
                     operationPart
                     )
                     , true
@@ -729,8 +760,8 @@ namespace UiPathCloudAPISharp
             return SendRequestPost(
                 string.Format(
                     "https://platform.uipath.com/{0}/{1}/odata/{2}",
-                    TenantLogicalName,
-                    ServiceInstances.FirstOrDefault().LogicalName,
+                    TargetAccount.LogicalName,
+                    TargetServiceInstance.LogicalName,
                     operationPart
                     )
                     , sentData
@@ -740,7 +771,14 @@ namespace UiPathCloudAPISharp
 
         private void GetAllServiceInstances()
         {
-            ServiceInstances = JsonConvert.DeserializeObject<List<ServiceInstance>>(SendRequestGet(string.Format("https://platform.uipath.com/cloudrpa/api/account/{0}/getAllServiceInstances", TenantLogicalName)));
+            ServiceInstances = JsonConvert.DeserializeObject<List<ServiceInstance>>(
+                SendRequestGet(
+                    string.Format(
+                        "https://platform.uipath.com/cloudrpa/api/account/{0}/getAllServiceInstances", 
+                        TargetAccount.LogicalName
+                    )
+                )
+            );
         }
 
         private AccountsForUser GetAccountsForUser()
@@ -752,7 +790,7 @@ namespace UiPathCloudAPISharp
         {
             if (string.IsNullOrWhiteSpace(url))
             {
-                throw new ArgumentException("Empty url.");
+                throw new ArgumentException("Url is empty.");
             }
 
             HttpWebRequest req = WebRequest.Create(url) as HttpWebRequest;
@@ -761,7 +799,7 @@ namespace UiPathCloudAPISharp
             req.Headers.Add("Authorization", Token.TokenType + " " + (access ? Token.AccessToken : Token.IdToken));
             if (access)
             {
-                req.Headers.Add("X-UIPATH-TenantName", ServiceInstances.FirstOrDefault().LogicalName);
+                req.Headers.Add("X-UIPATH-TenantName", TargetServiceInstance.LogicalName);
             }
 
             return SendRequest(req);
@@ -771,7 +809,7 @@ namespace UiPathCloudAPISharp
         {
             if (string.IsNullOrWhiteSpace(url))
             {
-                throw new ArgumentException("Empty url.");
+                throw new ArgumentException("Url is empty.");
             }
 
             HttpWebRequest req = WebRequest.Create(url) as HttpWebRequest;
@@ -784,8 +822,12 @@ namespace UiPathCloudAPISharp
                 if (Authorized)
                 {
                     req.Headers.Add("Authorization", Token.TokenType + " " + Token.AccessToken);
+                    req.Headers.Add("X-UIPATH-TenantName", TargetServiceInstance.LogicalName);
                 }
-                req.Headers.Add("X-UIPATH-TenantName", TenantLogicalName);
+                else
+                {
+                    req.Headers.Add("X-UIPATH-TenantName", TenantLogicalName);
+                }
             }
 
             req.ContentLength = sentData.Length;

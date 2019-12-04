@@ -106,7 +106,7 @@ namespace UiPathCloudAPISharpStartJob
             while (true)
             {
                 Console.Clear();
-                Console.WriteLine("Welcome, {0}!", uiPath.TenantLogicalName);
+                Console.WriteLine("Welcome, {0}!", uiPath.TargetAccount.Name);
                 Console.WriteLine("Select number:");
                 Console.WriteLine("0. Exit.");
                 Console.WriteLine("1. Robots.");
