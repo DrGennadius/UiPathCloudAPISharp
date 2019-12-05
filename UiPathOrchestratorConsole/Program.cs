@@ -110,9 +110,8 @@ namespace UiPathCloudAPISharpStartJob
                 { "InOutZ", 4 }
             };
             var startedJob = uiPath.StartJob("Test Robot", "BackgroundProcess", "Test Environment", inputArguments);
-            Thread.Sleep(10000);
-            var job = uiPath.GetJob(startedJob);
-            object a1 = job.OutputArguments["OutputY"];
+            var job = uiPath.WaitReadyJob(startedJob);
+            var a1 = job.OutputArguments["OutputY"];
             Console.ReadKey();
             return;
             while (true)

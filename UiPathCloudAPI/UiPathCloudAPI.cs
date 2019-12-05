@@ -8,6 +8,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
 using UiPathCloudAPISharp.Models;
 using UiPathCloudAPISharp.OData;
 
@@ -47,6 +48,16 @@ namespace UiPathCloudAPISharp
         /// <para >The default value is 30,000 milliseconds (30 seconds).</para>
         /// </summary>
         public int RequestTimeout { get; set; } = 30000;
+
+        /// <summary>
+        /// Gets or sets the time-out value in milliseconds for wait the big operation.
+        /// </summary>
+        public int WaitTimeout { get; set; } = 300000;
+
+        /// <summary>
+        /// Gets or sets the time-out value in milliseconds for wait the big operation.
+        /// </summary>
+        public int BigWaitTimeout { get; set; } = 1800000;
 
         /// <summary>
         /// Passed an authentication?
@@ -453,6 +464,56 @@ namespace UiPathCloudAPISharp
         public JobWithArguments GetJob(Job job)
         {
             return GetJobs(new Filter("Id", job.Id)).FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Wait ready (not pending) job. It is sync.
+        /// </summary>
+        /// <param name="job"></param>
+        /// <returns></returns>
+        public JobWithArguments WaitReadyJob(Job job)
+        {
+            return WaitReadyJob(job, WaitTimeout);
+        }
+
+        /// <summary>
+        /// Wait ready (not pending) big job. It is sync.
+        /// </summary>
+        /// <param name="job"></param>
+        /// <returns></returns>
+        public JobWithArguments WaitReadyBigJob(Job job)
+        {
+            return WaitReadyJob(job, BigWaitTimeout);
+        }
+
+        /// <summary>
+        /// Wait ready (not pending) job with timeout. It is sync.
+        /// </summary>
+        /// <param name="job"></param>
+        /// <param name="timeout"></param>
+        /// <returns></returns>
+        public JobWithArguments WaitReadyJob(Job job, int timeout)
+        {
+            JobWithArguments readyJob = null;
+
+            DateTime stopDateTime = DateTime.Now.AddMilliseconds(timeout);
+            while (true)
+            {
+                Thread.Sleep(5000);
+                var returnJob = GetJobs(new Filter("Id", job.Id)).FirstOrDefault();
+                if (DateTime.Now >= stopDateTime || returnJob.State != "Pending")
+                {
+                    readyJob = returnJob;
+                    break;
+                }
+            }
+            if (readyJob == null)
+            {
+                LastErrorMessage = "Timeout!";
+                throw new Exception(LastErrorMessage);
+            }
+
+            return readyJob;
         }
 
         #endregion Jobs
