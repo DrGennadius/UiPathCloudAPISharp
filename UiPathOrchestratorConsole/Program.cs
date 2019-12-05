@@ -103,6 +103,18 @@ namespace UiPathCloudAPISharpStartJob
 
         static void MenuLoop(UiPathCloudAPI uiPath)
         {
+            Dictionary<string, object> inputArguments = new Dictionary<string, object>
+            {
+                { "InputX1", 2 },
+                { "InputX2", 3 },
+                { "InOutZ", 4 }
+            };
+            var startedJob = uiPath.StartJob("Test Robot", "BackgroundProcess", "Test Environment", inputArguments);
+            Thread.Sleep(10000);
+            var job = uiPath.GetJob(startedJob);
+            object a1 = job.OutputArguments["OutputY"];
+            Console.ReadKey();
+            return;
             while (true)
             {
                 Console.Clear();
@@ -254,7 +266,7 @@ namespace UiPathCloudAPISharpStartJob
                     case 0:
                         return;
                     case 1:
-                        PrintJobs(uiPath.GetJobs());
+                        //PrintJobs(uiPath.GetJobs());
                         Console.ReadKey();
                         break;
                     case 2:
@@ -265,7 +277,7 @@ namespace UiPathCloudAPISharpStartJob
                             Console.Write("Enter proccess name: ");
                             string proccessName = Console.ReadLine();
                             var newJobs = uiPath.StartJob(robotName, proccessName);
-                            PrintJobs(newJobs, "New Jobs:");
+                            //PrintJobs(newJobs, "New Jobs:");
                         }
                         catch (WebException)
                         {

@@ -248,7 +248,7 @@ namespace UiPathCloudAPISharp
         /// <param name="robot"></param>
         /// <param name="process"></param>
         /// <returns></returns>
-        public List<Job> StartJob(Robot robot, Process process)
+        public Job StartJob(Robot robot, Process process)
         {
             return StartJob(robot.Id, process.Key);
         }
@@ -260,20 +260,22 @@ namespace UiPathCloudAPISharp
         /// <param name="process"></param>
         /// <param name="inputArguments">Input Arguments</param>
         /// <returns></returns>
-        public List<Job> StartJob(Robot robot, Process process, Dictionary<string, object> inputArguments)
+        public Job StartJob(Robot robot, Process process, Dictionary<string, object> inputArguments)
         {
             return StartJob(robot.Id, process.Key, inputArguments);
         }
 
         /// <summary>
         /// Start new job by robot name and proccess name.
+        /// <para>(!) Experimental</para>
         /// </summary>
         /// <param name="robotName"></param>
-        /// <param name="processName"></param>
+        /// <param name="processKey"></param>
+        /// <param name="environmentName"></param>
         /// <returns></returns>
-        public List<Job> StartJob(string robotName, string processName)
+        public Job StartJob(string robotName, string processKey, string environmentName)
         {
-            return StartJob(robotName, processName, new Dictionary<string, object>());
+            return StartJob(robotName, processKey + "_" + environmentName);
         }
 
         /// <summary>
@@ -281,21 +283,46 @@ namespace UiPathCloudAPISharp
         /// </summary>
         /// <param name="robotName"></param>
         /// <param name="processName"></param>
+        /// <returns></returns>
+        public Job StartJob(string robotName, string processName)
+        {
+            return StartJob(robotName, processName, new Dictionary<string, object>());
+        }
+
+        /// <summary>
+        /// Start new job by robot name and proccess name.
+        /// <para>(!) Experimental</para>
+        /// </summary>
+        /// <param name="robotName"></param>
+        /// <param name="processKey"></param>
+        /// <param name="environmentName"></param>
+        /// <param name="inputArguments"></param>
+        /// <returns></returns>
+        public Job StartJob(string robotName, string processKey, string environmentName, Dictionary<string, object> inputArguments)
+        {
+            return StartJob(robotName, processKey + "_" + environmentName, inputArguments);
+        }
+
+        /// <summary>
+        /// Start new job by robot name and proccess name.
+        /// </summary>
+        /// <param name="robotName">Robot Name</param>
+        /// <param name="processName">{Process Key} + _ + {Environment Name}</param>
         /// <param name="inputArguments">Input Arguments</param>
         /// <returns></returns>
-        public List<Job> StartJob(string robotName, string processName, Dictionary<string, object> inputArguments)
+        public Job StartJob(string robotName, string processName, Dictionary<string, object> inputArguments)
         {
-            Robot robot = GetRobots().Where(x => x.Name == robotName).FirstOrDefault();
+            Robot robot = GetRobots(new Filter("Robot/Name", robotName)).FirstOrDefault();
             if (robot == null)
             {
                 LastErrorMessage = "The specified robot was not found.";
-                return new List<Job>();
+                return null;
             }
-            Process process = GetProcesses().Where(x => x.Name == processName).FirstOrDefault();
+            Process process = GetProcesses(new Filter("Name", processName)).FirstOrDefault();
             if (process == null)
             {
                 LastErrorMessage = "The specified proccess was not found.";
-                return new List<Job>();
+                return null;
             }
             return StartJob(robot.Id, process.Key, inputArguments);
         }
@@ -306,7 +333,7 @@ namespace UiPathCloudAPISharp
         /// <param name="robotId">Robot ID</param>
         /// <param name="releaseKey">Proccess release key</param>
         /// <returns></returns>
-        public List<Job> StartJob(int robotId, string releaseKey)
+        public Job StartJob(int robotId, string releaseKey)
         {
             return StartJob(robotId, releaseKey, new Dictionary<string, object>());
         }
@@ -318,9 +345,9 @@ namespace UiPathCloudAPISharp
         /// <param name="releaseKey">Proccess release key</param>
         /// <param name="inputArguments">Input Arguments</param>
         /// <returns></returns>
-        public List<Job> StartJob(int robotId, string releaseKey, Dictionary<string, object> inputArguments)
+        public Job StartJob(int robotId, string releaseKey, Dictionary<string, object> inputArguments)
         {
-            List<Job> jobs = new List<Job>();
+            Job job = null;
             if (string.IsNullOrEmpty(releaseKey))
             {
                 LastErrorMessage = "Proccess release key is empty.";
@@ -371,7 +398,7 @@ namespace UiPathCloudAPISharp
                 try
                 {
                     returnStr = SendRequestPostForOdata("Jobs/UiPath.Server.Configuration.OData.StartJobs", sentData);
-                    jobs.AddRange(JsonConvert.DeserializeObject<Info<Job>>(returnStr).Items);
+                    job = JsonConvert.DeserializeObject<Info<Job>>(returnStr).Items.FirstOrDefault();
                 }
                 catch (Exception ex)
                 {
@@ -382,17 +409,17 @@ namespace UiPathCloudAPISharp
                     }
                 }
             }
-            return jobs;
+            return job;
         }
 
         /// <summary>
         /// Get job list
         /// </summary>
         /// <returns></returns>
-        public List<Job> GetJobs()
+        public List<JobWithArguments> GetJobs()
         {
             string response = SendRequestGetForOdata("Jobs");
-            return JsonConvert.DeserializeObject<Info<Job>>(response).Items;
+            return JsonConvert.DeserializeObject<Info<JobWithArguments>>(response).Items;
         }
 
         /// <summary>
@@ -400,10 +427,10 @@ namespace UiPathCloudAPISharp
         /// </summary>
         /// <param name="clauses">Clauses</param>
         /// <returns></returns>
-        public List<Job> GetJobs(IClause clauses)
+        public List<JobWithArguments> GetJobs(IClause clauses)
         {
             string response = SendRequestGetForOdata("Jobs", clauses);
-            return JsonConvert.DeserializeObject<Info<Job>>(response).Items;
+            return JsonConvert.DeserializeObject<Info<JobWithArguments>>(response).Items;
         }
 
         /// <summary>
@@ -411,11 +438,21 @@ namespace UiPathCloudAPISharp
         /// </summary>
         /// <param name="clauses">Clauses</param>
         /// <returns></returns>
-        public List<Job> GetJobs(string conditions)
+        public List<JobWithArguments> GetJobs(string conditions)
         {
             Filter filter = new Filter(conditions);
             string response = SendRequestGetForOdata("Jobs", filter);
-            return JsonConvert.DeserializeObject<Info<Job>>(response).Items;
+            return JsonConvert.DeserializeObject<Info<JobWithArguments>>(response).Items;
+        }
+
+        /// <summary>
+        /// Get Job from server. Update data for this instance. 
+        /// </summary>
+        /// <param name="job"></param>
+        /// <returns></returns>
+        public JobWithArguments GetJob(Job job)
+        {
+            return GetJobs(new Filter("Id", job.Id)).FirstOrDefault();
         }
 
         #endregion Jobs

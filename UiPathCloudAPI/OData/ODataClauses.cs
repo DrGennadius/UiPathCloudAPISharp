@@ -83,5 +83,10 @@ namespace UiPathCloudAPISharp.OData
 
             return _resultBuilder.ToString();
         }
+
+        public override string ToString()
+        {
+            return GetODataString();
+        }
     }
 }

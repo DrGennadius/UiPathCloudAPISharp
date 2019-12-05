@@ -5,19 +5,39 @@ namespace UiPathCloudAPISharp.Models
 {
     public class StartJobsInfoWithArguments : StartJobsInfo
     {
+        /// <summary>
+        /// Representation of input arguments as a single string.
+        /// </summary>
         [JsonProperty(PropertyName = "InputArguments")]
-        public string InputArgumentsAsString { get; set; }
+        public string InputArgumentsAsString { get; set; } = null;
 
+        /// <summary>
+        /// Representation of input arguments as <see cref="Dictionary{string, object}"/>.
+        /// </summary>
         [JsonIgnore]
         public Dictionary<string, object> InputArguments
         {
             get
             {
-                return JsonConvert.DeserializeObject<Dictionary<string, object>>(InputArgumentsAsString);
+                if (string.IsNullOrWhiteSpace(InputArgumentsAsString))
+                {
+                    return new Dictionary<string, object>();
+                }
+                else
+                {
+                    return JsonConvert.DeserializeObject<Dictionary<string, object>>(InputArgumentsAsString);
+                }
             }
             set
             {
-                InputArgumentsAsString = JsonConvert.SerializeObject(value);
+                if (value == null || value.Count == 0)
+                {
+                    InputArgumentsAsString = null;
+                }
+                else
+                {
+                    InputArgumentsAsString = JsonConvert.SerializeObject(value);
+                }
             }
         }
     }
