@@ -413,14 +413,32 @@ namespace UiPathCloudAPISharp
             return job;
         }
 
-        public void StopJob(Job job)
+        /// <summary>
+        /// Stop or kill the job.
+        /// </summary>
+        /// <param name="job"></param>
+        /// <param name="stopStrategy">Strategy: Kill or SoftStop</param>
+        public void StopJob(Job job, StopJobsStrategy stopStrategy = StopJobsStrategy.SoftStop)
         {
-
+            StopJobs(new List<Job>{ job }, stopStrategy);
         }
 
-        public void StopJobs(List<Job> job)
+        /// <summary>
+        /// Stop or kill the jobs.
+        /// </summary>
+        /// <param name="jobs"></param>
+        /// <param name="stopStrategy">Strategy: Kill or SoftStop</param>
+        public void StopJobs(List<Job> jobs, StopJobsStrategy stopStrategy = StopJobsStrategy.SoftStop)
         {
-
+            var startJobsInfo = new StopJobsInfo
+            {
+                Strategy = stopStrategy,
+                JobIds = jobs.Select(j => j.Id).ToArray()
+            };
+            string output = JsonConvert.SerializeObject(startJobsInfo);
+            SentDataStore.Enqueue(output);
+            byte[] sentData = Encoding.UTF8.GetBytes(output);
+            SendRequestPostForOdata("Jobs/UiPath.Server.Configuration.OData.StopJobs", sentData);
         }
 
         /// <summary>
