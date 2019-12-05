@@ -368,16 +368,6 @@ namespace UiPathCloudAPISharp
                 string output = "";
                 if (inputArguments.Any())
                 {
-                    int incount = inputArguments.Count;
-                    string correctedInputArguments = "{";
-                    foreach (var item in inputArguments)
-                    {
-                        incount--;
-                        correctedInputArguments += '"' + item.Key + "\":\"" + item.Value.ToString() + '"';
-                        if (incount > 0)
-                            correctedInputArguments += ',';
-                    }
-                    correctedInputArguments += '}';
                     var startInfo = new StartInfoContainer<StartJobsInfoWithArguments>
                     {
                         StartJobsInfo = new StartJobsInfoWithArguments
@@ -385,7 +375,7 @@ namespace UiPathCloudAPISharp
                             ReleaseKey = releaseKey,
                             Strategy = "Specific",
                             RobotIds = new int[] { robotId },
-                            InputArgumentsAsString = correctedInputArguments
+                            InputArgumentsAsString = JsonConvert.SerializeObject(inputArguments)
                         }
                     };
                     output = JsonConvert.SerializeObject(startInfo);
@@ -421,6 +411,16 @@ namespace UiPathCloudAPISharp
                 }
             }
             return job;
+        }
+
+        public void StopJob(Job job)
+        {
+
+        }
+
+        public void StopJobs(List<Job> job)
+        {
+
         }
 
         /// <summary>
@@ -496,21 +496,34 @@ namespace UiPathCloudAPISharp
         {
             JobWithArguments readyJob = null;
 
-            DateTime stopDateTime = DateTime.Now.AddMilliseconds(timeout);
-            while (true)
+            if (job == null)
             {
-                Thread.Sleep(5000);
-                var returnJob = GetJobs(new Filter("Id", job.Id)).FirstOrDefault();
-                if (DateTime.Now >= stopDateTime || returnJob.State != "Pending")
-                {
-                    readyJob = returnJob;
-                    break;
-                }
+                throw new ArgumentException("Job is NULL.");
             }
-            if (readyJob == null)
+            else
             {
-                LastErrorMessage = "Timeout!";
-                throw new Exception(LastErrorMessage);
+                DateTime stopDateTime = DateTime.Now.AddMilliseconds(timeout);
+                while (true)
+                {
+                    Thread.Sleep(5000);
+                    var returnJob = GetJobs(new Filter("Id", job.Id)).FirstOrDefault();
+                    if (DateTime.Now >= stopDateTime)
+                    {
+                        break;
+                    }
+                    else if (returnJob.State != JobState.Pending
+                        && returnJob.State != JobState.Running
+                        && returnJob.State != JobState.Stopping
+                        && returnJob.State != JobState.Terminating)
+                    {
+                        readyJob = returnJob;
+                        break;
+                    }
+                }
+                if (readyJob == null)
+                {
+                    throw new Exception("Timeout!");
+                }
             }
 
             return readyJob;

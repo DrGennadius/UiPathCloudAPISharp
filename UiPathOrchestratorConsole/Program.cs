@@ -109,7 +109,7 @@ namespace UiPathCloudAPISharpStartJob
                 { "InputX2", 3 },
                 { "InOutZ", 4 }
             };
-            var startedJob = uiPath.StartJob("Test Robot", "BackgroundProcess", "Test Environment", inputArguments);
+            var startedJob = uiPath.StartJob("Float Test Robot", "BackgroundProcess", "Demo Environment", inputArguments);
             var job = uiPath.WaitReadyJob(startedJob);
             var a1 = job.OutputArguments["OutputY"];
             Console.ReadKey();
@@ -425,7 +425,7 @@ namespace UiPathCloudAPISharpStartJob
             ConsoleHelper.PrintLine();
             foreach (var item in jobs)
             {
-                ConsoleHelper.PrintRow(item.Id.ToString(), item.Key, item.State, item.StartTime.ToString(), item.EndTime.ToString());
+                ConsoleHelper.PrintRow(item.Id.ToString(), item.Key, item.State.ToString(), item.StartTime.ToString(), item.EndTime.ToString());
             }
             ConsoleHelper.PrintLine();
         }
