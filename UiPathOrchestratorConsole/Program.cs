@@ -103,20 +103,6 @@ namespace UiPathCloudAPISharpStartJob
 
         static void MenuLoop(UiPathCloudAPI uiPath)
         {
-            Dictionary<string, object> inputArguments = new Dictionary<string, object>
-            {
-                { "InputX1", 2 },
-                { "InputX2", 3 },
-                { "InOutZ", 4 }
-            };
-            var startedJob = uiPath.StartJob("Float Test Robot", "BackgroundProcess", "Demo Environment", inputArguments);
-            uiPath.StopJob(startedJob, StopJobsStrategy.Kill);
-            var job = uiPath.GetJob(startedJob);
-            startedJob = uiPath.StartJob("Float Test Robot", "BackgroundProcess", "Demo Environment", inputArguments);
-            uiPath.StopJob(startedJob, StopJobsStrategy.SoftStop);
-            job = uiPath.GetJob(startedJob);
-            Console.ReadKey();
-            return;
             while (true)
             {
                 Console.Clear();
