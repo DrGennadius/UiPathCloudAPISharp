@@ -63,12 +63,7 @@ namespace UiPathCloudAPISharp
         /// Passed an authentication?
         /// </summary>
         public bool Authorized { get; private set; } = false;
-
-        /// <summary>
-        /// Automatic initiation when trying to execute a request if not yet initialized.
-        /// </summary>
-        public bool AutoInitiation { get; set; } = false;
-
+        
         /// <summary>
         /// Store for sent JSON data.
         /// </summary>
@@ -88,6 +83,11 @@ namespace UiPathCloudAPISharp
         /// Current target service instance.
         /// </summary>
         public ServiceInstance TargetServiceInstance { get; private set; }
+
+        /// <summary>
+        /// The behavior mode affects the logic of initialization, authorization, and call requests.
+        /// </summary>
+        public BehaviorMode BehaviorMode { get; private set; }
 
         #endregion Public fields
 
@@ -111,14 +111,14 @@ namespace UiPathCloudAPISharp
         /// <param name="tenantLogicalName"></param>
         /// <param name="clientId"></param>
         /// <param name="userKey"></param>
-        /// <param name="autoInitiation">Auto Initiation. Automatic initiation when trying to execute a request if not yet initialized.</param>
-        public UiPathCloudAPI(string tenantLogicalName, string clientId, string userKey, bool autoInitiation = false)
+        /// <param name="behaviorMode"></param>
+        public UiPathCloudAPI(string tenantLogicalName, string clientId, string userKey, BehaviorMode behaviorMode = BehaviorMode.Default)
             : this()
         {
             TenantLogicalName = tenantLogicalName;
             ClientId = clientId;
             UserKey = userKey;
-            AutoInitiation = autoInitiation;
+            BehaviorMode = behaviorMode;
         }
 
         /// <summary>
@@ -873,9 +873,16 @@ namespace UiPathCloudAPISharp
 
         private string SendRequestGetForOdata(string operationPart)
         {
-            if (!Authorized && AutoInitiation)
+            if (!Authorized && BehaviorMode == BehaviorMode.AutoInitiation)
             {
-                Initiation(TenantLogicalName, ClientId, UserKey);
+                if (BehaviorMode == BehaviorMode.AutoInitiation)
+                {
+                    Initiation(TenantLogicalName, ClientId, UserKey);
+                }
+                else if (BehaviorMode == BehaviorMode.AutoAuthorization)
+                {
+                    Authorization(TenantLogicalName, ClientId, UserKey);
+                }
             }
             if (!Authorized)
             {
@@ -894,9 +901,16 @@ namespace UiPathCloudAPISharp
 
         private string SendRequestPostForOdata(string operationPart, byte[] sentData)
         {
-            if (!Authorized && AutoInitiation)
+            if (!Authorized && BehaviorMode == BehaviorMode.AutoInitiation)
             {
-                Initiation(TenantLogicalName, ClientId, UserKey);
+                if (BehaviorMode == BehaviorMode.AutoInitiation)
+                {
+                    Initiation(TenantLogicalName, ClientId, UserKey);
+                }
+                else if (BehaviorMode == BehaviorMode.AutoAuthorization)
+                {
+                    Authorization(TenantLogicalName, ClientId, UserKey);
+                }
             }
             if (!Authorized)
             {
@@ -1017,5 +1031,36 @@ namespace UiPathCloudAPISharp
         }
 
         #endregion Private methods
+    }
+
+    /// <summary>
+    /// The behavior mode affects the logic of initialization, authorization, and call requests.
+    /// </summary>
+    public enum BehaviorMode
+    {
+        /// <summary>
+        /// No Initiation in constructor.
+        /// </summary>
+        Default,
+
+        /// <summary>
+        /// Automatic initiation and authorization when trying to execute a request if not yet initialized.
+        /// </summary>
+        Auto,
+
+        /// <summary>
+        /// Automatic initiation when trying to execute a request if not yet initialized.
+        /// </summary>
+        AutoInitiation,
+
+        /// <summary>
+        /// Automatic authorization when trying to execute a request if not yet initialized.
+        /// </summary>
+        AutoAuthorization,
+
+        /// <summary>
+        /// Automatic authorization when trying to execute a request if not yet initialized and timeout token life.
+        /// </summary>
+        SmartAuthorization
     }
 }
