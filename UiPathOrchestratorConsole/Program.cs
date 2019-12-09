@@ -18,87 +18,14 @@ namespace UiPathCloudAPISharpStartJob
     {
         static void Main(string[] args)
         {
-            UiPathCloudAPI uiPath = new UiPathCloudAPI();
-            if (Authentication(uiPath))
-            {
-                MenuLoop(uiPath);
-            }
-        }
-
-        static bool Authentication(UiPathCloudAPI uiPathCloudAPI)
-        {
-            bool result = false;
-            bool authenticated = false;
-
             Console.WriteLine("Authentication...");
 
             string tenantLogicalName = ConfigurationManager.AppSettings["TenantLogicalName"];
             string clientId = ConfigurationManager.AppSettings["ClientId"];
             string refreshToken = ConfigurationManager.AppSettings["UserKey"];
 
-            if (string.IsNullOrWhiteSpace(clientId) || string.IsNullOrWhiteSpace(refreshToken))
-            {
-                int tryCount = 3;
-                while (tryCount > 0 && !authenticated)
-                {
-                    Console.WriteLine("Attempt #{0}", 4 - tryCount);
-                    Console.Write(" Enter login: ");
-                    clientId = Console.ReadLine();
-                    Console.Write(" Enter password: ");
-                    refreshToken = Console.ReadLine();
-                    authenticated = TryAuthorize(uiPathCloudAPI, tenantLogicalName, clientId, refreshToken);
-                    tryCount--;
-                }
-            }
-            else
-            {
-                authenticated = TryAuthorize(uiPathCloudAPI, tenantLogicalName, clientId, refreshToken);
-            }
-            if (authenticated)
-            {
-                try
-                {
-                    uiPathCloudAPI.GetMainData();
-                    result = true;
-                }
-                catch (WebException)
-                {
-                    Console.WriteLine(uiPathCloudAPI.LastErrorMessage);
-                    Console.ReadKey();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
-                    Console.ReadKey();
-                }
-            }
-            else
-            {
-                Console.ReadKey();
-            }
-
-            return result;
-        }
-
-        static bool TryAuthorize(UiPathCloudAPI uiPathCloudAPI, string tenantLogicalName, string clientId, string refreshToken)
-        {
-            bool result = false;
-
-            try
-            {
-                uiPathCloudAPI.Authorization(tenantLogicalName, clientId, refreshToken);
-                result = uiPathCloudAPI.Authorized;
-            }
-            catch (WebException)
-            {
-                Console.WriteLine(uiPathCloudAPI.LastErrorMessage);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-
-            return result;
+            UiPathCloudAPI uiPath = new UiPathCloudAPI(tenantLogicalName, clientId, refreshToken, true);
+            MenuLoop(uiPath);
         }
 
         static void MenuLoop(UiPathCloudAPI uiPath)

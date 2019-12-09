@@ -65,6 +65,11 @@ namespace UiPathCloudAPISharp
         public bool Authorized { get; private set; } = false;
 
         /// <summary>
+        /// Automatic initiation when trying to execute a request if not yet initialized.
+        /// </summary>
+        public bool AutoInitiation { get; set; } = false;
+
+        /// <summary>
         /// Store for sent JSON data.
         /// </summary>
         public Queue<string> SentDataStore { get; private set; }
@@ -106,12 +111,14 @@ namespace UiPathCloudAPISharp
         /// <param name="tenantLogicalName"></param>
         /// <param name="clientId"></param>
         /// <param name="userKey"></param>
-        public UiPathCloudAPI(string tenantLogicalName, string clientId, string userKey)
+        /// <param name="autoInitiation">Auto Initiation. Automatic initiation when trying to execute a request if not yet initialized.</param>
+        public UiPathCloudAPI(string tenantLogicalName, string clientId, string userKey, bool autoInitiation = false)
             : this()
         {
             TenantLogicalName = tenantLogicalName;
             ClientId = clientId;
             UserKey = userKey;
+            AutoInitiation = autoInitiation;
         }
 
         /// <summary>
@@ -131,7 +138,7 @@ namespace UiPathCloudAPISharp
         /// </summary>
         /// <param name="login"></param>
         /// <param name="password"></param>
-        public void Initiation(string tenantLogicalName, string clientId = null, string userKey = null)
+        public void Initiation(string tenantLogicalName = null, string clientId = null, string userKey = null)
         {
             Authorization(tenantLogicalName, clientId, userKey);
             GetMainData();
@@ -866,6 +873,10 @@ namespace UiPathCloudAPISharp
 
         private string SendRequestGetForOdata(string operationPart)
         {
+            if (!Authorized && AutoInitiation)
+            {
+                Initiation(TenantLogicalName, ClientId, UserKey);
+            }
             if (!Authorized)
             {
                 throw new Exception("Not authorized.");
@@ -883,6 +894,10 @@ namespace UiPathCloudAPISharp
 
         private string SendRequestPostForOdata(string operationPart, byte[] sentData)
         {
+            if (!Authorized && AutoInitiation)
+            {
+                Initiation(TenantLogicalName, ClientId, UserKey);
+            }
             if (!Authorized)
             {
                 throw new Exception("Not authorized.");
