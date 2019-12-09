@@ -62,8 +62,33 @@ namespace UiPathCloudAPISharp
         /// <summary>
         /// Passed an authentication?
         /// </summary>
-        public bool Authorized { get; private set; } = false;
-        
+        public bool IsAuthorized
+        {
+            get
+            {
+                if (IsExpired)
+                {
+                    _isAuthorized = false;
+                }
+                return _isAuthorized;
+            }
+            private set
+            {
+                _isAuthorized = value;
+            }
+        }
+
+        /// <summary>
+        /// Is expired timeout?
+        /// </summary>
+        public bool IsExpired
+        {
+            get
+            {
+                return DateTime.Now >= _expirationTime;
+            }
+        }
+
         /// <summary>
         /// Store for sent JSON data.
         /// </summary>
@@ -97,9 +122,18 @@ namespace UiPathCloudAPISharp
 
         private List<ServiceInstance> ServiceInstances { get; set; }
 
-        private AccountsForUser TargetUser { get; set; }        
+        private AccountsForUser TargetUser { get; set; }
+
+        private bool _isAuthorized = false;
+
+        private DateTime _expirationTime;
 
         private readonly string urlUipathAuth = "https://account.uipath.com/oauth/token";
+
+        /// <summary>
+        /// Reserve of time in seconds for expiration time.
+        /// </summary>
+        private readonly int _leeway = 30;
 
         #endregion Private and internal fields
 
@@ -151,7 +185,7 @@ namespace UiPathCloudAPISharp
         /// <param name="password"></param>
         public void Authorization(string tenantLogicalName = null, string clientId = null, string userKey = null)
         {
-            Authorized = false;
+            IsAuthorized = false;
             if (!string.IsNullOrEmpty(tenantLogicalName))
             {
                 TenantLogicalName = tenantLogicalName;
@@ -177,7 +211,8 @@ namespace UiPathCloudAPISharp
             string output = JsonConvert.SerializeObject(authParametr);
             var sentData = Encoding.UTF8.GetBytes(output);
             Token = JsonConvert.DeserializeObject<AuthToken>(SendRequestPost(urlUipathAuth, sentData, true));
-            Authorized = true;
+            _expirationTime = DateTime.Now.AddSeconds(Token.ExpiresIn - _leeway);
+            IsAuthorized = true;
         }
 
         /// <summary>
@@ -215,7 +250,7 @@ namespace UiPathCloudAPISharp
         {
             List<Account> accounts = new List<Account>();
 
-            if (Authorized)
+            if (IsAuthorized)
             {
                 accounts.AddRange(TargetUser.Accounts);
             }
@@ -236,7 +271,7 @@ namespace UiPathCloudAPISharp
         {
             bool result = false;
 
-            if (Authorized)
+            if (IsAuthorized)
             {
                 if (TargetUser.Accounts.Contains(account))
                 {
@@ -873,18 +908,18 @@ namespace UiPathCloudAPISharp
 
         private string SendRequestGetForOdata(string operationPart)
         {
-            if (!Authorized && BehaviorMode == BehaviorMode.AutoInitiation)
+            if (!IsAuthorized)
             {
-                if (BehaviorMode == BehaviorMode.AutoInitiation)
-                {
-                    Initiation(TenantLogicalName, ClientId, UserKey);
-                }
-                else if (BehaviorMode == BehaviorMode.AutoAuthorization)
+                if (BehaviorMode == BehaviorMode.AutoAuthorization)
                 {
                     Authorization(TenantLogicalName, ClientId, UserKey);
                 }
+                else if (BehaviorMode == BehaviorMode.AutoInitiation)
+                {
+                    Initiation(TenantLogicalName, ClientId, UserKey);
+                }
             }
-            if (!Authorized)
+            if (!IsAuthorized)
             {
                 throw new Exception("Not authorized.");
             }
@@ -901,18 +936,18 @@ namespace UiPathCloudAPISharp
 
         private string SendRequestPostForOdata(string operationPart, byte[] sentData)
         {
-            if (!Authorized && BehaviorMode == BehaviorMode.AutoInitiation)
+            if (!IsAuthorized)
             {
-                if (BehaviorMode == BehaviorMode.AutoInitiation)
-                {
-                    Initiation(TenantLogicalName, ClientId, UserKey);
-                }
-                else if (BehaviorMode == BehaviorMode.AutoAuthorization)
+                if (BehaviorMode == BehaviorMode.AutoAuthorization)
                 {
                     Authorization(TenantLogicalName, ClientId, UserKey);
                 }
+                else if (BehaviorMode == BehaviorMode.AutoInitiation)
+                {
+                    Initiation(TenantLogicalName, ClientId, UserKey);
+                }
             }
-            if (!Authorized)
+            if (!IsAuthorized)
             {
                 throw new Exception("Not authorized.");
             }
@@ -978,7 +1013,7 @@ namespace UiPathCloudAPISharp
             req.Accept = "application/json";
             if (access)
             {
-                if (Authorized)
+                if (IsAuthorized)
                 {
                     req.Headers.Add("Authorization", Token.TokenType + " " + Token.AccessToken);
                     req.Headers.Add("X-UIPATH-TenantName", TargetServiceInstance.LogicalName);
@@ -1039,28 +1074,18 @@ namespace UiPathCloudAPISharp
     public enum BehaviorMode
     {
         /// <summary>
-        /// No Initiation in constructor.
+        /// No use automatic initiation and authorization.
         /// </summary>
         Default,
 
         /// <summary>
-        /// Automatic initiation and authorization when trying to execute a request if not yet initialized.
-        /// </summary>
-        Auto,
-
-        /// <summary>
-        /// Automatic initiation when trying to execute a request if not yet initialized.
+        /// Automatic initiation when trying to execute a request if not yet authorized or timeout token life.
         /// </summary>
         AutoInitiation,
 
         /// <summary>
-        /// Automatic authorization when trying to execute a request if not yet initialized.
+        /// Automatic authorization when trying to execute a request if not yet authorized or timeout token life.
         /// </summary>
-        AutoAuthorization,
-
-        /// <summary>
-        /// Automatic authorization when trying to execute a request if not yet initialized and timeout token life.
-        /// </summary>
-        SmartAuthorization
+        AutoAuthorization
     }
 }

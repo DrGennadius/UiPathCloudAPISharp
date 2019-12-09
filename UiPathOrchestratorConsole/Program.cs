@@ -24,7 +24,7 @@ namespace UiPathCloudAPISharpStartJob
             string clientId = ConfigurationManager.AppSettings["ClientId"];
             string refreshToken = ConfigurationManager.AppSettings["UserKey"];
 
-            UiPathCloudAPI uiPath = new UiPathCloudAPI(tenantLogicalName, clientId, refreshToken, true);
+            UiPathCloudAPI uiPath = new UiPathCloudAPI(tenantLogicalName, clientId, refreshToken, BehaviorMode.AutoInitiation);
             MenuLoop(uiPath);
         }
 
@@ -33,7 +33,7 @@ namespace UiPathCloudAPISharpStartJob
             while (true)
             {
                 Console.Clear();
-                Console.WriteLine("Welcome, {0}!", uiPath.TargetAccount.Name);
+                //Console.WriteLine("Welcome, {0}!", uiPath.TargetAccount.Name);
                 Console.WriteLine("Select number:");
                 Console.WriteLine("0. Exit.");
                 Console.WriteLine("1. Robots.");
@@ -181,7 +181,7 @@ namespace UiPathCloudAPISharpStartJob
                     case 0:
                         return;
                     case 1:
-                        //PrintJobs(uiPath.GetJobs());
+                        PrintJobs(uiPath.GetJobs());
                         Console.ReadKey();
                         break;
                     case 2:
@@ -191,8 +191,8 @@ namespace UiPathCloudAPISharpStartJob
                             string robotName = Console.ReadLine();
                             Console.Write("Enter proccess name: ");
                             string proccessName = Console.ReadLine();
-                            var newJobs = uiPath.StartJob(robotName, proccessName);
-                            //PrintJobs(newJobs, "New Jobs:");
+                            var newJob = uiPath.StartJob(robotName, proccessName);
+                            PrintJobs(new List<JobWithArguments> { (JobWithArguments)newJob }, "New Job:");
                         }
                         catch (WebException)
                         {
@@ -332,12 +332,12 @@ namespace UiPathCloudAPISharpStartJob
             ConsoleHelper.PrintLine();
         }
 
-        static void PrintJobs(List<Job> jobs, string title = "Jobs:")
+        static void PrintJobs(List<JobWithArguments> jobs, string title = "Jobs:")
         {
             Console.WriteLine(title);
             ConsoleHelper.UpdateWidth();
             ConsoleHelper.PrintLine();
-            ConsoleHelper.PrintRow(nameof(Job.Id), nameof(Job.Key), nameof(Job.State), nameof(Job.StartTime), nameof(Job.EndTime));
+            ConsoleHelper.PrintRow(nameof(JobWithArguments.Id), nameof(JobWithArguments.Key), nameof(JobWithArguments.State), nameof(JobWithArguments.StartTime), nameof(JobWithArguments.EndTime));
             ConsoleHelper.PrintLine();
             foreach (var item in jobs)
             {
