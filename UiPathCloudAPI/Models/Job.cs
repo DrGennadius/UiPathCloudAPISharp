@@ -23,6 +23,10 @@ namespace UiPathCloudAPISharp.Models
         public string StartingScheduleId { get; set; }
         
         public int Id { get; set; }
+
+        public Robot Robot { get; set; }
+
+        public Process Release { get; set; }
     }
 
     public enum JobState
