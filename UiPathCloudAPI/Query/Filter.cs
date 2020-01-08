@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace UiPathCloudAPISharp.OData
+namespace UiPathCloudAPISharp.Query
 {
     public class Filter : IFilter
     {
@@ -21,7 +21,7 @@ namespace UiPathCloudAPISharp.OData
             AddCondition(name, value, comparisonOperator);
         }
 
-        public Filter(string name, IODataTransform oDataTransform)
+        public Filter(string name, IQueryStringTransform oDataTransform)
             : this()
         {
             AddCondition(name, oDataTransform);
@@ -66,9 +66,9 @@ namespace UiPathCloudAPISharp.OData
             AddCondition(new Condition(name, value, comparisonOperator));
         }
 
-        public void AddCondition(string name, IODataTransform oDataTransform)
+        public void AddCondition(string name, IQueryStringTransform oDataTransform)
         {
-            AppendToResult(oDataTransform.GetODataString(name));
+            AppendToResult(oDataTransform.GetQueryString(name));
         }
 
         public void AddCondition(string conditionalExpression)
@@ -104,22 +104,22 @@ namespace UiPathCloudAPISharp.OData
 
         public void AddCondition(ICondition condition, LogicalOperator logicalOperator)
         {
-            AppendToResult(condition.GetODataString(), logicalOperator.ToString().ToLower());
+            AppendToResult(condition.GetQueryString(), logicalOperator.ToString().ToLower());
         }
 
         public void AddCondition(ICondition condition)
         {
-            AppendToResult(condition.GetODataString());
+            AppendToResult(condition.GetQueryString());
         }
 
-        public string GetODataString()
+        public string GetQueryString()
         {
             return "$filter=" + _resultBuilder.ToString();
         }
 
         public override string ToString()
         {
-            return GetODataString();
+            return GetQueryString();
         }
 
         private StringBuilder _resultBuilder;

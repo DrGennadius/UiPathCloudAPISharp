@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace UiPathCloudAPISharp.OData
+namespace UiPathCloudAPISharp.Query
 {
-    public class OrderBy : IClause
+    public class OrderBy : IQueryParameters
     {
         /// <summary>
         /// Order by <paramref name="value"/> and using <paramref name="sort"/>.
@@ -42,7 +42,7 @@ namespace UiPathCloudAPISharp.OData
         /// </summary>
         public Sort Sort { get; set; } = Sort.None;
 
-        public string GetODataString()
+        public string GetQueryString()
         {
             if (string.IsNullOrWhiteSpace(Value))
             {

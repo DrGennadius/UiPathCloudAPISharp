@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace UiPathCloudAPISharp.OData
+namespace UiPathCloudAPISharp.Query
 {
-    public interface IFilter : IClause
+    interface IDeleteRequest
     {
-
     }
 }

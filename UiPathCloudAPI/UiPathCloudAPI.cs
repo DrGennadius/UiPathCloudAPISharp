@@ -4,13 +4,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Security.Cryptography;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
-using System.Threading.Tasks;
+using UiPathCloudAPISharp.Managers;
 using UiPathCloudAPISharp.Models;
-using UiPathCloudAPISharp.OData;
+using UiPathCloudAPISharp.Query;
 
 namespace UiPathCloudAPISharp
 {
@@ -114,6 +112,8 @@ namespace UiPathCloudAPISharp
         /// </summary>
         public BehaviorMode BehaviorMode { get; private set; }
 
+        public RobotManager RobotManager { get; private set; }
+
         #endregion Public fields
 
         #region Private and internal properties
@@ -153,6 +153,8 @@ namespace UiPathCloudAPISharp
             ClientId = clientId;
             UserKey = userKey;
             BehaviorMode = behaviorMode;
+            RequestManager requestManager = new RequestManager(tenantLogicalName, clientId, userKey, behaviorMode);
+            RobotManager = new RobotManager(requestManager, true);
         }
 
         /// <summary>
@@ -462,7 +464,7 @@ namespace UiPathCloudAPISharp
         /// <param name="stopStrategy">Strategy: Kill or SoftStop</param>
         public void StopJob(Job job, StopJobsStrategy stopStrategy = StopJobsStrategy.SoftStop)
         {
-            StopJobs(new List<Job>{ job }, stopStrategy);
+            StopJobs(new List<Job> { job }, stopStrategy);
         }
 
         /// <summary>
@@ -496,18 +498,18 @@ namespace UiPathCloudAPISharp
         /// <summary>
         /// Get job list
         /// </summary>
-        /// <param name="clauses">Clauses</param>
+        /// <param name="queryParameters">queryParameters</param>
         /// <returns></returns>
-        public List<JobWithArguments> GetJobs(IClause clauses)
+        public List<JobWithArguments> GetJobs(IQueryParameters queryParameters)
         {
-            string response = SendRequestGetForOdata("Jobs", clauses);
+            string response = SendRequestGetForOdata("Jobs", queryParameters);
             return JsonConvert.DeserializeObject<Info<JobWithArguments>>(response).Items;
         }
 
         /// <summary>
         /// Get job list
         /// </summary>
-        /// <param name="clauses">Clauses</param>
+        /// <param name="queryParameters">queryParameters</param>
         /// <returns></returns>
         public List<JobWithArguments> GetJobs(string conditions)
         {
@@ -689,11 +691,11 @@ namespace UiPathCloudAPISharp
         /// <summary>
         /// Get robot list using sessions (extended robots information)
         /// </summary>
-        /// <param name="clauses"></param>
+        /// <param name="queryParameters"></param>
         /// <returns></returns>
-        public List<Robot> GetRobots(ODataClauses clauses)
+        public List<Robot> GetRobots(QueryParameters queryParameters)
         {
-            return GetExtendedRobotsInfo(clauses).Select(x => x.Robot).ToList();
+            return GetExtendedRobotsInfo(queryParameters).Select(x => x.Robot).ToList();
         }
 
         /// <summary>
@@ -712,20 +714,20 @@ namespace UiPathCloudAPISharp
         /// <returns></returns>
         public List<RobotInfo> GetExtendedRobotsInfo()
         {
-            ODataClauses clauses = new ODataClauses(select: "Robot", expand: "Robot");
-            string response = SendRequestGetForOdata("Sessions", clauses);
+            QueryParameters queryParameters = new QueryParameters(select: "Robot", expand: "Robot");
+            string response = SendRequestGetForOdata("Sessions", queryParameters);
             return JsonConvert.DeserializeObject<Info<RobotInfo>>(response).Items;
         }
 
         public List<RobotInfo> GetExtendedRobotsInfo(Filter filter)
         {
-            ODataClauses clauses = new ODataClauses(filter: filter, select: "Robot", expand: "Robot");
-            string response = SendRequestGetForOdata("Sessions", clauses);
+            QueryParameters queryParameters = new QueryParameters(filter: filter, select: "Robot", expand: "Robot");
+            string response = SendRequestGetForOdata("Sessions", queryParameters);
             return JsonConvert.DeserializeObject<Info<RobotInfo>>(response).Items;
         }
 
         /// <summary>
-        /// Get extended robots information with clauses
+        /// Get extended robots information with queryParameters
         /// </summary>
         /// <param name="top">Top</param>
         /// <param name="filter">Filter</param>
@@ -741,13 +743,13 @@ namespace UiPathCloudAPISharp
         }
 
         /// <summary>
-        /// Get extended robots information with clauses
+        /// Get extended robots information with queryParameters
         /// </summary>
-        /// <param name="clauses">Session clauses</param>
+        /// <param name="queryParameters">Session queryParameters</param>
         /// <returns></returns>
-        public List<RobotInfo> GetExtendedRobotsInfo(ODataClauses clauses)
+        public List<RobotInfo> GetExtendedRobotsInfo(QueryParameters queryParameters)
         {
-            ODataClauses sessionClauses = clauses;
+            QueryParameters sessionClauses = queryParameters;
             if (string.IsNullOrEmpty(sessionClauses.Select))
             {
                 sessionClauses.Select = "Robot";
@@ -821,13 +823,13 @@ namespace UiPathCloudAPISharp
         }
 
         /// <summary>
-        /// Get a list of all processes by OData clauses
+        /// Get a list of all processes by OData queryParameters
         /// </summary>
-        /// <param name="clauses"></param>
+        /// <param name="queryParameters"></param>
         /// <returns></returns>
-        public List<Process> GetProcesses(IClause clauses)
+        public List<Process> GetProcesses(IQueryParameters queryParameters)
         {
-            string response = SendRequestGetForOdata("Releases", clauses);
+            string response = SendRequestGetForOdata("Releases", queryParameters);
             return JsonConvert.DeserializeObject<Info<Process>>(response).Items;
         }
 
@@ -863,16 +865,16 @@ namespace UiPathCloudAPISharp
             Filter filter = new Filter(objectName, objectValue, comparisonOperator);
             return GetLibraries(filter);
         }
-        
+
         public List<Library> GetLibraries(string objectBaseName, string objectPropertyName, object objectValue, ComparisonOperator comparisonOperator = ComparisonOperator.EQ)
         {
             Filter filter = new Filter(objectBaseName, objectPropertyName, objectValue, comparisonOperator);
             return GetLibraries(filter);
         }
 
-        public List<Library> GetLibraries(IClause clauses)
+        public List<Library> GetLibraries(IQueryParameters queryParameters)
         {
-            string response = SendRequestGetForOdata("Libraries", clauses);
+            string response = SendRequestGetForOdata("Libraries", queryParameters);
             return JsonConvert.DeserializeObject<Info<Library>>(response).Items;
         }
 
@@ -897,13 +899,13 @@ namespace UiPathCloudAPISharp
         #region Private methods
         private string SendRequestGetForOdata(string operationPart, int top = -1, Filter filter = null, string select = null, string expand = null, OrderBy orderBy = null, string skip = null)
         {
-            ODataClauses clauses = new ODataClauses(top, filter, select, expand, orderBy, skip);
-            return SendRequestGetForOdata(string.Format("{0}?{1}", operationPart, clauses.GetODataString()));
+            QueryParameters queryParameters = new QueryParameters(top, filter, select, expand, orderBy, skip);
+            return SendRequestGetForOdata(string.Format("{0}?{1}", operationPart, queryParameters.GetQueryString()));
         }
 
-        private string SendRequestGetForOdata(string operationPart, IClause clauses)
+        private string SendRequestGetForOdata(string operationPart, IQueryParameters queryParameters)
         {
-            return SendRequestGetForOdata(string.Format("{0}?{1}", operationPart, clauses.GetODataString()));
+            return SendRequestGetForOdata(string.Format("{0}?{1}", operationPart, queryParameters.GetQueryString()));
         }
 
         private string SendRequestGetForOdata(string operationPart)
@@ -968,7 +970,7 @@ namespace UiPathCloudAPISharp
             ServiceInstances = JsonConvert.DeserializeObject<List<ServiceInstance>>(
                 SendRequestGet(
                     string.Format(
-                        "https://platform.uipath.com/cloudrpa/api/account/{0}/getAllServiceInstances", 
+                        "https://platform.uipath.com/cloudrpa/api/account/{0}/getAllServiceInstances",
                         TargetAccount.LogicalName
                     )
                 )
@@ -1066,26 +1068,5 @@ namespace UiPathCloudAPISharp
         }
 
         #endregion Private methods
-    }
-
-    /// <summary>
-    /// The behavior mode affects the logic of initialization, authorization, and call requests.
-    /// </summary>
-    public enum BehaviorMode
-    {
-        /// <summary>
-        /// No use automatic initiation and authorization.
-        /// </summary>
-        Default,
-
-        /// <summary>
-        /// Automatic initiation when trying to execute a request if not yet authorized or timeout token life.
-        /// </summary>
-        AutoInitiation,
-
-        /// <summary>
-        /// Automatic authorization when trying to execute a request if not yet authorized or timeout token life.
-        /// </summary>
-        AutoAuthorization
     }
 }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace UiPathCloudAPISharp.OData
+namespace UiPathCloudAPISharp.Query
 {
     public class PrimitiveCondition : ICondition
     {
@@ -33,7 +33,7 @@ namespace UiPathCloudAPISharp.OData
         /// </summary>
         public ComparisonOperator ComparisonOperator { get; set; } = ComparisonOperator.EQ;
 
-        public string GetODataString()
+        public string GetQueryString()
         {
             return string.Format("{0}%20{1}%20{2}", Name, ComparisonOperator.ToString().ToLower(), Value);
         }

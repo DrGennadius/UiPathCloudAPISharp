@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace UiPathCloudAPISharp.OData
+namespace UiPathCloudAPISharp.Query
 {
-    public class ODataClauses : IClause
+    public class QueryParameters : IQueryParameters
     {
-        public ODataClauses(int top = -1, Filter filter = null, string select = null, string expand = null, OrderBy orderby = null, string skip = null)
+        public QueryParameters(int top = -1, Filter filter = null, string select = null, string expand = null, OrderBy orderby = null, string skip = null)
         {
             Top = top;
             Filter = filter;
@@ -43,7 +43,7 @@ namespace UiPathCloudAPISharp.OData
             }
         }
         
-        public string GetODataString()
+        public string GetQueryString()
         {
             if (_resultBuilder == null)
             {
@@ -58,7 +58,7 @@ namespace UiPathCloudAPISharp.OData
             {
                 AppendToResult(string.Format("$top={0}", Top));
             }
-            string filterString = Filter?.GetODataString();
+            string filterString = Filter?.GetQueryString();
             if (!string.IsNullOrEmpty(filterString))
             {
                 AppendToResult(filterString);
@@ -71,7 +71,7 @@ namespace UiPathCloudAPISharp.OData
             {
                 AppendToResult(string.Format("$expand={0}", Expand));
             }
-            string orderByString = OrderBy?.GetODataString();
+            string orderByString = OrderBy?.GetQueryString();
             if (!string.IsNullOrEmpty(orderByString))
             {
                 AppendToResult(orderByString);
@@ -86,7 +86,7 @@ namespace UiPathCloudAPISharp.OData
 
         public override string ToString()
         {
-            return GetODataString();
+            return GetQueryString();
         }
     }
 }

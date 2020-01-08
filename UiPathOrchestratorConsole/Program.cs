@@ -1,16 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.IO;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 using UiPathCloudAPISharp;
+using UiPathCloudAPISharp.Managers;
 using UiPathCloudAPISharp.Models;
-using UiPathCloudAPISharp.OData;
 
 namespace UiPathCloudAPISharpStartJob
 {
@@ -30,6 +24,8 @@ namespace UiPathCloudAPISharpStartJob
 
         static void MenuLoop(UiPathCloudAPI uiPath)
         {
+            uiPath.RobotManager.UseSession = false;
+            var robots = uiPath.RobotManager.GetCollection();
             while (true)
             {
                 Console.Clear();

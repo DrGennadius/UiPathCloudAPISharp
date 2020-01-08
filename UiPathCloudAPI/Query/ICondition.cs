@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace UiPathCloudAPISharp.OData
+namespace UiPathCloudAPISharp.Query
 {
-    public interface ICondition : IOData
+    public interface ICondition : IQueryString
     {
         PrimitiveCondition[] GetPrimitives();
     }

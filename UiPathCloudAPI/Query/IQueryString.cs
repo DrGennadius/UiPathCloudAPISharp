@@ -1,11 +1,11 @@
-﻿namespace UiPathCloudAPISharp.OData
+﻿namespace UiPathCloudAPISharp.Query
 {
-    public interface IOData
+    public interface IQueryString
     {
         /// <summary>
         /// Get OData String
         /// </summary>
         /// <returns></returns>
-        string GetODataString();
+        string GetQueryString();
     }
 }

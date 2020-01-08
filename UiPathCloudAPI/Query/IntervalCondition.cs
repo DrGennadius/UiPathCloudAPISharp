@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace UiPathCloudAPISharp.OData
+namespace UiPathCloudAPISharp.Query
 {
     public class IntervalCondition<T> : ICondition where T : struct, IComparable<T>
     {
@@ -27,9 +27,9 @@ namespace UiPathCloudAPISharp.OData
         /// </summary>
         public Interval<T> Interval { get; set; }
 
-        public string GetODataString()
+        public string GetQueryString()
         {
-            return Interval.GetODataString(Name);
+            return Interval.GetQueryString(Name);
         }
 
         public PrimitiveCondition[] GetPrimitives()

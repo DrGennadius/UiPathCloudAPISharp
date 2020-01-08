@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace UiPathCloudAPISharp.OData
+namespace UiPathCloudAPISharp.Query
 {
     public class Condition : ICondition
     {
@@ -97,7 +97,7 @@ namespace UiPathCloudAPISharp.OData
         /// </summary>
         public ComparisonOperator ComparisonOperator { get; set; } = ComparisonOperator.EQ;
 
-        public string GetODataString()
+        public string GetQueryString()
         {
             string name = Name;
             if (!string.IsNullOrEmpty(name))

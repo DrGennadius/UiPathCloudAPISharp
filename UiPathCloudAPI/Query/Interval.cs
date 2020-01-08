@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Text;
 
-namespace UiPathCloudAPISharp.OData
+namespace UiPathCloudAPISharp.Query
 {
-    public class Interval<T> : IODataTransform where T : struct, IComparable<T>
+    public class Interval<T> : IQueryStringTransform where T : struct, IComparable<T>
     {
         public Interval(T start, T end)
         {
@@ -89,17 +89,17 @@ namespace UiPathCloudAPISharp.OData
             return typeof(T);
         }
 
-        public string GetODataString(string input)
+        public string GetQueryString(string input)
         {
             PrimitiveCondition[] primitiveConditions = GeneratePrimitiveConditions(input);
 
             if (primitiveConditions.Length == 1)
             {
-                return primitiveConditions[0].GetODataString();
+                return primitiveConditions[0].GetQueryString();
             }
             else if (primitiveConditions.Length == 2)
             {
-                return string.Format("{0}%20and%20{1}", primitiveConditions[0].GetODataString(), primitiveConditions[1].GetODataString());
+                return string.Format("{0}%20and%20{1}", primitiveConditions[0].GetQueryString(), primitiveConditions[1].GetQueryString());
             }
 
             return "";
