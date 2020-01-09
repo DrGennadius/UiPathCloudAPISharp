@@ -68,11 +68,6 @@ namespace UiPathCloudAPISharp
         public bool IsExpired => _requestManager.IsExpired;
 
         /// <summary>
-        /// Store for sent JSON data.
-        /// </summary>
-        public Queue<string> SentDataStore { get; private set; }
-
-        /// <summary>
         /// Last issue response (deserialized).
         /// </summary>
         public Response LastIssueResponse { get; private set; }
@@ -118,6 +113,8 @@ namespace UiPathCloudAPISharp
 
         private readonly string urlUipathAuth = "https://account.uipath.com/oauth/token";
 
+        private bool _useInitiation = true;
+
         /// <summary>
         /// Reserve of time in seconds for expiration time.
         /// </summary>
@@ -135,16 +132,23 @@ namespace UiPathCloudAPISharp
         /// <param name="userKey"></param>
         /// <param name="behaviorMode"></param>
         public UiPathCloudAPI(string tenantLogicalName, string clientId, string userKey, BehaviorMode behaviorMode = BehaviorMode.Default)
+            : this(tenantLogicalName, clientId, userKey, null, behaviorMode)
+        {
+        }
+
+        /// <summary>
+        /// Create instance by Access data.
+        /// </summary>
+        /// <param name="tenantLogicalName"></param>
+        /// <param name="clientId"></param>
+        /// <param name="userKey"></param>
+        /// <param name="accountLogicalName"></param>
+        /// <param name="behaviorMode"></param>
+        public UiPathCloudAPI(string tenantLogicalName, string clientId, string userKey, string accountLogicalName, BehaviorMode behaviorMode = BehaviorMode.Default)
             : this()
         {
-            _requestManager = new RequestManager(tenantLogicalName, clientId, userKey, behaviorMode);
-            SessionManager = new SessionManager(_requestManager);
-            RobotManager = new RobotManager(_requestManager, SessionManager, true);
-            ProcessManager = new ProcessManager(_requestManager);
-            LibraryManager = new LibraryManager(_requestManager);
-            AssetManager = new AssetManager(_requestManager);
-            ScheduleManager = new ScheduleManager(_requestManager);
-            JobManager = new JobManager(_requestManager, RobotManager, ProcessManager);
+            _useInitiation = false;
+            Initialization(tenantLogicalName, clientId, userKey, accountLogicalName, behaviorMode);
         }
 
         /// <summary>
@@ -152,11 +156,35 @@ namespace UiPathCloudAPISharp
         /// </summary>
         public UiPathCloudAPI()
         {
-            SentDataStore = new Queue<string>();
         }
 
         ~UiPathCloudAPI()
         {
+        }
+
+        /// <summary>
+        /// (Re)Initialization. Initialize managers and if call out of constructor when authorize + get main data.
+        /// </summary>
+        /// <param name="tenantLogicalName"></param>
+        /// <param name="clientId"></param>
+        /// <param name="userKey"></param>
+        /// <param name="accountLogicalName"></param>
+        /// <param name="behaviorMode"></param>
+        public void Initialization(string tenantLogicalName, string clientId, string userKey, string accountLogicalName, BehaviorMode behaviorMode = BehaviorMode.Default)
+        {
+            _requestManager = new RequestManager(tenantLogicalName, clientId, userKey, behaviorMode);
+            if (_useInitiation)
+            {
+                _requestManager.Initiation();
+                _useInitiation = _requestManager.IsAuthorized;
+            }
+            SessionManager = new SessionManager(_requestManager);
+            RobotManager = new RobotManager(_requestManager, SessionManager, true);
+            ProcessManager = new ProcessManager(_requestManager);
+            LibraryManager = new LibraryManager(_requestManager);
+            AssetManager = new AssetManager(_requestManager);
+            ScheduleManager = new ScheduleManager(_requestManager);
+            JobManager = new JobManager(_requestManager, RobotManager, ProcessManager);
         }
 
         /// <summary>

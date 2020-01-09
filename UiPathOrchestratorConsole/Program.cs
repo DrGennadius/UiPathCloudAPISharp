@@ -37,6 +37,11 @@ namespace UiPathCloudAPISharpStartJob
             var sessions = uiPath.SessionManager.GetCollection();
             var assets = uiPath.AssetManager.GetCollection();
             var concretteAssets = uiPath.AssetManager.GetConcreteCollection();
+            uiPath.RobotManager.UseSession = false;
+            var robot = uiPath.RobotManager.GetCollection(new Filter("Name", "Float Test Robot")).First();
+            var process = uiPath.ProcessManager.GetCollection(new Filter("Name", "BackgroundProcess_Test Environment")).First();
+            var job = uiPath.JobManager.StartJob(robot, process);
+            var job1 = uiPath.JobManager.WaitReadyJob(job);
             while (true)
             {
                 Console.Clear();

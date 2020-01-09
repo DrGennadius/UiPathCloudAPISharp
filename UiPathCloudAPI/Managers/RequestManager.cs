@@ -64,7 +64,7 @@ namespace UiPathCloudAPISharp.Managers
         /// The behavior mode affects the logic of initialization, authorization, and call requests.
         /// </summary>
         public BehaviorMode BehaviorMode { get; private set; }
-
+        
         /// <summary>
         /// Last issue response (deserialized).
         /// </summary>
@@ -112,36 +112,48 @@ namespace UiPathCloudAPISharp.Managers
 
         private readonly string urlUipathAuth = "https://account.uipath.com/oauth/token";
 
+        private string _requiredAccountLogicalName = null;
+
         /// <summary>
         /// Reserve of time in seconds for expiration time.
         /// </summary>
         private readonly int _leeway = 30;
 
         public RequestManager(string tenantLogicalName, string clientId, string userKey, BehaviorMode behaviorMode = BehaviorMode.Default)
+            : this(tenantLogicalName, clientId, userKey, null, behaviorMode)
+        {
+        }
+
+        public RequestManager(string tenantLogicalName, string clientId, string userKey, string accountLogicalName, BehaviorMode behaviorMode = BehaviorMode.Default)
         {
             TenantLogicalName = tenantLogicalName;
             ClientId = clientId;
             UserKey = userKey;
             BehaviorMode = behaviorMode;
+            _requiredAccountLogicalName = accountLogicalName;
         }
 
         /// <summary>
         /// Initiation. authorize + get main data.
         /// </summary>
-        /// <param name="login"></param>
-        /// <param name="password"></param>
-        public void Initiation(string tenantLogicalName = null, string clientId = null, string userKey = null)
+        /// <param name="tenantLogicalName"></param>
+        /// <param name="clientId"></param>
+        /// <param name="userKey"></param>
+        /// <param name="accountLogicalName"></param>
+        public void Initiation(string tenantLogicalName = null, string clientId = null, string userKey = null, string accountLogicalName = null)
         {
-            Authorization(tenantLogicalName, clientId, userKey);
+            Authorization(tenantLogicalName, clientId, userKey, accountLogicalName);
             GetMainData();
         }
 
         /// <summary>
-        /// UiPath authorize.
+        /// UiPath authorization.
         /// </summary>
-        /// <param name="login"></param>
-        /// <param name="password"></param>
-        public void Authorization(string tenantLogicalName = null, string clientId = null, string userKey = null)
+        /// <param name="tenantLogicalName"></param>
+        /// <param name="clientId"></param>
+        /// <param name="userKey"></param>
+        /// <param name="accountLogicalName"></param>
+        public void Authorization(string tenantLogicalName = null, string clientId = null, string userKey = null, string accountLogicalName = null)
         {
             IsAuthorized = false;
             if (!string.IsNullOrEmpty(tenantLogicalName))
@@ -160,6 +172,7 @@ namespace UiPathCloudAPISharp.Managers
             {
                 throw new ArgumentException("Tenant Logical Name or Client Id or User Key is empty.");
             }
+            _requiredAccountLogicalName = accountLogicalName;
 
             var authParametr = new AuthParameters
             {
@@ -183,7 +196,18 @@ namespace UiPathCloudAPISharp.Managers
             {
                 throw new Exception("Accounts for target user is empty.");
             }
-            TargetAccount = TargetUser.Accounts.First();
+            if (string.IsNullOrEmpty(_requiredAccountLogicalName))
+            {
+                TargetAccount = TargetUser.Accounts.First();
+            }
+            else
+            {
+                TargetAccount = TargetUser.Accounts.Where(a => a.LogicalName == _requiredAccountLogicalName).FirstOrDefault();
+                if (TargetAccount == null)
+                {
+                    throw new Exception("Required Account is not found.");
+                }
+            }
             if (string.IsNullOrWhiteSpace(TenantLogicalName))
             {
                 throw new Exception("LogicalName is null, empty or white space filled.");
@@ -365,26 +389,5 @@ namespace UiPathCloudAPISharp.Managers
                 throw ex;
             }
         }
-    }
-
-    /// <summary>
-    /// The behavior mode affects the logic of initialization, authorization, and call requests.
-    /// </summary>
-    public enum BehaviorMode
-    {
-        /// <summary>
-        /// No use automatic initiation and authorization.
-        /// </summary>
-        Default,
-
-        /// <summary>
-        /// Automatic initiation when trying to execute a request if not yet authorized or timeout token life.
-        /// </summary>
-        AutoInitiation,
-
-        /// <summary>
-        /// Automatic authorization when trying to execute a request if not yet authorized or timeout token life.
-        /// </summary>
-        AutoAuthorization
     }
 }
