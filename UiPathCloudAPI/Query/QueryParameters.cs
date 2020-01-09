@@ -7,7 +7,7 @@ namespace UiPathCloudAPISharp.Query
 {
     public class QueryParameters : IQueryParameters
     {
-        public QueryParameters(int top = -1, Filter filter = null, string select = null, string expand = null, OrderBy orderby = null, string skip = null)
+        public QueryParameters(int top = -1, IFilter filter = null, string select = null, string expand = null, OrderBy orderby = null, string skip = null)
         {
             Top = top;
             Filter = filter;

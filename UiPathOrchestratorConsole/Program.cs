@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Linq;
 using System.Net;
 using UiPathCloudAPISharp;
 using UiPathCloudAPISharp.Managers;
 using UiPathCloudAPISharp.Models;
+using UiPathCloudAPISharp.Query;
 
 namespace UiPathCloudAPISharpStartJob
 {
@@ -26,6 +28,15 @@ namespace UiPathCloudAPISharpStartJob
         {
             uiPath.RobotManager.UseSession = false;
             var robots = uiPath.RobotManager.GetCollection();
+            uiPath.RobotManager.UseSession = true;
+            robots = uiPath.RobotManager.GetCollection();
+            var processes = uiPath.ProcessManager.GetCollection();
+            var jobs = uiPath.JobManager.GetCollection();
+            var schedules = uiPath.ScheduleManager.GetCollection();
+            var libraries = uiPath.LibraryManager.GetCollection();
+            var sessions = uiPath.SessionManager.GetCollection();
+            var assets = uiPath.AssetManager.GetCollection();
+            var concretteAssets = uiPath.AssetManager.GetConcreteCollection();
             while (true)
             {
                 Console.Clear();
@@ -98,7 +109,7 @@ namespace UiPathCloudAPISharpStartJob
                     case 0:
                         return;
                     case 1:
-                        PrintRobots(uiPath.GetRobots());
+                        PrintRobots(uiPath.RobotManager.GetCollection());
                         Console.ReadKey();
                         break;
                     default:
@@ -137,7 +148,7 @@ namespace UiPathCloudAPISharpStartJob
                     case 0:
                         return;
                     case 1:
-                        PrintProcesses(uiPath.GetProcesses());
+                        PrintProcesses(uiPath.ProcessManager.GetCollection());
                         Console.ReadKey();
                         break;
                     default:
@@ -177,7 +188,7 @@ namespace UiPathCloudAPISharpStartJob
                     case 0:
                         return;
                     case 1:
-                        PrintJobs(uiPath.GetJobs());
+                        PrintJobs(uiPath.JobManager.GetCollection());
                         Console.ReadKey();
                         break;
                     case 2:
@@ -187,7 +198,7 @@ namespace UiPathCloudAPISharpStartJob
                             string robotName = Console.ReadLine();
                             Console.Write("Enter proccess name: ");
                             string proccessName = Console.ReadLine();
-                            var newJob = uiPath.StartJob(robotName, proccessName);
+                            var newJob = uiPath.JobManager.StartJob(robotName, proccessName);
                             PrintJobs(new List<JobWithArguments> { (JobWithArguments)newJob }, "New Job:");
                         }
                         catch (WebException)
@@ -240,7 +251,7 @@ namespace UiPathCloudAPISharpStartJob
                     case 1:
                         try
                         {
-                            PrintConcreteAssets(uiPath.GetConcreteAssets());
+                            PrintConcreteAssets(uiPath.AssetManager.GetConcreteCollection());
                         }
                         catch (WebException)
                         {
@@ -257,9 +268,11 @@ namespace UiPathCloudAPISharpStartJob
                         {
                             Console.Write("Enter robot name: ");
                             string robotName = Console.ReadLine();
+                            uiPath.RobotManager.UseSession = true;
+                            var robot = uiPath.RobotManager.GetCollection(new Filter("Robot/Name", robotName)).FirstOrDefault();
                             Console.Write("Enter asset name: ");
                             string assetName = Console.ReadLine();
-                            Asset asset = uiPath.GetRobotAsset(robotName, assetName);
+                            Asset asset = uiPath.AssetManager.GetInstanceByRobot(assetName, robot);
                             var sinpledAsset = GetSimpledAsset(asset);
                             Console.WriteLine("{0} = {1}", sinpledAsset.Key, sinpledAsset.Value);
                         }
@@ -300,7 +313,7 @@ namespace UiPathCloudAPISharpStartJob
             }
         }
 
-        static void PrintRobots(List<Robot> robots, string title = "Robots:")
+        static void PrintRobots(IEnumerable<Robot> robots, string title = "Robots:")
         {
             Console.WriteLine(title);
             ConsoleHelper.UpdateWidth();
@@ -314,7 +327,7 @@ namespace UiPathCloudAPISharpStartJob
             ConsoleHelper.PrintLine();
         }
 
-        static void PrintProcesses(List<Process> proccess, string title = "Processes:")
+        static void PrintProcesses(IEnumerable<Process> proccess, string title = "Processes:")
         {
             Console.WriteLine(title);
             ConsoleHelper.UpdateWidth();
@@ -328,7 +341,7 @@ namespace UiPathCloudAPISharpStartJob
             ConsoleHelper.PrintLine();
         }
 
-        static void PrintJobs(List<JobWithArguments> jobs, string title = "Jobs:")
+        static void PrintJobs(IEnumerable<JobWithArguments> jobs, string title = "Jobs:")
         {
             Console.WriteLine(title);
             ConsoleHelper.UpdateWidth();
@@ -342,7 +355,7 @@ namespace UiPathCloudAPISharpStartJob
             ConsoleHelper.PrintLine();
         }
 
-        static void PrintConcreteAssets(List<ConcreteAsset> assets, string title = "Assets:")
+        static void PrintConcreteAssets(IEnumerable<ConcreteAsset> assets, string title = "Assets:")
         {
             Console.WriteLine(title);
             ConsoleHelper.UpdateWidth();
@@ -356,7 +369,7 @@ namespace UiPathCloudAPISharpStartJob
             ConsoleHelper.PrintLine();
         }
 
-        static void PrintAssets(List<Asset> assets, string title = "Assets:")
+        static void PrintAssets(IEnumerable<Asset> assets, string title = "Assets:")
         {
             Console.WriteLine(title);
             ConsoleHelper.UpdateWidth();

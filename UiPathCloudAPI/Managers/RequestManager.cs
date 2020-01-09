@@ -235,7 +235,7 @@ namespace UiPathCloudAPISharp.Managers
                 );
         }
 
-        private string SendRequestPostForOdata(string operationPart, byte[] sentData)
+        public string SendRequestPostForOdata(string operationPart, byte[] sentData)
         {
             if (!IsAuthorized)
             {
@@ -281,7 +281,7 @@ namespace UiPathCloudAPISharp.Managers
             return JsonConvert.DeserializeObject<AccountsForUser>(SendRequestGet("https://platform.uipath.com/cloudrpa/api/getAccountsForUser"));
         }
 
-        private string SendRequestGet(string url, bool access = false)
+        public string SendRequestGet(string url, bool access = false)
         {
             if (string.IsNullOrWhiteSpace(url))
             {

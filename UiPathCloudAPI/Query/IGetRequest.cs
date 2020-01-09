@@ -9,6 +9,14 @@ namespace UiPathCloudAPISharp.Query
     {
         IEnumerable<T> GetCollection();
 
+        IEnumerable<T> GetCollection(string conditions);
+
+        IEnumerable<T> GetCollection(int top = -1, IFilter filter = null, string select = null, string expand = null, OrderBy orderby = null, string skip = null);
+
         IEnumerable<T> GetCollection(IQueryParameters queryParameters);
+
+        T GetInstance(int id);
+
+        T GetInstance(T instance);
     }
 }

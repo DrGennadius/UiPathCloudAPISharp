@@ -23,22 +23,22 @@ namespace UiPathCloudAPISharp
         /// User Key for connect to UiPath Orchestrator via Cloud API.
         /// Used as refresh_token for Authorization.
         /// </summary>
-        public string UserKey { get; set; }
+        public string UserKey => _requestManager.UserKey;
 
         /// <summary>
         /// Client Id for connect to UiPath Orchestrator via Cloud API.
         /// </summary>
-        public string ClientId { get; set; }
+        public string ClientId => _requestManager.ClientId;
 
         /// <summary>
         /// Tenant Logical Name for connect to UiPath Orchestrator via Cloud API.
         /// </summary>
-        public string TenantLogicalName { get; private set; }
+        public string TenantLogicalName => _requestManager.TenantLogicalName;
 
         /// <summary>
         /// Last error message that occurred
         /// </summary>
-        public string LastErrorMessage { get; private set; }
+        public string LastErrorMessage => _requestManager.LastErrorMessage;
 
         /// <summary>
         /// Gets or sets the time-out value in milliseconds for the <see cref="HttpWebRequest.GetResponse"/> 
@@ -60,32 +60,12 @@ namespace UiPathCloudAPISharp
         /// <summary>
         /// Passed an authentication?
         /// </summary>
-        public bool IsAuthorized
-        {
-            get
-            {
-                if (IsExpired)
-                {
-                    _isAuthorized = false;
-                }
-                return _isAuthorized;
-            }
-            private set
-            {
-                _isAuthorized = value;
-            }
-        }
+        public bool IsAuthorized => _requestManager.IsAuthorized;
 
         /// <summary>
         /// Is expired timeout?
         /// </summary>
-        public bool IsExpired
-        {
-            get
-            {
-                return DateTime.Now >= _expirationTime;
-            }
-        }
+        public bool IsExpired => _requestManager.IsExpired;
 
         /// <summary>
         /// Store for sent JSON data.
@@ -110,15 +90,23 @@ namespace UiPathCloudAPISharp
         /// <summary>
         /// The behavior mode affects the logic of initialization, authorization, and call requests.
         /// </summary>
-        public BehaviorMode BehaviorMode { get; private set; }
-
+        public BehaviorMode BehaviorMode => _requestManager.BehaviorMode;
+        
         public RobotManager RobotManager { get; private set; }
+        public SessionManager SessionManager { get; private set; }
+        public ProcessManager ProcessManager { get; private set; }
+        public LibraryManager LibraryManager { get; private set; }
+        public AssetManager AssetManager { get; private set; }
+        public ScheduleManager ScheduleManager { get; private set; }
+        public JobManager JobManager { get; private set; }
 
         #endregion Public fields
 
         #region Private and internal properties
 
         internal AuthToken Token { get; set; }
+
+        private RequestManager _requestManager;
 
         private List<ServiceInstance> ServiceInstances { get; set; }
 
@@ -149,12 +137,14 @@ namespace UiPathCloudAPISharp
         public UiPathCloudAPI(string tenantLogicalName, string clientId, string userKey, BehaviorMode behaviorMode = BehaviorMode.Default)
             : this()
         {
-            TenantLogicalName = tenantLogicalName;
-            ClientId = clientId;
-            UserKey = userKey;
-            BehaviorMode = behaviorMode;
-            RequestManager requestManager = new RequestManager(tenantLogicalName, clientId, userKey, behaviorMode);
-            RobotManager = new RobotManager(requestManager, true);
+            _requestManager = new RequestManager(tenantLogicalName, clientId, userKey, behaviorMode);
+            SessionManager = new SessionManager(_requestManager);
+            RobotManager = new RobotManager(_requestManager, SessionManager, true);
+            ProcessManager = new ProcessManager(_requestManager);
+            LibraryManager = new LibraryManager(_requestManager);
+            AssetManager = new AssetManager(_requestManager);
+            ScheduleManager = new ScheduleManager(_requestManager);
+            JobManager = new JobManager(_requestManager, RobotManager, ProcessManager);
         }
 
         /// <summary>
@@ -176,8 +166,7 @@ namespace UiPathCloudAPISharp
         /// <param name="password"></param>
         public void Initiation(string tenantLogicalName = null, string clientId = null, string userKey = null)
         {
-            Authorization(tenantLogicalName, clientId, userKey);
-            GetMainData();
+            _requestManager.Initiation();
         }
 
         /// <summary>
@@ -187,34 +176,7 @@ namespace UiPathCloudAPISharp
         /// <param name="password"></param>
         public void Authorization(string tenantLogicalName = null, string clientId = null, string userKey = null)
         {
-            IsAuthorized = false;
-            if (!string.IsNullOrEmpty(tenantLogicalName))
-            {
-                TenantLogicalName = tenantLogicalName;
-            }
-            if (!string.IsNullOrEmpty(clientId))
-            {
-                ClientId = clientId;
-            }
-            if (!string.IsNullOrEmpty(userKey))
-            {
-                UserKey = userKey;
-            }
-            if (string.IsNullOrWhiteSpace(TenantLogicalName) || string.IsNullOrWhiteSpace(ClientId) || string.IsNullOrWhiteSpace(UserKey))
-            {
-                throw new ArgumentException("Tenant Logical Name or Client Id or User Key is empty.");
-            }
-
-            var authParametr = new AuthParameters
-            {
-                ClientId = ClientId,
-                RefreshToken = UserKey
-            };
-            string output = JsonConvert.SerializeObject(authParametr);
-            var sentData = Encoding.UTF8.GetBytes(output);
-            Token = JsonConvert.DeserializeObject<AuthToken>(SendRequestPost(urlUipathAuth, sentData, true));
-            _expirationTime = DateTime.Now.AddSeconds(Token.ExpiresIn - _leeway);
-            IsAuthorized = true;
+            _requestManager.Authorization();
         }
 
         /// <summary>
@@ -222,22 +184,7 @@ namespace UiPathCloudAPISharp
         /// </summary>
         public void GetMainData()
         {
-            TargetUser = GetAccountsForUser();
-            if (!TargetUser.Accounts.Any())
-            {
-                throw new Exception("Accounts for target user is empty.");
-            }
-            TargetAccount = TargetUser.Accounts.First();
-            if (string.IsNullOrWhiteSpace(TenantLogicalName))
-            {
-                throw new Exception("LogicalName is null, empty or white space filled.");
-            }
-            GetAllServiceInstances();
-            if (!ServiceInstances.Any())
-            {
-                throw new Exception("ServiceInstances is empty.");
-            }
-            TargetServiceInstance = ServiceInstances.First();
+            _requestManager.GetMainData();
         }
 
         #endregion Constructors, initiation, etc.
@@ -258,7 +205,7 @@ namespace UiPathCloudAPISharp
             }
             else
             {
-                LastErrorMessage = "No authorized";
+                throw new Exception("No authorized");
             }
 
             return accounts;
@@ -282,791 +229,26 @@ namespace UiPathCloudAPISharp
                 }
                 else
                 {
-                    LastErrorMessage = "The specified account does not belong to the target user.";
+                    throw new Exception("The specified account does not belong to the target user.");
                 }
             }
             else
             {
-                LastErrorMessage = "No authorized";
+                throw new Exception("No authorized");
             }
 
             return result;
         }
 
         #endregion Accounts
-
-        #region Jobs
-
-        /// <summary>
-        /// Start new job by robot and proccess release.
-        /// </summary>
-        /// <param name="robot"></param>
-        /// <param name="process"></param>
-        /// <returns></returns>
-        public Job StartJob(Robot robot, Process process)
-        {
-            return StartJob(robot.Id, process.Key);
-        }
-
-        /// <summary>
-        /// Start new job by robot and proccess release.
-        /// </summary>
-        /// <param name="robot"></param>
-        /// <param name="process"></param>
-        /// <param name="inputArguments">Input Arguments</param>
-        /// <returns></returns>
-        public Job StartJob(Robot robot, Process process, Dictionary<string, object> inputArguments)
-        {
-            return StartJob(robot.Id, process.Key, inputArguments);
-        }
-
-        /// <summary>
-        /// Start new job by robot name and proccess name.
-        /// <para>(!) Experimental</para>
-        /// </summary>
-        /// <param name="robotName"></param>
-        /// <param name="processKey"></param>
-        /// <param name="environmentName"></param>
-        /// <returns></returns>
-        public Job StartJob(string robotName, string processKey, string environmentName)
-        {
-            return StartJob(robotName, processKey + "_" + environmentName);
-        }
-
-        /// <summary>
-        /// Start new job by robot name and proccess name.
-        /// </summary>
-        /// <param name="robotName"></param>
-        /// <param name="processName"></param>
-        /// <returns></returns>
-        public Job StartJob(string robotName, string processName)
-        {
-            return StartJob(robotName, processName, new Dictionary<string, object>());
-        }
-
-        /// <summary>
-        /// Start new job by robot name and proccess name.
-        /// <para>(!) Experimental</para>
-        /// </summary>
-        /// <param name="robotName"></param>
-        /// <param name="processKey"></param>
-        /// <param name="environmentName"></param>
-        /// <param name="inputArguments"></param>
-        /// <returns></returns>
-        public Job StartJob(string robotName, string processKey, string environmentName, Dictionary<string, object> inputArguments)
-        {
-            return StartJob(robotName, processKey + "_" + environmentName, inputArguments);
-        }
-
-        /// <summary>
-        /// Start new job by robot name and proccess name.
-        /// </summary>
-        /// <param name="robotName">Robot Name</param>
-        /// <param name="processName">{Process Key} + _ + {Environment Name}</param>
-        /// <param name="inputArguments">Input Arguments</param>
-        /// <returns></returns>
-        public Job StartJob(string robotName, string processName, Dictionary<string, object> inputArguments)
-        {
-            Robot robot = GetRobots(new Filter("Robot/Name", robotName)).FirstOrDefault();
-            if (robot == null)
-            {
-                LastErrorMessage = "The specified robot was not found.";
-                return null;
-            }
-            Process process = GetProcesses(new Filter("Name", processName)).FirstOrDefault();
-            if (process == null)
-            {
-                LastErrorMessage = "The specified proccess was not found.";
-                return null;
-            }
-            return StartJob(robot.Id, process.Key, inputArguments);
-        }
-
-        /// <summary>
-        /// Start new job by robot id and proccess release key.
-        /// </summary>
-        /// <param name="robotId">Robot ID</param>
-        /// <param name="releaseKey">Proccess release key</param>
-        /// <returns></returns>
-        public Job StartJob(int robotId, string releaseKey)
-        {
-            return StartJob(robotId, releaseKey, new Dictionary<string, object>());
-        }
-
-        /// <summary>
-        /// Start new job by robot id and proccess release key.
-        /// </summary>
-        /// <param name="robotId">Robot ID</param>
-        /// <param name="releaseKey">Proccess release key</param>
-        /// <param name="inputArguments">Input Arguments</param>
-        /// <returns></returns>
-        public Job StartJob(int robotId, string releaseKey, Dictionary<string, object> inputArguments)
-        {
-            Job job = null;
-            if (string.IsNullOrEmpty(releaseKey))
-            {
-                LastErrorMessage = "Proccess release key is empty.";
-            }
-            else
-            {
-                string output = "";
-                if (inputArguments.Any())
-                {
-                    var startInfo = new StartInfoContainer<StartJobsInfoWithArguments>
-                    {
-                        StartJobsInfo = new StartJobsInfoWithArguments
-                        {
-                            ReleaseKey = releaseKey,
-                            Strategy = "Specific",
-                            RobotIds = new int[] { robotId },
-                            InputArgumentsAsString = JsonConvert.SerializeObject(inputArguments)
-                        }
-                    };
-                    output = JsonConvert.SerializeObject(startInfo);
-                }
-                else
-                {
-                    var startInfo = new StartInfoContainer<StartJobsInfo>
-                    {
-                        StartJobsInfo = new StartJobsInfo
-                        {
-                            ReleaseKey = releaseKey,
-                            Strategy = "Specific",
-                            RobotIds = new int[] { robotId }
-                        }
-                    };
-                    output = JsonConvert.SerializeObject(startInfo);
-                }
-                SentDataStore.Enqueue(output);
-                byte[] sentData = Encoding.UTF8.GetBytes(output);
-                string returnStr = null;
-                try
-                {
-                    returnStr = SendRequestPostForOdata("Jobs/UiPath.Server.Configuration.OData.StartJobs", sentData);
-                    job = JsonConvert.DeserializeObject<Info<Job>>(returnStr).Items.FirstOrDefault();
-                }
-                catch (Exception ex)
-                {
-                    LastErrorMessage += "\nException message:\n" + ex.Message;
-                    if (!string.IsNullOrEmpty(returnStr))
-                    {
-                        LastErrorMessage += "\nReturn string:\n" + returnStr;
-                    }
-                }
-            }
-            return job;
-        }
-
-        /// <summary>
-        /// Stop or kill the job.
-        /// </summary>
-        /// <param name="job"></param>
-        /// <param name="stopStrategy">Strategy: Kill or SoftStop</param>
-        public void StopJob(Job job, StopJobsStrategy stopStrategy = StopJobsStrategy.SoftStop)
-        {
-            StopJobs(new List<Job> { job }, stopStrategy);
-        }
-
-        /// <summary>
-        /// Stop or kill the jobs.
-        /// </summary>
-        /// <param name="jobs"></param>
-        /// <param name="stopStrategy">Strategy: Kill or SoftStop</param>
-        public void StopJobs(List<Job> jobs, StopJobsStrategy stopStrategy = StopJobsStrategy.SoftStop)
-        {
-            var startJobsInfo = new StopJobsInfo
-            {
-                Strategy = stopStrategy,
-                JobIds = jobs.Select(j => j.Id).ToArray()
-            };
-            string output = JsonConvert.SerializeObject(startJobsInfo);
-            SentDataStore.Enqueue(output);
-            byte[] sentData = Encoding.UTF8.GetBytes(output);
-            SendRequestPostForOdata("Jobs/UiPath.Server.Configuration.OData.StopJobs", sentData);
-        }
-
-        /// <summary>
-        /// Get job list
-        /// </summary>
-        /// <returns></returns>
-        public List<JobWithArguments> GetJobs()
-        {
-            string response = SendRequestGetForOdata("Jobs");
-            return JsonConvert.DeserializeObject<Info<JobWithArguments>>(response).Items;
-        }
-
-        /// <summary>
-        /// Get job list
-        /// </summary>
-        /// <param name="queryParameters">queryParameters</param>
-        /// <returns></returns>
-        public List<JobWithArguments> GetJobs(IQueryParameters queryParameters)
-        {
-            string response = SendRequestGetForOdata("Jobs", queryParameters);
-            return JsonConvert.DeserializeObject<Info<JobWithArguments>>(response).Items;
-        }
-
-        /// <summary>
-        /// Get job list
-        /// </summary>
-        /// <param name="queryParameters">queryParameters</param>
-        /// <returns></returns>
-        public List<JobWithArguments> GetJobs(string conditions)
-        {
-            Filter filter = new Filter(conditions);
-            string response = SendRequestGetForOdata("Jobs", filter);
-            return JsonConvert.DeserializeObject<Info<JobWithArguments>>(response).Items;
-        }
-
-        /// <summary>
-        /// Get Job from server. Update data for this instance. 
-        /// </summary>
-        /// <param name="job"></param>
-        /// <returns></returns>
-        public JobWithArguments GetJob(Job job)
-        {
-            return GetJobs(new Filter("Id", job.Id)).FirstOrDefault();
-        }
-
-        /// <summary>
-        /// Wait ready (not pending) job. It is sync.
-        /// </summary>
-        /// <param name="job"></param>
-        /// <returns></returns>
-        public JobWithArguments WaitReadyJob(Job job)
-        {
-            return WaitReadyJob(job, WaitTimeout);
-        }
-
-        /// <summary>
-        /// Wait ready (not pending) big job. It is sync.
-        /// </summary>
-        /// <param name="job"></param>
-        /// <returns></returns>
-        public JobWithArguments WaitReadyBigJob(Job job)
-        {
-            return WaitReadyJob(job, BigWaitTimeout);
-        }
-
-        /// <summary>
-        /// Wait ready (not pending) job with timeout. It is sync.
-        /// </summary>
-        /// <param name="job"></param>
-        /// <param name="timeout"></param>
-        /// <returns></returns>
-        public JobWithArguments WaitReadyJob(Job job, int timeout)
-        {
-            JobWithArguments readyJob = null;
-
-            if (job == null)
-            {
-                throw new ArgumentException("Job is NULL.");
-            }
-            else
-            {
-                DateTime stopDateTime = DateTime.Now.AddMilliseconds(timeout);
-                while (true)
-                {
-                    Thread.Sleep(5000);
-                    var returnJob = GetJobs(new Filter("Id", job.Id)).FirstOrDefault();
-                    if (DateTime.Now >= stopDateTime)
-                    {
-                        break;
-                    }
-                    else if (returnJob.State != JobState.Pending
-                        && returnJob.State != JobState.Running
-                        && returnJob.State != JobState.Stopping
-                        && returnJob.State != JobState.Terminating)
-                    {
-                        readyJob = returnJob;
-                        break;
-                    }
-                }
-                if (readyJob == null)
-                {
-                    throw new Exception("Timeout!");
-                }
-            }
-
-            return readyJob;
-        }
-
-        #endregion Jobs
-
-        #region Assets
-
-        /// <summary>
-        /// Get Assets.
-        /// </summary>
-        /// <returns></returns>
-        public List<ConcreteAsset> GetConcreteAssets()
-        {
-            return GetAssets().Select(x => x.Concrete()).ToList();
-        }
-
-        /// <summary>
-        /// Get Assets.
-        /// </summary>
-        /// <returns></returns>
-        public List<Asset> GetAssets()
-        {
-            string response = SendRequestGetForOdata("Assets");
-            return JsonConvert.DeserializeObject<Info<Asset>>(response).Items;
-        }
-
-        /// <summary>
-        /// Get robot Asset.
-        /// </summary>
-        /// <param name="robot"></param>
-        /// <param name="assetName"></param>
-        /// <returns></returns>
-        public Asset GetRobotAsset(Robot robot, string assetName)
-        {
-            return GetRobotAssetByRobotId(robot.Id, assetName);
-        }
-
-        /// <summary>
-        /// Get robot Asset.
-        /// </summary>
-        /// <param name="robotName"></param>
-        /// <param name="assetName"></param>
-        /// <returns></returns>
-        public Asset GetRobotAsset(string robotName, string assetName)
-        {
-            Robot robot = GetRobots().Where(x => x.Name == robotName).FirstOrDefault();
-            if (robot == null)
-            {
-                LastErrorMessage = "The specified robot was not found.";
-                return null;
-            }
-            return GetRobotAssetByRobotId(robot.Id, assetName);
-        }
-
-        /// <summary>
-        /// Get robot Asset.
-        /// </summary>
-        /// <param name="robotId"></param>
-        /// <param name="assetName"></param>
-        /// <returns></returns>
-        public Asset GetRobotAssetByRobotId(int robotId, string assetName)
-        {
-            string response = SendRequestGetForOdata(string.Format("Assets/UiPath.Server.Configuration.OData.GetRobotAssetByRobotId(robotId={0},assetName='{1}')", robotId, assetName));
-            return JsonConvert.DeserializeObject<Asset>(response);
-        }
-
-        #endregion Assets
-
-        #region Robots
-
-        /// <summary>
-        /// Get robot by id
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        public Robot GetRobot(int id)
-        {
-            string response = SendRequestGetForOdata(string.Format("Robots({0})", id));
-            return JsonConvert.DeserializeObject<Robot>(response);
-        }
-
-        /// <summary>
-        /// Get robot list using sessions (extended robots information)
-        /// </summary>
-        /// <returns></returns>
-        public List<Robot> GetRobots()
-        {
-            return GetExtendedRobotsInfo().Select(x => x.Robot).ToList();
-        }
-
-        /// <summary>
-        /// Get robot list using sessions (extended robots information)
-        /// </summary>
-        /// <param name="filter"></param>
-        /// <returns></returns>
-        public List<Robot> GetRobots(Filter filter)
-        {
-            return GetExtendedRobotsInfo(filter).Select(x => x.Robot).ToList();
-        }
-
-        /// <summary>
-        /// Get robot list using sessions (extended robots information)
-        /// </summary>
-        /// <param name="queryParameters"></param>
-        /// <returns></returns>
-        public List<Robot> GetRobots(QueryParameters queryParameters)
-        {
-            return GetExtendedRobotsInfo(queryParameters).Select(x => x.Robot).ToList();
-        }
-
-        /// <summary>
-        /// Get robot list
-        /// </summary>
-        /// <returns></returns>
-        public List<Robot> GetRobots2()
-        {
-            string response = SendRequestGetForOdata("Robots");
-            return JsonConvert.DeserializeObject<Info<Robot>>(response).Items;
-        }
-
-        /// <summary>
-        /// Get extended robots information
-        /// </summary>
-        /// <returns></returns>
-        public List<RobotInfo> GetExtendedRobotsInfo()
-        {
-            QueryParameters queryParameters = new QueryParameters(select: "Robot", expand: "Robot");
-            string response = SendRequestGetForOdata("Sessions", queryParameters);
-            return JsonConvert.DeserializeObject<Info<RobotInfo>>(response).Items;
-        }
-
-        public List<RobotInfo> GetExtendedRobotsInfo(Filter filter)
-        {
-            QueryParameters queryParameters = new QueryParameters(filter: filter, select: "Robot", expand: "Robot");
-            string response = SendRequestGetForOdata("Sessions", queryParameters);
-            return JsonConvert.DeserializeObject<Info<RobotInfo>>(response).Items;
-        }
-
-        /// <summary>
-        /// Get extended robots information with queryParameters
-        /// </summary>
-        /// <param name="top">Top</param>
-        /// <param name="filter">Filter</param>
-        /// <param name="select">Select</param>
-        /// <param name="expand">Expand</param>
-        /// <param name="orderby">OrderBy</param>
-        /// <param name="skip">Skip</param>
-        /// <returns></returns>
-        public List<RobotInfo> GetExtendedRobotsInfo(int top = -1, Filter filter = null, OrderBy orderBy = null, string skip = null)
-        {
-            string response = SendRequestGetForOdata("Sessions", top, filter, "Robot", "Robot", orderBy, skip);
-            return JsonConvert.DeserializeObject<Info<RobotInfo>>(response).Items;
-        }
-
-        /// <summary>
-        /// Get extended robots information with queryParameters
-        /// </summary>
-        /// <param name="queryParameters">Session queryParameters</param>
-        /// <returns></returns>
-        public List<RobotInfo> GetExtendedRobotsInfo(QueryParameters queryParameters)
-        {
-            QueryParameters sessionClauses = queryParameters;
-            if (string.IsNullOrEmpty(sessionClauses.Select))
-            {
-                sessionClauses.Select = "Robot";
-            }
-            else if (sessionClauses.Select != "Robot")
-            {
-                throw new ArgumentException("Select != \"Robot\"");
-            }
-            if (string.IsNullOrEmpty(sessionClauses.Expand))
-            {
-                sessionClauses.Expand = "Robot";
-            }
-            else if (sessionClauses.Expand != "Robot")
-            {
-                throw new ArgumentException("Expand != \"Robot\"");
-            }
-            string response = SendRequestGetForOdata("Sessions", sessionClauses);
-            return JsonConvert.DeserializeObject<Info<RobotInfo>>(response).Items;
-        }
-
-        #endregion Robots
-
-        #region Processes
-
-        /// <summary>
-        /// Get a list of all processes
-        /// </summary>
-        /// <returns></returns>
-        public List<Process> GetProcesses()
-        {
-            string response = SendRequestGetForOdata("Releases");
-            return JsonConvert.DeserializeObject<Info<Process>>(response).Items;
-        }
-
-        /// <summary>
-        /// Get a list of all processes by condition string
-        /// </summary>
-        /// <param name="name">Name</param>
-        /// <returns></returns>
-        public List<Process> GetProcesses(string conditions)
-        {
-            Filter filter = new Filter(conditions);
-            return GetProcesses(filter);
-        }
-
-        /// <summary>
-        /// Get a list of all processes by condition
-        /// </summary>
-        /// <param name="objectName"></param>
-        /// <param name="objectValue"></param>
-        /// <param name="comparisonOperator"></param>
-        /// <returns></returns>
-        public List<Process> GetProcesses(string objectName, object objectValue, ComparisonOperator comparisonOperator = ComparisonOperator.EQ)
-        {
-            Filter filter = new Filter(objectName, objectValue, comparisonOperator);
-            return GetProcesses(filter);
-        }
-
-        /// <summary>
-        /// Get a list of all processes by condition
-        /// </summary>
-        /// <param name="objectBaseName"></param>
-        /// <param name="objectPropertyName"></param>
-        /// <param name="objectValue"></param>
-        /// <param name="comparisonOperator"></param>
-        /// <returns></returns>
-        public List<Process> GetProcesses(string objectBaseName, string objectPropertyName, object objectValue, ComparisonOperator comparisonOperator = ComparisonOperator.EQ)
-        {
-            Filter filter = new Filter(objectBaseName, objectPropertyName, objectValue, comparisonOperator);
-            return GetProcesses(filter);
-        }
-
-        /// <summary>
-        /// Get a list of all processes by OData queryParameters
-        /// </summary>
-        /// <param name="queryParameters"></param>
-        /// <returns></returns>
-        public List<Process> GetProcesses(IQueryParameters queryParameters)
-        {
-            string response = SendRequestGetForOdata("Releases", queryParameters);
-            return JsonConvert.DeserializeObject<Info<Process>>(response).Items;
-        }
-
-        /// <summary>
-        /// Get a list of all processes by name
-        /// </summary>
-        /// <param name="name">Name</param>
-        /// <returns></returns>
-        public List<Process> GetProcessesByName(string name)
-        {
-            Filter filter = new Filter("Name", name);
-            return GetProcesses(filter);
-        }
-
-        #endregion Processes
-
-        #region Libraries
-
-        public List<Library> GetLibraries()
-        {
-            string response = SendRequestGetForOdata("Libraries");
-            return JsonConvert.DeserializeObject<Info<Library>>(response).Items;
-        }
-
-        public List<Library> GetLibraries(string conditions)
-        {
-            Filter filter = new Filter(conditions);
-            return GetLibraries(filter);
-        }
-
-        public List<Library> GetLibraries(string objectName, object objectValue, ComparisonOperator comparisonOperator = ComparisonOperator.EQ)
-        {
-            Filter filter = new Filter(objectName, objectValue, comparisonOperator);
-            return GetLibraries(filter);
-        }
-
-        public List<Library> GetLibraries(string objectBaseName, string objectPropertyName, object objectValue, ComparisonOperator comparisonOperator = ComparisonOperator.EQ)
-        {
-            Filter filter = new Filter(objectBaseName, objectPropertyName, objectValue, comparisonOperator);
-            return GetLibraries(filter);
-        }
-
-        public List<Library> GetLibraries(IQueryParameters queryParameters)
-        {
-            string response = SendRequestGetForOdata("Libraries", queryParameters);
-            return JsonConvert.DeserializeObject<Info<Library>>(response).Items;
-        }
-
-        #endregion Libraries
-
-        #region Process Schedules
-
-        public List<Schedule> GetProcessSchedules()
-        {
-            string response = SendRequestGetForOdata("ProcessSchedules");
-            return JsonConvert.DeserializeObject<Info<Schedule>>(response).Items;
-        }
-
-        public Schedule GetProcessSchedule(int id)
-        {
-            string response = SendRequestGetForOdata(string.Format("ProcessSchedules({0})", id));
-            return JsonConvert.DeserializeObject<Schedule>(response);
-        }
-
-        #endregion Process Schedules
-
+ 
         #region Private methods
-        private string SendRequestGetForOdata(string operationPart, int top = -1, Filter filter = null, string select = null, string expand = null, OrderBy orderBy = null, string skip = null)
-        {
-            QueryParameters queryParameters = new QueryParameters(top, filter, select, expand, orderBy, skip);
-            return SendRequestGetForOdata(string.Format("{0}?{1}", operationPart, queryParameters.GetQueryString()));
-        }
-
-        private string SendRequestGetForOdata(string operationPart, IQueryParameters queryParameters)
-        {
-            return SendRequestGetForOdata(string.Format("{0}?{1}", operationPart, queryParameters.GetQueryString()));
-        }
-
-        private string SendRequestGetForOdata(string operationPart)
-        {
-            if (!IsAuthorized)
-            {
-                if (BehaviorMode == BehaviorMode.AutoAuthorization)
-                {
-                    Authorization(TenantLogicalName, ClientId, UserKey);
-                }
-                else if (BehaviorMode == BehaviorMode.AutoInitiation)
-                {
-                    Initiation(TenantLogicalName, ClientId, UserKey);
-                }
-            }
-            if (!IsAuthorized)
-            {
-                throw new Exception("Not authorized.");
-            }
-            return SendRequestGet(
-                string.Format(
-                    "https://platform.uipath.com/{0}/{1}/odata/{2}",
-                    TargetAccount.LogicalName,
-                    TargetServiceInstance.LogicalName,
-                    operationPart
-                    )
-                    , true
-                );
-        }
-
-        private string SendRequestPostForOdata(string operationPart, byte[] sentData)
-        {
-            if (!IsAuthorized)
-            {
-                if (BehaviorMode == BehaviorMode.AutoAuthorization)
-                {
-                    Authorization(TenantLogicalName, ClientId, UserKey);
-                }
-                else if (BehaviorMode == BehaviorMode.AutoInitiation)
-                {
-                    Initiation(TenantLogicalName, ClientId, UserKey);
-                }
-            }
-            if (!IsAuthorized)
-            {
-                throw new Exception("Not authorized.");
-            }
-            return SendRequestPost(
-                string.Format(
-                    "https://platform.uipath.com/{0}/{1}/odata/{2}",
-                    TargetAccount.LogicalName,
-                    TargetServiceInstance.LogicalName,
-                    operationPart
-                    )
-                    , sentData
-                    , true
-                );
-        }
-
-        private void GetAllServiceInstances()
-        {
-            ServiceInstances = JsonConvert.DeserializeObject<List<ServiceInstance>>(
-                SendRequestGet(
-                    string.Format(
-                        "https://platform.uipath.com/cloudrpa/api/account/{0}/getAllServiceInstances",
-                        TargetAccount.LogicalName
-                    )
-                )
-            );
-        }
 
         private AccountsForUser GetAccountsForUser()
         {
-            return JsonConvert.DeserializeObject<AccountsForUser>(SendRequestGet("https://platform.uipath.com/cloudrpa/api/getAccountsForUser"));
+            return JsonConvert.DeserializeObject<AccountsForUser>(_requestManager.SendRequestGet("https://platform.uipath.com/cloudrpa/api/getAccountsForUser"));
         }
-
-        private string SendRequestGet(string url, bool access = false)
-        {
-            if (string.IsNullOrWhiteSpace(url))
-            {
-                throw new ArgumentException("Url is empty.");
-            }
-
-            HttpWebRequest req = WebRequest.Create(url) as HttpWebRequest;
-            req.Method = "GET";
-            req.Timeout = RequestTimeout;
-            req.Headers.Add("Authorization", Token.TokenType + " " + (access ? Token.AccessToken : Token.IdToken));
-            if (access)
-            {
-                req.Headers.Add("X-UIPATH-TenantName", TargetServiceInstance.LogicalName);
-            }
-
-            return SendRequest(req);
-        }
-
-        private string SendRequestPost(string url, byte[] sentData, bool access = false)
-        {
-            if (string.IsNullOrWhiteSpace(url))
-            {
-                throw new ArgumentException("Url is empty.");
-            }
-
-            HttpWebRequest req = WebRequest.Create(url) as HttpWebRequest;
-            req.Method = "POST";
-            req.Timeout = RequestTimeout;
-            req.ContentType = "application/json";
-            req.Accept = "application/json";
-            if (access)
-            {
-                if (IsAuthorized)
-                {
-                    req.Headers.Add("Authorization", Token.TokenType + " " + Token.AccessToken);
-                    req.Headers.Add("X-UIPATH-TenantName", TargetServiceInstance.LogicalName);
-                }
-                else
-                {
-                    req.Headers.Add("X-UIPATH-TenantName", TenantLogicalName);
-                }
-            }
-
-            req.ContentLength = sentData.Length;
-            Stream sendStream = req.GetRequestStream();
-            sendStream.Write(sentData, 0, sentData.Length);
-
-            return SendRequest(req);
-        }
-
-        private string SendRequest(HttpWebRequest httpWebRequest)
-        {
-            try
-            {
-                var res = httpWebRequest.GetResponse() as HttpWebResponse;
-                var resStream = res.GetResponseStream();
-                return new StreamReader(resStream, Encoding.UTF8).ReadToEnd();
-            }
-            catch (WebException ex)
-            {
-                if (ex.Response != null)
-                {
-                    using (var stream = ex.Response.GetResponseStream())
-                    {
-                        using (var reader = new StreamReader(stream))
-                        {
-                            LastErrorMessage = reader.ReadToEnd();
-                            try
-                            {
-                                LastIssueResponse = JsonConvert.DeserializeObject<Response>(LastErrorMessage);
-                            }
-                            catch { }
-                        }
-                    }
-                }
-                throw ex;
-            }
-            catch (Exception ex)
-            {
-                LastErrorMessage = ex.Message;
-                throw ex;
-            }
-        }
-
+        
         #endregion Private methods
     }
 }
