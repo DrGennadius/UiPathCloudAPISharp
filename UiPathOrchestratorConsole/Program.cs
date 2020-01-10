@@ -20,9 +20,7 @@ namespace UiPathCloudAPISharpStartJob
             string clientId = ConfigurationManager.AppSettings["ClientId"];
             string refreshToken = ConfigurationManager.AppSettings["UserKey"];
 
-            UiPathCloudAPI uiPath = new UiPathCloudAPI();
-            uiPath.Initialization(tenantLogicalName, clientId, refreshToken, BehaviorMode.AutoInitiation);
-            var setting = uiPath.ConfigurationManager["TracingLevel"];
+            UiPathCloudAPI uiPath = new UiPathCloudAPI(tenantLogicalName, clientId, refreshToken, BehaviorMode.AutoInitiation);
             MenuLoop(uiPath);
         }
 

@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>UiPathCloudAPI.net40</id>
-    <version>0.6.2</version>
+    <version>0.7.0</version>
     <title>UiPathCloudAPI .NET40</title>
     <authors>Gennady Zykov</authors>
     <licenseUrl>https://raw.githubusercontent.com/DrGennadius/UiPathCloudAPISharp/master/LICENSE</licenseUrl>

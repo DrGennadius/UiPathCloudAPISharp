@@ -144,6 +144,11 @@ namespace UiPathCloudAPISharp
         /// </summary>
         public TransactionManager TransactionManager { get; private set; }
 
+        /// <summary>
+        /// Environment Manager
+        /// </summary>
+        public EnvironmentManager EnvironmentManager { get; private set; }
+
         #endregion Public fields
 
         #region Private and internal properties
@@ -231,6 +236,7 @@ namespace UiPathCloudAPISharp
             ScheduleManager = new ScheduleManager(_requestManager);
             JobManager = new JobManager(_requestManager, RobotManager, ProcessManager);
             TransactionManager = new TransactionManager(_requestManager);
+            EnvironmentManager = new EnvironmentManager(_requestManager);
         }
 
         /// <summary>
