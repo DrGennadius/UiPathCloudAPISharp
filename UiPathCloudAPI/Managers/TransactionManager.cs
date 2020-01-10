@@ -8,7 +8,7 @@ using UiPathCloudAPISharp.Managers;
 using UiPathCloudAPISharp.Models;
 using UiPathCloudAPISharp.Query;
 
-namespace UiPathCloudAPISharp
+namespace UiPathCloudAPISharp.Managers
 {
     public class TransactionManager : IManager, IGetRequest<QueueItem>
     {
