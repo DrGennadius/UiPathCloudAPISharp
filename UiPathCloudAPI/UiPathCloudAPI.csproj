@@ -1,11 +1,15 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>net40;net461;netstandard2.0</TargetFrameworks>
+    <PackageId>UiPathCloudAPISharp</PackageId>
     <Version>0.7.1</Version>
     <Authors>Gennady Zykov</Authors>
     <Company />
     <RootNamespace>UiPathCloudAPISharp</RootNamespace>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageDescription>A simple example of library for UiPath Cloud API</PackageDescription>
+    <RepositoryUrl>https://github.com/DrGennadius/UiPathCloudAPISharp</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,7 +19,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
   </ItemGroup>
   
   <ItemGroup>

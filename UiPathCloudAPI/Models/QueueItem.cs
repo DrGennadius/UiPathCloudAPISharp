@@ -58,7 +58,7 @@ namespace UiPathCloudAPISharp.Models
         public object SpecificContent { get; set; }
 
         [JsonProperty("Output")]
-        private object _output;
+        private object _output = null;
 
         [JsonIgnore]
         public string Output
