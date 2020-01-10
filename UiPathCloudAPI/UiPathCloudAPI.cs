@@ -134,10 +134,15 @@ namespace UiPathCloudAPISharp
         /// </summary>
         public JobManager JobManager { get; private set; }
 
+        /// <summary>
+        /// Transaction Manager
+        /// </summary>
+        public TransactionManager TransactionManager { get; private set; }
+
         #endregion Public fields
 
         #region Private and internal properties
-        
+
         private RequestManager _requestManager;
 
         private bool _useInitiation = true;
@@ -219,6 +224,7 @@ namespace UiPathCloudAPISharp
             AssetManager = new AssetManager(_requestManager);
             ScheduleManager = new ScheduleManager(_requestManager);
             JobManager = new JobManager(_requestManager, RobotManager, ProcessManager);
+            TransactionManager = new TransactionManager(_requestManager);
         }
 
         /// <summary>

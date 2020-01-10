@@ -1,11 +1,15 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
 namespace UiPathCloudAPISharp.Models
 {
-    public class Transaction
+    /// <summary>
+    /// Queue Item for Transactions.
+    /// </summary>
+    public class QueueItem
     {
         public int QueueDefinitionId { get; set; }
 
@@ -49,11 +53,21 @@ namespace UiPathCloudAPISharp.Models
 
         public int Id { get; set; }
 
-        public string ProcessingException { get; set; }
+        public ProcessingException ProcessingException { get; set; }
 
-        public string SpecificContent { get; set; }
+        public object SpecificContent { get; set; }
 
-        public string Output { get; set; }
+        [JsonProperty("Output")]
+        private object _output;
+
+        [JsonIgnore]
+        public string Output
+        {
+            get
+            {
+                return _output as string;
+            }
+        }
 
         public Robot Robot { get; set; }
     }
