@@ -51,6 +51,11 @@ namespace UiPathCloudAPISharp.Managers
         public int BigWaitTimeout { get; set; } = 1800000;
 
         /// <summary>
+        /// Target User.
+        /// </summary>
+        public AccountsForUser TargetUser { get; set; }
+
+        /// <summary>
         /// Current target account.
         /// </summary>
         public Account TargetAccount { get; private set; }
@@ -103,8 +108,6 @@ namespace UiPathCloudAPISharp.Managers
         internal AuthToken Token { get; set; }
 
         private List<ServiceInstance> ServiceInstances { get; set; }
-
-        private AccountsForUser TargetUser { get; set; }
 
         private bool _isAuthorized = false;
 
@@ -218,6 +221,55 @@ namespace UiPathCloudAPISharp.Managers
                 throw new Exception("ServiceInstances is empty.");
             }
             TargetServiceInstance = ServiceInstances.First();
+        }
+
+        /// <summary>
+        /// Get accounts for target user.
+        /// </summary>
+        /// <returns></returns>
+        public List<Account> GetAccountsForTargetUser()
+        {
+            List<Account> accounts = new List<Account>();
+
+            if (IsAuthorized)
+            {
+                accounts.AddRange(TargetUser.Accounts);
+            }
+            else
+            {
+                throw new Exception("No authorized");
+            }
+
+            return accounts;
+        }
+
+        /// <summary>
+        /// Set target account.
+        /// </summary>
+        /// <param name="account"></param>
+        /// <returns></returns>
+        public bool SetTargetAccount(Account account)
+        {
+            bool result = false;
+
+            if (IsAuthorized)
+            {
+                if (TargetUser.Accounts.Contains(account))
+                {
+                    TargetAccount = account;
+                    result = true;
+                }
+                else
+                {
+                    throw new Exception("The specified account does not belong to the target user.");
+                }
+            }
+            else
+            {
+                throw new Exception("No authorized");
+            }
+
+            return result;
         }
 
         public string SendRequestGetForOdata(string operationPart, int top = -1, Filter filter = null, string select = null, string expand = null, OrderBy orderBy = null, string skip = null)

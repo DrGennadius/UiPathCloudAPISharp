@@ -45,17 +45,29 @@ namespace UiPathCloudAPISharp
         /// and <see cref="HttpWebRequest.GetRequestStream"/> methods.
         /// <para >The default value is 30,000 milliseconds (30 seconds).</para>
         /// </summary>
-        public int RequestTimeout { get; set; } = 30000;
+        public int RequestTimeout
+        {
+            get { return _requestManager.RequestTimeout; }
+            set { _requestManager.RequestTimeout = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the time-out value in milliseconds for wait the operation.
+        /// </summary>
+        public int WaitTimeout
+        {
+            get { return _requestManager.WaitTimeout; }
+            set { _requestManager.WaitTimeout = value; }
+        }
 
         /// <summary>
         /// Gets or sets the time-out value in milliseconds for wait the big operation.
         /// </summary>
-        public int WaitTimeout { get; set; } = 300000;
-
-        /// <summary>
-        /// Gets or sets the time-out value in milliseconds for wait the big operation.
-        /// </summary>
-        public int BigWaitTimeout { get; set; } = 1800000;
+        public int BigWaitTimeout
+        {
+            get { return _requestManager.BigWaitTimeout; }
+            set { _requestManager.BigWaitTimeout = value; }
+        }
 
         /// <summary>
         /// Passed an authentication?
@@ -70,55 +82,65 @@ namespace UiPathCloudAPISharp
         /// <summary>
         /// Last issue response (deserialized).
         /// </summary>
-        public Response LastIssueResponse { get; private set; }
+        public Response LastIssueResponse => _requestManager.LastIssueResponse;
 
         /// <summary>
         /// Current target account.
         /// </summary>
-        public Account TargetAccount { get; private set; }
+        public Account TargetAccount => _requestManager.TargetAccount;
 
         /// <summary>
         /// Current target service instance.
         /// </summary>
-        public ServiceInstance TargetServiceInstance { get; private set; }
+        public ServiceInstance TargetServiceInstance => _requestManager.TargetServiceInstance;
 
         /// <summary>
         /// The behavior mode affects the logic of initialization, authorization, and call requests.
         /// </summary>
         public BehaviorMode BehaviorMode => _requestManager.BehaviorMode;
-        
+
+        /// <summary>
+        /// Robot Manager
+        /// </summary>
         public RobotManager RobotManager { get; private set; }
+
+        /// <summary>
+        /// Session Manager
+        /// </summary>
         public SessionManager SessionManager { get; private set; }
+
+        /// <summary>
+        /// Process Manager
+        /// </summary>
         public ProcessManager ProcessManager { get; private set; }
+
+        /// <summary>
+        /// Library Manager
+        /// </summary>
         public LibraryManager LibraryManager { get; private set; }
+
+        /// <summary>
+        /// Asset Manager
+        /// </summary>
         public AssetManager AssetManager { get; private set; }
+
+        /// <summary>
+        /// Schedule Manager
+        /// </summary>
         public ScheduleManager ScheduleManager { get; private set; }
+
+        /// <summary>
+        /// Job Manager
+        /// </summary>
         public JobManager JobManager { get; private set; }
 
         #endregion Public fields
 
         #region Private and internal properties
-
-        internal AuthToken Token { get; set; }
-
+        
         private RequestManager _requestManager;
 
-        private List<ServiceInstance> ServiceInstances { get; set; }
-
-        private AccountsForUser TargetUser { get; set; }
-
-        private bool _isAuthorized = false;
-
-        private DateTime _expirationTime;
-
-        private readonly string urlUipathAuth = "https://account.uipath.com/oauth/token";
-
         private bool _useInitiation = true;
-
-        /// <summary>
-        /// Reserve of time in seconds for expiration time.
-        /// </summary>
-        private readonly int _leeway = 30;
 
         #endregion Private and internal fields
 
@@ -160,6 +182,18 @@ namespace UiPathCloudAPISharp
 
         ~UiPathCloudAPI()
         {
+        }
+
+        /// <summary>
+        /// (Re)Initialization. Initialize managers and if call out of constructor when authorize + get main data.
+        /// </summary>
+        /// <param name="tenantLogicalName"></param>
+        /// <param name="clientId"></param>
+        /// <param name="userKey"></param>
+        /// <param name="behaviorMode"></param>
+        public void Initialization(string tenantLogicalName, string clientId, string userKey, BehaviorMode behaviorMode = BehaviorMode.Default)
+        {
+            Initialization(tenantLogicalName, clientId, userKey, null, behaviorMode);
         }
 
         /// <summary>
@@ -225,18 +259,7 @@ namespace UiPathCloudAPISharp
         /// <returns></returns>
         public List<Account> GetAccountsForTargetUser()
         {
-            List<Account> accounts = new List<Account>();
-
-            if (IsAuthorized)
-            {
-                accounts.AddRange(TargetUser.Accounts);
-            }
-            else
-            {
-                throw new Exception("No authorized");
-            }
-
-            return accounts;
+            return _requestManager.GetAccountsForTargetUser();
         }
 
         /// <summary>
@@ -246,26 +269,7 @@ namespace UiPathCloudAPISharp
         /// <returns></returns>
         public bool SetTargetAccount(Account account)
         {
-            bool result = false;
-
-            if (IsAuthorized)
-            {
-                if (TargetUser.Accounts.Contains(account))
-                {
-                    TargetAccount = account;
-                    result = true;
-                }
-                else
-                {
-                    throw new Exception("The specified account does not belong to the target user.");
-                }
-            }
-            else
-            {
-                throw new Exception("No authorized");
-            }
-
-            return result;
+            return _requestManager.SetTargetAccount(account);
         }
 
         #endregion Accounts

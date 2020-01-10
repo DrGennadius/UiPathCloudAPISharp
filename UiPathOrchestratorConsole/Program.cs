@@ -20,28 +20,12 @@ namespace UiPathCloudAPISharpStartJob
             string clientId = ConfigurationManager.AppSettings["ClientId"];
             string refreshToken = ConfigurationManager.AppSettings["UserKey"];
 
-            UiPathCloudAPI uiPath = new UiPathCloudAPI(tenantLogicalName, clientId, refreshToken, BehaviorMode.AutoInitiation);
+            UiPathCloudAPI uiPath = new UiPathCloudAPI();
             MenuLoop(uiPath);
         }
 
         static void MenuLoop(UiPathCloudAPI uiPath)
         {
-            uiPath.RobotManager.UseSession = false;
-            var robots = uiPath.RobotManager.GetCollection();
-            uiPath.RobotManager.UseSession = true;
-            robots = uiPath.RobotManager.GetCollection();
-            var processes = uiPath.ProcessManager.GetCollection();
-            var jobs = uiPath.JobManager.GetCollection();
-            var schedules = uiPath.ScheduleManager.GetCollection();
-            var libraries = uiPath.LibraryManager.GetCollection();
-            var sessions = uiPath.SessionManager.GetCollection();
-            var assets = uiPath.AssetManager.GetCollection();
-            var concretteAssets = uiPath.AssetManager.GetConcreteCollection();
-            uiPath.RobotManager.UseSession = false;
-            var robot = uiPath.RobotManager.GetCollection(new Filter("Name", "Float Test Robot")).First();
-            var process = uiPath.ProcessManager.GetCollection(new Filter("Name", "BackgroundProcess_Test Environment")).First();
-            var job = uiPath.JobManager.StartJob(robot, process);
-            var job1 = uiPath.JobManager.WaitReadyJob(job);
             while (true)
             {
                 Console.Clear();
