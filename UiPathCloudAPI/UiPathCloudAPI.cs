@@ -110,6 +110,11 @@ namespace UiPathCloudAPISharp
         public SessionManager SessionManager { get; private set; }
 
         /// <summary>
+        /// Configuration Manager
+        /// </summary>
+        public UiPathConfigurationManager ConfigurationManager { get; private set; }
+
+        /// <summary>
         /// Process Manager
         /// </summary>
         public ProcessManager ProcessManager { get; private set; }
@@ -218,6 +223,7 @@ namespace UiPathCloudAPISharp
                 _useInitiation = _requestManager.IsAuthorized;
             }
             SessionManager = new SessionManager(_requestManager);
+            ConfigurationManager = new UiPathConfigurationManager(_requestManager);
             RobotManager = new RobotManager(_requestManager, SessionManager, true);
             ProcessManager = new ProcessManager(_requestManager);
             LibraryManager = new LibraryManager(_requestManager);

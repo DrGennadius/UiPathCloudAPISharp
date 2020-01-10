@@ -22,8 +22,7 @@ namespace UiPathCloudAPISharpStartJob
 
             UiPathCloudAPI uiPath = new UiPathCloudAPI();
             uiPath.Initialization(tenantLogicalName, clientId, refreshToken, BehaviorMode.AutoInitiation);
-            var queueItems = uiPath.TransactionManager.GetCollection();
-            var queueItem = uiPath.TransactionManager.GetInstance(queueItems.First());
+            var setting = uiPath.ConfigurationManager["TracingLevel"];
             MenuLoop(uiPath);
         }
 
