@@ -12,7 +12,7 @@ namespace UiPathCloudAPISharp.Managers
 {
     public class JobManager : IManager, IGetRequest<JobWithArguments>
     {
-        public QueryStore QueryStore => throw new NotImplementedException();
+        public QueryStore QueryStore { get { throw new NotImplementedException(); } }
 
         private RequestManager _requestManager;
 

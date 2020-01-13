@@ -12,6 +12,23 @@ namespace UiPathCloudAPISharp.Managers
 {
     internal class RequestManager
     {
+        public RequestManager(string tenantLogicalName, string clientId, string userKey, BehaviorMode behaviorMode = BehaviorMode.Default)
+            : this(tenantLogicalName, clientId, userKey, null, behaviorMode)
+        {
+        }
+
+        public RequestManager(string tenantLogicalName, string clientId, string userKey, string accountLogicalName, BehaviorMode behaviorMode = BehaviorMode.Default)
+        {
+            TenantLogicalName = tenantLogicalName;
+            ClientId = clientId;
+            UserKey = userKey;
+            BehaviorMode = behaviorMode;
+            _requiredAccountLogicalName = accountLogicalName;
+            RequestTimeout = 30000;
+            WaitTimeout = 300000;
+            BigWaitTimeout = 1800000;
+        }
+
         /// <summary>
         /// User Key for connect to UiPath Orchestrator via Cloud API.
         /// Used as refresh_token for Authorization.
@@ -38,17 +55,17 @@ namespace UiPathCloudAPISharp.Managers
         /// and <see cref="HttpWebRequest.GetRequestStream"/> methods.
         /// <para >The default value is 30,000 milliseconds (30 seconds).</para>
         /// </summary>
-        public int RequestTimeout { get; set; } = 30000;
+        public int RequestTimeout { get; set; }
 
         /// <summary>
         /// Gets or sets the time-out value in milliseconds for wait the big operation.
         /// </summary>
-        public int WaitTimeout { get; set; } = 300000;
+        public int WaitTimeout { get; set; }
 
         /// <summary>
         /// Gets or sets the time-out value in milliseconds for wait the big operation.
         /// </summary>
-        public int BigWaitTimeout { get; set; } = 1800000;
+        public int BigWaitTimeout { get; set; }
 
         /// <summary>
         /// Target User.
@@ -121,20 +138,6 @@ namespace UiPathCloudAPISharp.Managers
         /// Reserve of time in seconds for expiration time.
         /// </summary>
         private readonly int _leeway = 30;
-
-        public RequestManager(string tenantLogicalName, string clientId, string userKey, BehaviorMode behaviorMode = BehaviorMode.Default)
-            : this(tenantLogicalName, clientId, userKey, null, behaviorMode)
-        {
-        }
-
-        public RequestManager(string tenantLogicalName, string clientId, string userKey, string accountLogicalName, BehaviorMode behaviorMode = BehaviorMode.Default)
-        {
-            TenantLogicalName = tenantLogicalName;
-            ClientId = clientId;
-            UserKey = userKey;
-            BehaviorMode = behaviorMode;
-            _requiredAccountLogicalName = accountLogicalName;
-        }
 
         /// <summary>
         /// Initiation. authorize + get main data.

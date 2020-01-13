@@ -5,7 +5,7 @@ namespace UiPathCloudAPISharp.Models
     public class AuthParameters
     {
         [JsonProperty(PropertyName = "grant_type")]
-        public string GrantType => "refresh_token";
+        public string GrantType { get { return "refresh_token"; } }
 
         [JsonProperty(PropertyName = "refresh_token")]
         public string RefreshToken { get; set; }

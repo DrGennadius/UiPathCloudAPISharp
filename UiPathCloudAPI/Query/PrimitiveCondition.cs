@@ -8,6 +8,7 @@ namespace UiPathCloudAPISharp.Query
     public class PrimitiveCondition : ICondition
     {
         public PrimitiveCondition(string name, string value, ComparisonOperator comparisonOperator = ComparisonOperator.EQ)
+            : this()
         {
             Name = name;
             Value = value;
@@ -16,6 +17,7 @@ namespace UiPathCloudAPISharp.Query
 
         public PrimitiveCondition()
         {
+            ComparisonOperator = Query.ComparisonOperator.EQ;
         }
 
         /// <summary>
@@ -31,7 +33,7 @@ namespace UiPathCloudAPISharp.Query
         /// <summary>
         /// Condition operation
         /// </summary>
-        public ComparisonOperator ComparisonOperator { get; set; } = ComparisonOperator.EQ;
+        public ComparisonOperator ComparisonOperator { get; set; }
 
         public string GetQueryString()
         {

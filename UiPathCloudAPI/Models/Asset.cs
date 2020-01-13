@@ -55,7 +55,7 @@ namespace UiPathCloudAPISharp.Models
     {
         public Asset Asset { get; private set; }
 
-        public string Name => Asset.Name;
+        public string Name { get { return Asset.Name; } }
 
         public ConcreteAsset(Asset asset)
         {
@@ -112,9 +112,9 @@ namespace UiPathCloudAPISharp.Models
             }
         }
 
-        public override string StringValue => Value;
+        public override string StringValue { get { return Value; } }
 
-        public override bool CorrectAssignment => true;
+        public override bool CorrectAssignment { get { return true; } }
     }
 
     public class IntegerAsset : ConcreteAsset
@@ -159,9 +159,9 @@ namespace UiPathCloudAPISharp.Models
             }
         }
 
-        public override string StringValue => Value.ToString();
+        public override string StringValue { get { return Value.ToString(); } }
 
-        public override bool CorrectAssignment => m_CorrectAssignment;
+        public override bool CorrectAssignment { get { return m_CorrectAssignment; } }
     }
 
     public class BoolAsset : ConcreteAsset
@@ -214,9 +214,9 @@ namespace UiPathCloudAPISharp.Models
             }
         }
 
-        public override string StringValue => Value.ToString();
+        public override string StringValue { get { return Value.ToString(); } }
 
-        public override bool CorrectAssignment => m_CorrectAssignment;
+        public override bool CorrectAssignment { get { return m_CorrectAssignment; } }
     }
 
     public class CredentialAsset : ConcreteAsset
@@ -247,8 +247,8 @@ namespace UiPathCloudAPISharp.Models
             }
         }
 
-        public override string StringValue => Value.ToString();
+        public override string StringValue { get { return Value.ToString(); } }
 
-        public override bool CorrectAssignment => m_CorrectAssignment;
+        public override bool CorrectAssignment { get { return m_CorrectAssignment; } }
     }
 }

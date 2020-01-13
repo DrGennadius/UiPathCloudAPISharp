@@ -7,6 +7,8 @@ namespace UiPathCloudAPISharp.Query
 {
     public class QueryParameters : IQueryParameters
     {
+        public QueryParameters() : this(-1) {}
+
         public QueryParameters(int top = -1, IFilter filter = null, string select = null, string expand = null, OrderBy orderby = null, string skip = null)
         {
             Top = top;
@@ -17,7 +19,7 @@ namespace UiPathCloudAPISharp.Query
             Skip = Skip;
         }
 
-        public int Top { get; set; } = -1;
+        public int Top { get; set; }
 
         public string Select { get; set; }
 
@@ -58,7 +60,7 @@ namespace UiPathCloudAPISharp.Query
             {
                 AppendToResult(string.Format("$top={0}", Top));
             }
-            string filterString = Filter?.GetQueryString();
+            string filterString = Filter == null ? null : Filter.GetQueryString();
             if (!string.IsNullOrEmpty(filterString))
             {
                 AppendToResult(filterString);
@@ -71,7 +73,7 @@ namespace UiPathCloudAPISharp.Query
             {
                 AppendToResult(string.Format("$expand={0}", Expand));
             }
-            string orderByString = OrderBy?.GetQueryString();
+            string orderByString = OrderBy == null ? null : Filter.GetQueryString();
             if (!string.IsNullOrEmpty(orderByString))
             {
                 AppendToResult(orderByString);

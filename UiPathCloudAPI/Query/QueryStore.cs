@@ -8,15 +8,15 @@ namespace UiPathCloudAPISharp.Query
 {
     public class QueryStore : IDictionary<string, string>
     {
-        public string this[string key] { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public string this[string key] { get { throw new NotImplementedException(); } set { throw new NotImplementedException(); } }
 
-        public ICollection<string> Keys => throw new NotImplementedException();
+        public ICollection<string> Keys { get { throw new NotImplementedException(); } }
 
-        public ICollection<string> Values => throw new NotImplementedException();
+        public ICollection<string> Values { get { throw new NotImplementedException(); } }
 
-        public int Count => throw new NotImplementedException();
+        public int Count { get { throw new NotImplementedException(); } }
 
-        public bool IsReadOnly => throw new NotImplementedException();
+        public bool IsReadOnly { get { throw new NotImplementedException(); } }
 
         public void Add(string key, string value)
         {

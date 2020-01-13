@@ -8,14 +8,14 @@ namespace UiPathCloudAPISharp.Query
     public class OrderBy : IQueryParameters
     {
         /// <summary>
-        /// Order by <paramref name="value"/> and using <paramref name="sort"/>.
+        /// Order by <paramref name="value"/> and using <paramref name="sortDirection"/>.
         /// </summary>
         /// <param name="value">Value for order</param>
-        /// <param name="sort">None, Ascending (asc) or Descending (desc) order</param>
-        public OrderBy(string value, Sort sort)
+        /// <param name="sortDirection">None, Ascending (asc) or Descending (desc) order</param>
+        public OrderBy(string value, SortDirection sortDirection)
         {
             Value = value;
-            Sort = sort;
+            SortDirection = sortDirection;
         }
 
         /// <summary>
@@ -23,24 +23,24 @@ namespace UiPathCloudAPISharp.Query
         /// </summary>
         /// <param name="value">Value for order</param>
         public OrderBy(string value)
+            : this(value, SortDirection.None)
         {
-            Value = value;
         }
 
         /// <summary>
         /// Order by ...
         /// </summary>
-        public OrderBy() { }
+        public OrderBy() : this("", SortDirection.None) { }
 
         /// <summary>
         /// Value for order.
         /// </summary>
-        public string Value { get; set; } = "";
+        public string Value { get; set; }
 
         /// <summary>
         /// None, Ascending (asc) or Descending (desc) order.
         /// </summary>
-        public Sort Sort { get; set; } = Sort.None;
+        public SortDirection SortDirection { get; set; }
 
         public string GetQueryString()
         {
@@ -48,18 +48,18 @@ namespace UiPathCloudAPISharp.Query
             {
                 return "";
             }
-            else if (Sort == Sort.None)
+            else if (SortDirection == SortDirection.None)
             {
                 return string.Format("$orderby={0}", Value);
             }
-            return string.Format("$orderby={0}%20{1}", Value, Sort.ToString().ToLower());
+            return string.Format("$orderby={0}%20{1}", Value, SortDirection.ToString().ToLower());
         }
     }
 
     /// <summary>
     /// None, Ascending (asc) or Descending (desc) order.
     /// </summary>
-    public enum Sort
+    public enum SortDirection
     {
         None,
         Asc,

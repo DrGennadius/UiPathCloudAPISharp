@@ -6,6 +6,7 @@ namespace UiPathCloudAPISharp.Query
     public class Interval<T> : IQueryStringTransform where T : struct, IComparable<T>
     {
         public Interval(T start, T end)
+            : this()
         {
             Start = start;
             End = end;
@@ -13,15 +14,17 @@ namespace UiPathCloudAPISharp.Query
 
         public Interval()
         {
+            IncludeStart = true;
+            IncludeEnd = true;
         }
 
         public T? Start { get; set; }
 
         public T? End { get; set; }
 
-        public bool IncludeStart { get; set; } = true;
+        public bool IncludeStart { get; set; }
 
-        public bool IncludeEnd { get; set; } = true;
+        public bool IncludeEnd { get; set; }
 
         public override string ToString()
         {
