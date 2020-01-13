@@ -42,7 +42,7 @@ namespace UiPathWinFormExample.net40
 
         private void JobManager_WaitReadyJobCompleted(object sender, UiPathCloudAPISharp.Managers.WaitReadyJobCompletedEventArgs e)
         {
-            tbOutput.Text += string.Format("\n{0} done!", e.Result.Key);
+            tbOutput.Text += string.Format("\n{0} done!", e.ReadyJob.Key);
         }
 
         private void bStartJob_Click(object sender, EventArgs e)
@@ -52,7 +52,7 @@ namespace UiPathWinFormExample.net40
             tbOutput.Text += "\nStarting job...";
             var newJob =_uiPathOrchestrator.JobManager.StartJob(robot, process);
             tbOutput.Text += "\nPending job...";
-            var job = _uiPathOrchestrator.JobManager.WaitReadyJobAsync(newJob);
+            _uiPathOrchestrator.JobManager.RunWaitReadyJobAsync(newJob);
         }
     }
 }

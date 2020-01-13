@@ -28,14 +28,12 @@ namespace UiPathCloudAPISharp.Managers
             _processManager = processManager;
         }
 
+#pragma warning disable CS0067
         /// <summary>
         /// Completed Event Handler for waitting ready Job.
         /// </summary>
-        public event WaitReadyJobCompletedEventHandler WaitReadyJobCompleted
-        {
-            add { }
-            remove { }
-        }
+        public event WaitReadyJobCompletedEventHandler WaitReadyJobCompleted;
+#pragma warning restore CS0067
 
         public IEnumerable<JobWithArguments> GetCollection()
         {
@@ -266,14 +264,47 @@ namespace UiPathCloudAPISharp.Managers
             _requestManager.SendRequestPostForOdata("Jobs/UiPath.Server.Configuration.OData.StopJobs", sentData);
         }
 
+        public void RunWaitReadyJobAsync(Job job)
+        {
+            JobWithArguments result = null;
+            ManualResetEvent evt = new ManualResetEvent(false);
+            WaitCallback wait = new WaitCallback((x) =>
+            {
+                try
+                {
+                    result = WaitReadyJob(job);
+                }
+                catch (Exception ex)
+                {
+                    //TODO: handle the exception
+                }
+                finally
+                {
+                    evt.Set();
+                }
+            });
+            ThreadPool.QueueUserWorkItem(wait);
+            evt.WaitOne();
+            evt.Close();
+            OnWaitReadyJobCompleted(new WaitReadyJobCompletedEventArgs() { ReadyJob = result } );
+        }
+
+        protected void OnWaitReadyJobCompleted(WaitReadyJobCompletedEventArgs e)
+        {
+            if (WaitReadyJobCompleted != null)
+            {
+                WaitReadyJobCompleted(this, e);
+            }
+        }
+
         /// <summary>
         /// Wait ready (not pending) job. It is async.
         /// </summary>
         /// <param name="job"></param>
         /// <returns></returns>
-        public JobWithArguments WaitReadyJobAsync(Job job)
+        public async Task<JobWithArguments> WaitReadyJobAsync(Job job)
         {
-            return WaitReadyJobAsync(job, _requestManager.WaitTimeout).Result;
+            return await WaitReadyJobAsync(job, _requestManager.WaitTimeout);
         }
 
         /// <summary>
@@ -340,16 +371,18 @@ namespace UiPathCloudAPISharp.Managers
                 DateTime stopDateTime = DateTime.Now.AddMilliseconds(timeout);
                 while (true)
                 {
-                    Thread.Sleep(50000);
+                    Thread.Sleep(5000);
                     var returnJob = GetInstance(job.Id);
                     if (DateTime.Now >= stopDateTime)
                     {
                         break;
                     }
-                    else if (returnJob.State != JobState.Pending
-                        && returnJob.State != JobState.Running
-                        && returnJob.State != JobState.Stopping
-                        && returnJob.State != JobState.Terminating)
+                    else if (
+                        returnJob.State != JobState.Pending && 
+                        returnJob.State != JobState.Running && 
+                        returnJob.State != JobState.Stopping && 
+                        returnJob.State != JobState.Terminating
+                    )
                     {
                         readyJob = returnJob;
                         break;

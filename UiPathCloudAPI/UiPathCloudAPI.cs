@@ -302,7 +302,7 @@ namespace UiPathCloudAPISharp
 
         private AccountsForUser GetAccountsForUser()
         {
-            return JsonConvert.DeserializeObject<AccountsForUser>(_requestManager.SendRequestGetAsync("https://platform.uipath.com/cloudrpa/api/getAccountsForUser"));
+            return JsonConvert.DeserializeObject<AccountsForUser>(_requestManager.SendRequestGet("https://platform.uipath.com/cloudrpa/api/getAccountsForUser"));
         }
         
         #endregion Private methods
