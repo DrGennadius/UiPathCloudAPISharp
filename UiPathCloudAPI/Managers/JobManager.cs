@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using UiPathCloudAPISharp.Common;
 using UiPathCloudAPISharp.Models;
 using UiPathCloudAPISharp.Query;
@@ -263,7 +264,7 @@ namespace UiPathCloudAPISharp.Managers
         /// <returns></returns>
         public JobWithArguments WaitReadyJob(Job job)
         {
-            return WaitReadyJob(job, _requestManager.WaitTimeout);
+            return WaitReadyJobAsync(job, _requestManager.WaitTimeout).Result;
         }
 
         /// <summary>
@@ -273,16 +274,27 @@ namespace UiPathCloudAPISharp.Managers
         /// <returns></returns>
         public JobWithArguments WaitReadyBigJob(Job job)
         {
-            return WaitReadyJob(job, _requestManager.BigWaitTimeout);
+            return WaitReadyJobAsync(job, _requestManager.BigWaitTimeout).Result;
         }
 
         /// <summary>
-        /// Wait ready (not pending) job with timeout. It is sync.
+        /// Wait ready (not pending) job with timeout.
         /// </summary>
         /// <param name="job"></param>
         /// <param name="timeout"></param>
         /// <returns></returns>
         public JobWithArguments WaitReadyJob(Job job, int timeout)
+        {
+            return WaitReadyJobAsync(job, timeout).Result;
+        }
+
+        /// <summary>
+        /// Wait ready (not pending) job with timeout.
+        /// </summary>
+        /// <param name="job"></param>
+        /// <param name="timeout"></param>
+        /// <returns></returns>
+        private async Task<JobWithArguments> WaitReadyJobAsync(Job job, int timeout)
         {
             JobWithArguments readyJob = null;
 
@@ -295,7 +307,11 @@ namespace UiPathCloudAPISharp.Managers
                 DateTime stopDateTime = DateTime.Now.AddMilliseconds(timeout);
                 while (true)
                 {
-                    Thread.Sleep(5000);
+#if NET40
+                    await TaskEx.Delay(TimeSpan.FromSeconds(5));
+#else
+                    await Task.Delay(TimeSpan.FromSeconds(5));
+#endif
                     var returnJob = GetInstance(job.Id);
                     if (DateTime.Now >= stopDateTime)
                     {

@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 using UiPathCloudAPISharp.Models;
 using UiPathCloudAPISharp.Query;
 
@@ -303,7 +304,7 @@ namespace UiPathCloudAPISharp.Managers
             {
                 throw new Exception("Not authorized.");
             }
-            return SendRequestGet(
+            return SendRequestGetAsync(
                 string.Format(
                     "https://platform.uipath.com/{0}/{1}/odata/{2}",
                     TargetAccount.LogicalName,
@@ -346,7 +347,7 @@ namespace UiPathCloudAPISharp.Managers
         private void GetAllServiceInstances()
         {
             ServiceInstances = JsonConvert.DeserializeObject<List<ServiceInstance>>(
-                SendRequestGet(
+                SendRequestGetAsync(
                     string.Format(
                         "https://platform.uipath.com/cloudrpa/api/account/{0}/getAllServiceInstances",
                         TargetAccount.LogicalName
@@ -357,10 +358,10 @@ namespace UiPathCloudAPISharp.Managers
 
         private AccountsForUser GetAccountsForUser()
         {
-            return JsonConvert.DeserializeObject<AccountsForUser>(SendRequestGet("https://platform.uipath.com/cloudrpa/api/getAccountsForUser"));
+            return JsonConvert.DeserializeObject<AccountsForUser>(SendRequestGetAsync("https://platform.uipath.com/cloudrpa/api/getAccountsForUser"));
         }
 
-        public string SendRequestGet(string url, bool access = false)
+        public string SendRequestGetAsync(string url, bool access = false)
         {
             if (string.IsNullOrWhiteSpace(url))
             {
@@ -405,7 +406,7 @@ namespace UiPathCloudAPISharp.Managers
             }
 
             req.ContentLength = sentData.Length;
-            Stream sendStream = req.GetRequestStream();
+            Stream sendStream = req.GetRequestStreamAsync().Result;
             sendStream.Write(sentData, 0, sentData.Length);
 
             return SendRequest(req);
@@ -415,7 +416,7 @@ namespace UiPathCloudAPISharp.Managers
         {
             try
             {
-                var res = httpWebRequest.GetResponse() as HttpWebResponse;
+                var res = httpWebRequest.GetResponseAsync().Result as HttpWebResponse;
                 var resStream = res.GetResponseStream();
                 return new StreamReader(resStream, Encoding.UTF8).ReadToEnd();
             }
