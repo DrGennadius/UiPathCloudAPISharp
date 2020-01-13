@@ -31,7 +31,11 @@ namespace UiPathCloudAPISharp.Managers
         /// <summary>
         /// Completed Event Handler for waitting ready Job.
         /// </summary>
-        public event WaitReadyJobCompletedEventHandler WaitReadyJobCompleted;
+        public event WaitReadyJobCompletedEventHandler WaitReadyJobCompleted
+        {
+            add { }
+            remove { }
+        }
 
         public IEnumerable<JobWithArguments> GetCollection()
         {
@@ -290,7 +294,11 @@ namespace UiPathCloudAPISharp.Managers
         /// <returns></returns>
         public async Task<JobWithArguments> WaitReadyJobAsync(Job job, int timeout)
         {
+#if NET40
             return await TaskEx.Run(() => WaitReadyJob(job, timeout));
+#else
+            return await Task.Run(() => WaitReadyJob(job, timeout));
+#endif
         }
 
         /// <summary>
