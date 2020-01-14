@@ -85,8 +85,23 @@ namespace UiPathCloudAPISharp.Managers
                     if (queryParametersInstance.OrderBy != null)
                     {
                         queryParametersInstance.OrderBy.Value = "Robot/" + queryParametersInstance.OrderBy.Value;
-                        // TODO: Filter correction.
                     }
+                    if (queryParametersInstance.Filter != null)
+                    {
+                        if (queryParametersInstance.Filter is Filter)
+                        {
+                            Filter filter = queryParametersInstance.Filter as Filter;
+                            foreach (var item in filter.ConditionLine)
+                            {
+                                if (item is Condition)
+                                {
+                                    Condition condition = item as Condition;
+                                    condition.BaseName = "Robot";
+                                }
+                            }
+                        }
+                    }
+                    // TODO: Other query parameters correction.
                 }
                 return GetInfoCollection(queryParameters).Select(r => r.Robot);
             }

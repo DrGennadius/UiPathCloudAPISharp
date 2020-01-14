@@ -48,13 +48,10 @@ namespace UiPathCloudAPISharp.Query
 
         public Filter()
         {
-            _resultBuilder = new StringBuilder();
+            ConditionLine = new List<IQueryString>();
         }
 
-        public void Clear()
-        {
-            _resultBuilder.Clear();
-        }
+        public List<IQueryString> ConditionLine { get; private set; }
 
         public void AddCondition(string baseName, string propertyName, object value, ComparisonOperator comparisonOperator = ComparisonOperator.EQ)
         {
@@ -68,98 +65,78 @@ namespace UiPathCloudAPISharp.Query
 
         public void AddCondition(string name, IQueryStringTransform oDataTransform)
         {
-            AppendToResult(oDataTransform.GetQueryString(name));
+            AddCondition(oDataTransform.GetQueryString(name));
         }
 
         public void AddCondition(string conditionalExpression)
         {
-            Regex regex = new Regex("((?<= )and|or(?= ))");
+            Regex regex = new Regex(@"((?<=\s*)and|or(?=\s*))");
             string[] elements = regex.Split(conditionalExpression);
-            string lastLogicalOperator = "and";
             bool isFirst = true;
             foreach (var item in elements)
             {
                 string lowItem = item.ToLower();
                 bool isLogicalOperator = lowItem == "and" || lowItem == "or";
-                if (isLogicalOperator && isFirst || isLogicalOperator && !string.IsNullOrEmpty(lastLogicalOperator))
+                if (isLogicalOperator && isFirst || isLogicalOperator && ConditionLine.LastOrDefault() is LogicalOperator)
                 {
                     throw new ArgumentException("Condition string is incorrected:\n\"{0}\"", conditionalExpression);
                 }
                 if (isLogicalOperator)
                 {
-                    lastLogicalOperator = lowItem;
+                    ConditionLine.Add(new LogicalOperator(lowItem));
                 }
                 else
                 {
-                    AddCondition(new Condition(item), GetLogicalOperator(lastLogicalOperator));
-                    lastLogicalOperator = null;
+                    AddCondition(new Condition(item));
                 }
                 isFirst = false;
             }
-            if (!string.IsNullOrEmpty(lastLogicalOperator))
+            if (ConditionLine.LastOrDefault() is LogicalOperator)
             {
                 throw new ArgumentException("Condition string is incorrected:\n\"{0}\"", conditionalExpression);
             }
         }
 
-        public void AddCondition(ICondition condition, LogicalOperator logicalOperator)
+        public void AddCondition(ICondition condition, LogicalOperatorType logicalOperator)
         {
-            AppendToResult(condition.GetQueryString(), logicalOperator.ToString().ToLower());
+            ConditionLine.Add(condition);
+            ConditionLine.Add(new LogicalOperator(logicalOperator));
         }
 
         public void AddCondition(ICondition condition)
         {
-            AppendToResult(condition.GetQueryString());
+            if (ConditionLine.LastOrDefault() is ICondition)
+            {
+                ConditionLine.Add(LogicalOperator.And);
+            }
+            ConditionLine.Add(condition);
         }
 
         public string GetQueryString()
         {
-            return "$filter=" + _resultBuilder.ToString();
+            int conditionCount = ConditionLine.Count;
+            if (conditionCount == 0)
+            {
+                return "";
+            }
+            else
+            {
+                StringBuilder stringBuilder = new StringBuilder();
+                for (int i = 0; i < conditionCount; i++)
+                {
+                    stringBuilder.Append(ConditionLine[i].GetQueryString());
+                    if (i < conditionCount - 1)
+                    {
+                        stringBuilder.Append("%20");
+                    }
+                }
+                return "$filter=" + stringBuilder.ToString();
+            }
         }
 
         public override string ToString()
         {
             return GetQueryString();
         }
-
-        private StringBuilder _resultBuilder;
-
-        private void AppendToResult(string condition, string logicalOperator = "and")
-        {
-            if (_resultBuilder.Length > 0)
-            {
-                if (string.IsNullOrWhiteSpace(logicalOperator))
-                {
-                    logicalOperator = "and";
-                }
-                _resultBuilder.Append(string.Format("%20{0}%20{1}", logicalOperator, condition));
-            }
-            else
-            {
-                _resultBuilder.Append(condition);
-            }
-        }
-
-        private LogicalOperator GetLogicalOperator(string logicalOperator)
-        {
-            if (logicalOperator.ToLower() == "and")
-            {
-                return LogicalOperator.And;
-            }
-            else if (logicalOperator.ToLower() == "or")
-            {
-                return LogicalOperator.Or;
-            }
-            else
-            {
-                throw new Exception("Unknow logical operator");
-            }
-        }
-    }
-
-    public enum LogicalOperator
-    {
-        And,
-        Or
     }
 }

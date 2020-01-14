@@ -227,10 +227,13 @@ namespace UiPathCloudAPISharp
         public void Initialization(string tenantLogicalName, string clientId, string userKey, string accountLogicalName, BehaviorMode behaviorMode = BehaviorMode.Default)
         {
             _requestManager = new RequestManager(tenantLogicalName, clientId, userKey, behaviorMode);
-            if (_useInitiation)
+            if (_useInitiation && behaviorMode != BehaviorMode.Default)
             {
                 _requestManager.Initiation();
-                _useInitiation = _requestManager.IsAuthorized;
+            }
+            else
+            {
+                _useInitiation = true;
             }
             SessionManager = new SessionManager(_requestManager);
             ConfigurationManager = new UiPathConfigurationManager(_requestManager);

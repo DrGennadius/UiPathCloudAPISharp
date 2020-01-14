@@ -137,11 +137,11 @@ namespace UiPathCloudAPISharp.Query
                 var matches = regex.Matches(elements[0]);
                 if (matches.Count == 1)
                 {
-                    object value = TryCast(elements[2]);
+                    object value = TryCast(elements[2].Trim());
                     if (value != null)
                     {
                         Value = value;
-                        Name = matches[0].Value;
+                        Name = matches[0].Value.Trim();
                         ComparisonOperator = (ComparisonOperator)Enum.Parse(typeof(ComparisonOperator), GetODataComparisonOperator(elements[1]).ToUpper());
                     }
                     else

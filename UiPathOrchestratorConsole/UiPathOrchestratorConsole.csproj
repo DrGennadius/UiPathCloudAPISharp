@@ -23,7 +23,7 @@
   
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.1'">
     <PackageReference Include="System.Configuration.ConfigurationManager">
-      <Version>4.6.0</Version>
+      <Version>4.7.0</Version>
     </PackageReference>
   </ItemGroup>
 
