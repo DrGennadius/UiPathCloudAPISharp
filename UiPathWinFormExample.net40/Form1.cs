@@ -45,14 +45,14 @@ namespace UiPathWinFormExample.net40
             tbOutput.Text += string.Format("\n{0} done!", e.ReadyJob.Key);
         }
 
-        private void bStartJob_Click(object sender, EventArgs e)
+        private async void bStartJob_ClickAsync(object sender, EventArgs e)
         {
             Robot robot = (Robot)cbRobot.SelectedItem;
             Process process = (Process)cbProcess.SelectedItem;
             tbOutput.Text += "\nStarting job...";
             var newJob =_uiPathOrchestrator.JobManager.StartJob(robot, process);
             tbOutput.Text += "\nPending job...";
-            _uiPathOrchestrator.JobManager.RunWaitReadyJobAsync(newJob);
+            await _uiPathOrchestrator.JobManager.WaitReadyJobAsync(newJob);
         }
     }
 }

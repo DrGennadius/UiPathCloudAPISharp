@@ -28,12 +28,10 @@ namespace UiPathCloudAPISharp.Managers
             _processManager = processManager;
         }
 
-#pragma warning disable CS0067
         /// <summary>
         /// Completed Event Handler for waitting ready Job.
         /// </summary>
         public event WaitReadyJobCompletedEventHandler WaitReadyJobCompleted;
-#pragma warning restore CS0067
 
         public IEnumerable<JobWithArguments> GetCollection()
         {
@@ -264,41 +262,15 @@ namespace UiPathCloudAPISharp.Managers
             _requestManager.SendRequestPostForOdata("Jobs/UiPath.Server.Configuration.OData.StopJobs", sentData);
         }
 
-        public void RunWaitReadyJobAsync(Job job)
+        public async Task<JobWithArguments> RunWaitReadyJobAsync(Job job)
         {
-            JobWithArguments result = null;
-            ManualResetEvent evt = new ManualResetEvent(false);
-            WaitCallback wait = new WaitCallback((x) =>
-            {
-                try
-                {
-                    result = WaitReadyJob(job);
-                }
-                catch (Exception ex)
-                {
-                    //TODO: handle the exception
-                }
-                finally
-                {
-                    evt.Set();
-                }
-            });
-            ThreadPool.QueueUserWorkItem(wait);
-            evt.WaitOne();
-            evt.Close();
-            OnWaitReadyJobCompleted(new WaitReadyJobCompletedEventArgs() { ReadyJob = result } );
-        }
-
-        protected void OnWaitReadyJobCompleted(WaitReadyJobCompletedEventArgs e)
-        {
-            if (WaitReadyJobCompleted != null)
-            {
-                WaitReadyJobCompleted(this, e);
-            }
+            JobWithArguments readyJob = await Task.Factory.StartNew<JobWithArguments>(() => WaitReadyJob(job));
+            OnWaitReadyJobCompleted(new WaitReadyJobCompletedEventArgs() { ReadyJob = readyJob });
+            return readyJob;
         }
 
         /// <summary>
-        /// Wait ready (not pending) job. It is async.
+        /// Async wait ready job.
         /// </summary>
         /// <param name="job"></param>
         /// <returns></returns>
@@ -308,32 +280,30 @@ namespace UiPathCloudAPISharp.Managers
         }
 
         /// <summary>
-        /// Wait ready (not pending) big job. It is async.
+        /// Async wait ready big job.
         /// </summary>
         /// <param name="job"></param>
         /// <returns></returns>
-        public JobWithArguments WaitReadyBigJobAsync(Job job)
+        public async Task<JobWithArguments> WaitReadyBigJobAsync(Job job)
         {
-            return WaitReadyJobAsync(job, _requestManager.BigWaitTimeout).Result;
+            return await WaitReadyJobAsync(job, _requestManager.BigWaitTimeout);
         }
 
         /// <summary>
-        /// Wait ready (not pending) job with timeout.
+        /// Async wait ready job with timeout.
         /// </summary>
         /// <param name="job"></param>
         /// <param name="timeout"></param>
         /// <returns></returns>
         public async Task<JobWithArguments> WaitReadyJobAsync(Job job, int timeout)
         {
-#if NET40
-            return await TaskEx.Run(() => WaitReadyJob(job, timeout));
-#else
-            return await Task.Run(() => WaitReadyJob(job, timeout));
-#endif
+            JobWithArguments readyJob = await Task.Factory.StartNew<JobWithArguments>(() => WaitReadyJob(job, timeout));
+            OnWaitReadyJobCompleted(new WaitReadyJobCompletedEventArgs() { ReadyJob = readyJob });
+            return readyJob;
         }
 
         /// <summary>
-        /// Wait ready (not pending) job. It is async.
+        /// Wait ready job.
         /// </summary>
         /// <param name="job"></param>
         /// <returns></returns>
@@ -343,7 +313,7 @@ namespace UiPathCloudAPISharp.Managers
         }
 
         /// <summary>
-        /// Wait ready (not pending) big job. It is sync.
+        /// Wait ready big job.
         /// </summary>
         /// <param name="job"></param>
         /// <returns></returns>
@@ -353,7 +323,7 @@ namespace UiPathCloudAPISharp.Managers
         }
 
         /// <summary>
-        /// Wait ready (not pending) job with timeout.
+        /// Wait ready job with timeout.
         /// </summary>
         /// <param name="job"></param>
         /// <param name="timeout"></param>
@@ -395,6 +365,14 @@ namespace UiPathCloudAPISharp.Managers
             }
 
             return readyJob;
+        }
+
+        protected void OnWaitReadyJobCompleted(WaitReadyJobCompletedEventArgs e)
+        {
+            if (WaitReadyJobCompleted != null)
+            {
+                WaitReadyJobCompleted(this, e);
+            }
         }
     }
 }

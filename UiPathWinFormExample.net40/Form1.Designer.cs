@@ -59,7 +59,7 @@
             this.bStartJob.TabIndex = 2;
             this.bStartJob.Text = "Start job";
             this.bStartJob.UseVisualStyleBackColor = true;
-            this.bStartJob.Click += new System.EventHandler(this.bStartJob_Click);
+            this.bStartJob.Click += new System.EventHandler(this.bStartJob_ClickAsync);
             // 
             // tbOutput
             // 
