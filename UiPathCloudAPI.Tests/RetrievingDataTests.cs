@@ -12,48 +12,97 @@ namespace UiPathCloudAPISharp.Tests
     [TestClass]
     public class RetrievingDataTests
     {
-        private IConfiguration _configuration;
         private UiPathCloudAPI uiPath;
 
         [TestInitialize]
         public void Init()
         {
-            _configuration = Config.InitConfiguration();
-            uiPath = new UiPathCloudAPI();
-            uiPath.Initialization(_configuration["TenantLogicalName"], _configuration["ClientId"], _configuration["UserKey"], BehaviorMode.AutoAuthorization);
+            uiPath = Config.CommonUiPathApi;
         }
 
         [TestMethod]
-        public void GetRobotCollectionTest()
+        public void GetRobotsTest()
         {
-            uiPath.RobotManager.UseSession = false;
-            var robots = uiPath.RobotManager.GetCollection();
-            Assert.IsNotNull(robots);
-            uiPath.RobotManager.UseSession = true;
-            robots = uiPath.RobotManager.GetCollection();
-            Assert.IsNotNull(robots);
-            if (robots.Any())
+            try
             {
-                QueryParameters queryParameters = new QueryParameters(top: 1);
-                queryParameters.Filter = new Filter("Type", robots.ElementAt(0).Type);
-                robots = uiPath.RobotManager.GetCollection(queryParameters);
-                Assert.IsTrue(robots.Count() == 1);
-
+                uiPath.RobotManager.UseSession = false;
+                var robots = uiPath.RobotManager.GetCollection();
+                Assert.IsNotNull(robots);
+                uiPath.RobotManager.UseSession = true;
+                robots = uiPath.RobotManager.GetCollection();
+                Assert.IsNotNull(robots);
+                if (robots.Any())
+                {
+                    QueryParameters queryParameters = new QueryParameters(top: 1, orderby: new OrderBy("Type"));
+                    queryParameters.Filter = new Filter("Type", robots.First().Type);
+                    robots = uiPath.RobotManager.GetCollection(queryParameters);
+                    Assert.IsTrue(robots.Count() == 1);
+                    var robot = uiPath.RobotManager.GetInstance(robots.First());
+                    Assert.IsNotNull(robot);
+                    Assert.AreEqual(robot.Name, robots.First().Name);
+                }
+            }
+            catch (Exception ex)
+            {
+                if (!string.IsNullOrEmpty(uiPath.LastErrorMessage))
+                {
+                    throw new Exception(uiPath.LastErrorMessage, ex);
+                }
+                throw ex;
             }
         }
 
         [TestMethod]
-        public void GetProcessCollectionTest()
+        public void GetProcessesTest()
         {
-            var processes = uiPath.ProcessManager.GetCollection();
-            Assert.IsNotNull(processes);
+            try
+            {
+                var processes = uiPath.ProcessManager.GetCollection();
+                Assert.IsNotNull(processes);
+                if (processes.Any())
+                {
+                    QueryParameters queryParameters = new QueryParameters(top: 1, orderby: new OrderBy("Name"));
+                    queryParameters.Filter = new Filter("Key", processes.First().Key);
+                    processes = uiPath.ProcessManager.GetCollection(queryParameters);
+                    Assert.IsTrue(processes.Count() == 1);
+                    var process = uiPath.ProcessManager.GetInstance(processes.First());
+                    Assert.IsNotNull(process);
+                    Assert.AreEqual(process.Name, processes.First().Name);
+                }
+            }
+            catch (Exception ex)
+            {
+                if (!string.IsNullOrEmpty(uiPath.LastErrorMessage))
+                {
+                    throw new Exception(uiPath.LastErrorMessage, ex);
+                }
+                throw ex;
+            }
         }
 
         [TestMethod]
-        public void GetAssetCollectionTest()
+        public void GetAssetsTest()
         {
-            var assets = uiPath.AssetManager.GetCollection();
-            Assert.IsNotNull(assets);
+            try
+            {
+                var assets = uiPath.AssetManager.GetCollection();
+                Assert.IsNotNull(assets);
+                if (assets.Any())
+                {
+                    QueryParameters queryParameters = new QueryParameters(top: 1, orderby: new OrderBy("Name"));
+                    queryParameters.Filter = new Filter("Name", assets.First().Name);
+                    assets = uiPath.AssetManager.GetCollection(queryParameters);
+                    Assert.IsTrue(assets.Count() == 1);
+                }
+            }
+            catch (Exception ex)
+            {
+                if (!string.IsNullOrEmpty(uiPath.LastErrorMessage))
+                {
+                    throw new Exception(uiPath.LastErrorMessage, ex);
+                }
+                throw ex;
+            }
         }
     }
 }

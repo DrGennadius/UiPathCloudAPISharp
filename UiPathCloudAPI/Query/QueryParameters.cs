@@ -73,7 +73,7 @@ namespace UiPathCloudAPISharp.Query
             {
                 AppendToResult(string.Format("$expand={0}", Expand));
             }
-            string orderByString = OrderBy == null ? null : Filter.GetQueryString();
+            string orderByString = OrderBy == null ? null : OrderBy.GetQueryString();
             if (!string.IsNullOrEmpty(orderByString))
             {
                 AppendToResult(orderByString);

@@ -59,10 +59,6 @@ namespace UiPathCloudAPISharp.Managers
         {
             if (UseSession)
             {
-                if (_sessionManager == null)
-                {
-                    _sessionManager = new SessionManager(_requestManager);
-                }
                 return GetInfoCollection().Select(r => r.Robot);
             }
             else
@@ -75,34 +71,6 @@ namespace UiPathCloudAPISharp.Managers
         {
             if (UseSession)
             {
-                if (_sessionManager == null)
-                {
-                    _sessionManager = new SessionManager(_requestManager);
-                }
-                if (queryParameters is QueryParameters)
-                {
-                    var queryParametersInstance = queryParameters as QueryParameters;
-                    if (queryParametersInstance.OrderBy != null)
-                    {
-                        queryParametersInstance.OrderBy.Value = "Robot/" + queryParametersInstance.OrderBy.Value;
-                    }
-                    if (queryParametersInstance.Filter != null)
-                    {
-                        if (queryParametersInstance.Filter is Filter)
-                        {
-                            Filter filter = queryParametersInstance.Filter as Filter;
-                            foreach (var item in filter.ConditionLine)
-                            {
-                                if (item is Condition)
-                                {
-                                    Condition condition = item as Condition;
-                                    condition.BaseName = "Robot";
-                                }
-                            }
-                        }
-                    }
-                    // TODO: Other query parameters correction.
-                }
                 return GetInfoCollection(queryParameters).Select(r => r.Robot);
             }
             else
@@ -148,6 +116,22 @@ namespace UiPathCloudAPISharp.Managers
                 {
                     queryParametersInstance.OrderBy.Value = "Robot/" + queryParametersInstance.OrderBy.Value;
                 }
+                if (queryParametersInstance.Filter != null)
+                {
+                    if (queryParametersInstance.Filter is Filter)
+                    {
+                        Filter filter = queryParametersInstance.Filter as Filter;
+                        foreach (var item in filter.ConditionLine)
+                        {
+                            if (item is Condition)
+                            {
+                                Condition condition = item as Condition;
+                                condition.BaseName = "Robot";
+                            }
+                        }
+                    }
+                }
+                // TODO: Other query parameters correction.
             }
             return _sessionManager.GetRobotCollection(queryParameters);
         }

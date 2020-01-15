@@ -36,6 +36,14 @@ namespace UiPathCloudAPISharp.Query
             Value = value;
         }
 
+        public Condition(PrimitiveCondition primitiveCondition)
+            : this()
+        {
+            Name = primitiveCondition.Name;
+            Value = TryCast(primitiveCondition.Value);
+            ComparisonOperator = primitiveCondition.ComparisonOperator;
+        }
+
         public Condition(string condition)
             : this()
         {
@@ -64,9 +72,9 @@ namespace UiPathCloudAPISharp.Query
         {
             get
             {
-                if (string.IsNullOrEmpty(PropertyName))
+                if (string.IsNullOrEmpty(BaseName))
                 {
-                    return BaseName;
+                    return PropertyName;
                 }
                 return BaseName + '/' + PropertyName;
             }
@@ -75,7 +83,8 @@ namespace UiPathCloudAPISharp.Query
                 string[] names = value.Split('/');
                 if (names.Count() == 1)
                 {
-                    BaseName = value;
+                    BaseName = "";
+                    PropertyName = value;
                 }
                 else if (names.Count() == 2)
                 {
@@ -135,13 +144,21 @@ namespace UiPathCloudAPISharp.Query
             {
                 regex = new Regex("\\w+");
                 var matches = regex.Matches(elements[0]);
-                if (matches.Count == 1)
+                if (matches.Count == 1 || matches.Count == 2)
                 {
                     object value = TryCast(elements[2].Trim());
                     if (value != null)
                     {
                         Value = value;
-                        Name = matches[0].Value.Trim();
+                        if (matches.Count == 1)
+                        {
+                            Name = matches[0].Value.Trim();
+                        }
+                        else
+                        {
+                            BaseName = matches[0].Value.Trim();
+                            PropertyName = matches[1].Value.Trim();
+                        }
                         ComparisonOperator = (ComparisonOperator)Enum.Parse(typeof(ComparisonOperator), GetODataComparisonOperator(elements[1]).ToUpper());
                     }
                     else
@@ -212,6 +229,10 @@ namespace UiPathCloudAPISharp.Query
             else if (value is string)
             {
                 return "%27" + value.ToString() + "%27";
+            }
+            else if (value is bool)
+            {
+                return value.ToString().ToLower();
             }
             else
             {
