@@ -65,6 +65,11 @@ namespace UiPathCloudAPISharp.Managers
             return GetInstance(instance.Id);
         }
 
+        public JobWithArguments GetInstance(Job instance)
+        {
+            return GetInstance(instance.Id);
+        }
+
         /// <summary>
         /// Start new job by robot and proccess release.
         /// </summary>

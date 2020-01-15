@@ -1,10 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using UiPathCloudAPISharp.Models;
 using UiPathCloudAPISharp.Query;
 
 namespace UiPathCloudAPISharp.Tests
@@ -68,6 +64,90 @@ namespace UiPathCloudAPISharp.Tests
                     var process = uiPath.ProcessManager.GetInstance(processes.First());
                     Assert.IsNotNull(process);
                     Assert.AreEqual(process.Name, processes.First().Name);
+                }
+            }
+            catch (Exception ex)
+            {
+                if (!string.IsNullOrEmpty(uiPath.LastErrorMessage))
+                {
+                    throw new Exception(uiPath.LastErrorMessage, ex);
+                }
+                throw ex;
+            }
+        }
+
+        [TestMethod]
+        public void GetJobsTest()
+        {
+            try
+            {
+                var jobs = uiPath.JobManager.GetCollection();
+                Assert.IsNotNull(jobs);
+                if (jobs.Any())
+                {
+                    QueryParameters queryParameters = new QueryParameters(top: 1, orderby: new OrderBy("CreationTime", SortDirection.Desc));
+                    queryParameters.Filter = new Filter("State", jobs.First().State);
+                    jobs = uiPath.JobManager.GetCollection(queryParameters);
+                    Assert.IsTrue(jobs.Count() == 1);
+                    var job = uiPath.JobManager.GetInstance(jobs.First());
+                    Assert.IsNotNull(job);
+                    Assert.AreEqual(job.CreationTime, jobs.First().CreationTime);
+                }
+            }
+            catch (Exception ex)
+            {
+                if (!string.IsNullOrEmpty(uiPath.LastErrorMessage))
+                {
+                    throw new Exception(uiPath.LastErrorMessage, ex);
+                }
+                throw ex;
+            }
+        }
+
+        [TestMethod]
+        public void GetEnvironmentsTest()
+        {
+            try
+            {
+                var environments = uiPath.EnvironmentManager.GetCollection();
+                Assert.IsNotNull(environments);
+                if (environments.Any())
+                {
+                    QueryParameters queryParameters = new QueryParameters(top: 1, orderby: new OrderBy("Name"));
+                    queryParameters.Filter = new Filter("Name", environments.First().Name);
+                    environments = uiPath.EnvironmentManager.GetCollection(queryParameters);
+                    Assert.IsTrue(environments.Count() == 1);
+                    var environment = uiPath.EnvironmentManager.GetInstance(environments.First());
+                    Assert.IsNotNull(environment);
+                    Assert.AreEqual(environment.Name, environments.First().Name);
+                }
+            }
+            catch (Exception ex)
+            {
+                if (!string.IsNullOrEmpty(uiPath.LastErrorMessage))
+                {
+                    throw new Exception(uiPath.LastErrorMessage, ex);
+                }
+                throw ex;
+            }
+        }
+
+        [TestMethod]
+        public void GetMachinesTest()
+        {
+            try
+            {
+                var machines = uiPath.MachineManager.GetCollection();
+                Assert.IsNotNull(machines);
+                if (machines.Any())
+                {
+                    QueryParameters queryParameters = new QueryParameters(top: 1, orderby: new OrderBy("Name"));
+                    queryParameters.Filter = new Filter("Type", machines.First().Type);
+                    machines = uiPath.MachineManager.GetCollection(queryParameters);
+                    Assert.IsTrue(machines.Count() == 1);
+                    var machine = uiPath.MachineManager.GetInstance(machines.First());
+                    Assert.IsNotNull(machine);
+                    Assert.AreEqual(machine.Name, machines.First().Name);
                 }
             }
             catch (Exception ex)

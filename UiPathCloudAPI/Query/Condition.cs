@@ -226,7 +226,7 @@ namespace UiPathCloudAPISharp.Query
             {
                 return ((DateTime)value).ToString("yyyy-MM-ddTHH:mm:ssZ");
             }
-            else if (value is string)
+            else if (value is string || value is Enum)
             {
                 return "%27" + value.ToString() + "%27";
             }
