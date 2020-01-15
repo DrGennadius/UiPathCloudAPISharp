@@ -344,6 +344,63 @@ namespace UiPathCloudAPISharp.Managers
                 );
         }
 
+        public void SendRequestPutForOdata(string operationPart, byte[] sentData)
+        {
+            if (!IsAuthorized)
+            {
+                if (BehaviorMode == BehaviorMode.AutoAuthorization)
+                {
+                    Authorization(TenantLogicalName, ClientId, UserKey);
+                }
+                else if (BehaviorMode == BehaviorMode.AutoInitiation)
+                {
+                    Initiation(TenantLogicalName, ClientId, UserKey);
+                }
+            }
+            if (!IsAuthorized)
+            {
+                throw new Exception("Not authorized.");
+            }
+            SendRequestPut(
+                string.Format(
+                    "https://platform.uipath.com/{0}/{1}/odata/{2}",
+                    TargetAccount.LogicalName,
+                    TargetServiceInstance.LogicalName,
+                    operationPart
+                    )
+                    , sentData
+                    , true
+                );
+        }
+
+        public void SendRequestDeleteForOdata(string operationPart)
+        {
+            if (!IsAuthorized)
+            {
+                if (BehaviorMode == BehaviorMode.AutoAuthorization)
+                {
+                    Authorization(TenantLogicalName, ClientId, UserKey);
+                }
+                else if (BehaviorMode == BehaviorMode.AutoInitiation)
+                {
+                    Initiation(TenantLogicalName, ClientId, UserKey);
+                }
+            }
+            if (!IsAuthorized)
+            {
+                throw new Exception("Not authorized.");
+            }
+            SendRequestDelete(
+                string.Format(
+                    "https://platform.uipath.com/{0}/{1}/odata/{2}",
+                    TargetAccount.LogicalName,
+                    TargetServiceInstance.LogicalName,
+                    operationPart
+                    )
+                    , true
+                );
+        }
+
         private void GetAllServiceInstances()
         {
             ServiceInstances = JsonConvert.DeserializeObject<List<ServiceInstance>>(
@@ -410,6 +467,66 @@ namespace UiPathCloudAPISharp.Managers
             sendStream.Write(sentData, 0, sentData.Length);
 
             return SendRequest(req);
+        }
+
+        private void SendRequestPut(string url, byte[] sentData, bool access = false)
+        {
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                throw new ArgumentException("Url is empty.");
+            }
+
+            HttpWebRequest req = WebRequest.Create(url) as HttpWebRequest;
+            req.Method = "PUT";
+            req.Timeout = RequestTimeout;
+            req.ContentType = "application/json";
+            req.Accept = "application/json";
+            if (access)
+            {
+                if (IsAuthorized)
+                {
+                    req.Headers.Add("Authorization", Token.TokenType + " " + Token.AccessToken);
+                    req.Headers.Add("X-UIPATH-TenantName", TargetServiceInstance.LogicalName);
+                }
+                else
+                {
+                    req.Headers.Add("X-UIPATH-TenantName", TenantLogicalName);
+                }
+            }
+
+            req.ContentLength = sentData.Length;
+            Stream sendStream = req.GetRequestStream();
+            sendStream.Write(sentData, 0, sentData.Length);
+
+            string responseString = SendRequest(req);
+        }
+
+        private void SendRequestDelete(string url, bool access = false)
+        {
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                throw new ArgumentException("Url is empty.");
+            }
+
+            HttpWebRequest req = WebRequest.Create(url) as HttpWebRequest;
+            req.Method = "DELETE";
+            req.Timeout = RequestTimeout;
+            req.ContentType = "application/json";
+            req.Accept = "application/json";
+            if (access)
+            {
+                if (IsAuthorized)
+                {
+                    req.Headers.Add("Authorization", Token.TokenType + " " + Token.AccessToken);
+                    req.Headers.Add("X-UIPATH-TenantName", TargetServiceInstance.LogicalName);
+                }
+                else
+                {
+                    req.Headers.Add("X-UIPATH-TenantName", TenantLogicalName);
+                }
+            }
+
+            string responseString = SendRequest(req);
         }
 
         private string SendRequest(HttpWebRequest httpWebRequest)

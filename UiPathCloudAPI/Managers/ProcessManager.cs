@@ -52,5 +52,12 @@ namespace UiPathCloudAPISharp.Managers
         {
             return GetInstance(instance.Id);
         }
+
+        //public void ChangeInstance(Process instance)
+        //{
+        //    string output = JsonConvert.SerializeObject(instance);
+        //    byte[] sentData = Encoding.UTF8.GetBytes(output);
+        //    _requestManager.SendRequestPatchForOdata(string.Format("Releases({0})", instance.Id), sentData);
+        //}
     }
 }

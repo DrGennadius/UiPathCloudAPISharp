@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using UiPathCloudAPISharp.Models;
 using UiPathCloudAPISharp.Query;
 
 namespace UiPathCloudAPISharp.Tests
@@ -122,6 +123,65 @@ namespace UiPathCloudAPISharp.Tests
             Assert.AreEqual(filter1.GetQueryString(), filter3.GetQueryString());
             Assert.AreEqual(filter1.GetQueryString(), filter4.GetQueryString());
             Assert.AreEqual(filter1.GetQueryString(), "$filter=Name%20eq%20%27Bob%27%20and%20Name%20eq%20%27Lex%27");
+        }
+
+        [TestMethod]
+        public void QueryManipulations()
+        {
+            QueryParameters queryParameters1 = new QueryParameters(filter: new Filter("Name = Bob"));
+            Filter filter1 = new Filter("Name = Bob");
+
+            Assert.AreEqual(queryParameters1.GetQueryString(), filter1.GetQueryString());
+        }
+
+        [TestMethod]
+        public void AssetManipulations()
+        {
+            Asset asset1 = new Asset("Bob", "Big");
+            var concreteAsset1 = asset1.Concrete();
+            TextAsset textAsset1 = new TextAsset("Bob", "Big");
+            Assert.AreEqual(asset1.Value, concreteAsset1.StringValue);
+            Assert.AreEqual(asset1.Value, textAsset1.StringValue);
+
+            Asset asset2 = new Asset("Bob", true);
+            var concreteAsset2 = asset2.Concrete();
+            BoolAsset boolAsset1 = new BoolAsset("Bob", true);
+            Assert.AreEqual(asset2.Value.ToString(), concreteAsset2.StringValue);
+            Assert.AreEqual(asset2.Value, boolAsset1.Value);
+
+            Asset asset3 = new Asset("Bob", 1993);
+            var concreteAsset3 = asset3.Concrete();
+            IntegerAsset integerAsset = new IntegerAsset("Bob", 1993);
+            Assert.AreEqual(asset3.Value.ToString(), concreteAsset3.StringValue);
+            Assert.AreEqual(asset3.Value, integerAsset.Value);
+
+            Asset asset4 = new Asset("Tom", "Tam");
+            Assert.AreEqual(asset4.ValueType, AssetValueType.Text);
+            IntegerAsset integerAsset2 = new IntegerAsset("Tom", 1999);
+            bool canChangeValue = true;
+            try
+            {
+                asset4.Value = integerAsset2.Value;
+            }
+            catch (Exception)
+            {
+                canChangeValue = false;
+            }
+            Assert.IsFalse(canChangeValue);
+            Assert.AreEqual(asset4.ValueType, AssetValueType.Text);
+            Assert.AreNotEqual(asset4.ValueType, AssetValueType.Integer);
+            canChangeValue = true;
+            try
+            {
+                asset4.Value = "Test2";
+            }
+            catch (Exception)
+            {
+                canChangeValue = false;
+            }
+            Assert.IsTrue(canChangeValue);
+            Assert.AreEqual(asset4.StringValue, "Test2");
+            Assert.AreEqual(asset4.ValueType, AssetValueType.Text);
         }
     }
 }

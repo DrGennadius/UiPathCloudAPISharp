@@ -82,5 +82,40 @@ namespace UiPathCloudAPISharp.Managers
         {
             return GetConcreteInstanceByRobotId(assetName, robot.Id);
         }
+
+        public void DeleteInstance(Asset instance)
+        {
+            _requestManager.SendRequestDeleteForOdata(string.Format("Assets({0})", instance.Id));
+        }
+
+        public Asset CreateInstance(Asset instance)
+        {
+            string output = JsonConvert.SerializeObject(instance);
+            byte[] sentData = Encoding.UTF8.GetBytes(output);
+            string response = _requestManager.SendRequestPostForOdata("Assets", sentData);
+            return JsonConvert.DeserializeObject<Asset>(response);
+        }
+
+        public Asset CreateInstance(ConcreteAsset instance)
+        {
+            return CreateInstance(instance.Asset);
+        }
+
+        public ConcreteAsset CreateInstanceAndReturnConcrete(Asset instance)
+        {
+            return CreateInstance(instance).Concrete();
+        }
+
+        public ConcreteAsset CreateInstanceAndReturnConcrete(ConcreteAsset instance)
+        {
+            return CreateInstance(instance).Concrete();
+        }
+
+        public void ChangeInstance(Asset instance)
+        {
+            string output = JsonConvert.SerializeObject(instance);
+            byte[] sentData = Encoding.UTF8.GetBytes(output);
+            _requestManager.SendRequestPutForOdata(string.Format("Assets({0})", instance.Id), sentData);
+        }
     }
 }

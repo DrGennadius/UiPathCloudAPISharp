@@ -267,13 +267,6 @@ namespace UiPathCloudAPISharp.Managers
             _requestManager.SendRequestPostForOdata("Jobs/UiPath.Server.Configuration.OData.StopJobs", sentData);
         }
 
-        public async Task<JobWithArguments> RunWaitReadyJobAsync(Job job)
-        {
-            JobWithArguments readyJob = await Task.Factory.StartNew<JobWithArguments>(() => WaitReadyJob(job));
-            OnWaitReadyJobCompleted(new WaitReadyJobCompletedEventArgs() { ReadyJob = readyJob });
-            return readyJob;
-        }
-
         /// <summary>
         /// Async wait ready job.
         /// </summary>
