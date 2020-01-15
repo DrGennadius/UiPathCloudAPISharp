@@ -365,7 +365,7 @@ namespace UiPathCloudAPISharpStartJob
             ConsoleHelper.PrintLine();
             foreach (var item in assets)
             {
-                ConsoleHelper.PrintRow(item.Name, item.ForceStringValue());
+                ConsoleHelper.PrintRow(item.Name, item.Asset.Value.ToString());
             }
             ConsoleHelper.PrintLine();
         }
