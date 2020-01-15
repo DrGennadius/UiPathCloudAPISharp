@@ -12,7 +12,7 @@ namespace UiPathCloudAPISharp.Managers
 {
     public class TransactionManager : IManager, IGetRequest<QueueItem>
     {
-        public QueryStore QueryStore => throw new NotImplementedException();
+        public QueryStore QueryStore { get { throw new NotImplementedException(); } }
 
         private RequestManager _requestManager;
 

@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 using UiPathCloudAPISharp.Models;
 using UiPathCloudAPISharp.Query;
 
@@ -12,6 +13,23 @@ namespace UiPathCloudAPISharp.Managers
 {
     internal class RequestManager
     {
+        public RequestManager(string tenantLogicalName, string clientId, string userKey, BehaviorMode behaviorMode = BehaviorMode.Default)
+            : this(tenantLogicalName, clientId, userKey, null, behaviorMode)
+        {
+        }
+
+        public RequestManager(string tenantLogicalName, string clientId, string userKey, string accountLogicalName, BehaviorMode behaviorMode = BehaviorMode.Default)
+        {
+            TenantLogicalName = tenantLogicalName;
+            ClientId = clientId;
+            UserKey = userKey;
+            BehaviorMode = behaviorMode;
+            _requiredAccountLogicalName = accountLogicalName;
+            RequestTimeout = 30000;
+            WaitTimeout = 300000;
+            BigWaitTimeout = 1800000;
+        }
+
         /// <summary>
         /// User Key for connect to UiPath Orchestrator via Cloud API.
         /// Used as refresh_token for Authorization.
@@ -38,17 +56,17 @@ namespace UiPathCloudAPISharp.Managers
         /// and <see cref="HttpWebRequest.GetRequestStream"/> methods.
         /// <para >The default value is 30,000 milliseconds (30 seconds).</para>
         /// </summary>
-        public int RequestTimeout { get; set; } = 30000;
+        public int RequestTimeout { get; set; }
 
         /// <summary>
         /// Gets or sets the time-out value in milliseconds for wait the big operation.
         /// </summary>
-        public int WaitTimeout { get; set; } = 300000;
+        public int WaitTimeout { get; set; }
 
         /// <summary>
         /// Gets or sets the time-out value in milliseconds for wait the big operation.
         /// </summary>
-        public int BigWaitTimeout { get; set; } = 1800000;
+        public int BigWaitTimeout { get; set; }
 
         /// <summary>
         /// Target User.
@@ -121,20 +139,6 @@ namespace UiPathCloudAPISharp.Managers
         /// Reserve of time in seconds for expiration time.
         /// </summary>
         private readonly int _leeway = 30;
-
-        public RequestManager(string tenantLogicalName, string clientId, string userKey, BehaviorMode behaviorMode = BehaviorMode.Default)
-            : this(tenantLogicalName, clientId, userKey, null, behaviorMode)
-        {
-        }
-
-        public RequestManager(string tenantLogicalName, string clientId, string userKey, string accountLogicalName, BehaviorMode behaviorMode = BehaviorMode.Default)
-        {
-            TenantLogicalName = tenantLogicalName;
-            ClientId = clientId;
-            UserKey = userKey;
-            BehaviorMode = behaviorMode;
-            _requiredAccountLogicalName = accountLogicalName;
-        }
 
         /// <summary>
         /// Initiation. authorize + get main data.
@@ -340,6 +344,63 @@ namespace UiPathCloudAPISharp.Managers
                 );
         }
 
+        public void SendRequestPutForOdata(string operationPart, byte[] sentData)
+        {
+            if (!IsAuthorized)
+            {
+                if (BehaviorMode == BehaviorMode.AutoAuthorization)
+                {
+                    Authorization(TenantLogicalName, ClientId, UserKey);
+                }
+                else if (BehaviorMode == BehaviorMode.AutoInitiation)
+                {
+                    Initiation(TenantLogicalName, ClientId, UserKey);
+                }
+            }
+            if (!IsAuthorized)
+            {
+                throw new Exception("Not authorized.");
+            }
+            SendRequestPut(
+                string.Format(
+                    "https://platform.uipath.com/{0}/{1}/odata/{2}",
+                    TargetAccount.LogicalName,
+                    TargetServiceInstance.LogicalName,
+                    operationPart
+                    )
+                    , sentData
+                    , true
+                );
+        }
+
+        public void SendRequestDeleteForOdata(string operationPart)
+        {
+            if (!IsAuthorized)
+            {
+                if (BehaviorMode == BehaviorMode.AutoAuthorization)
+                {
+                    Authorization(TenantLogicalName, ClientId, UserKey);
+                }
+                else if (BehaviorMode == BehaviorMode.AutoInitiation)
+                {
+                    Initiation(TenantLogicalName, ClientId, UserKey);
+                }
+            }
+            if (!IsAuthorized)
+            {
+                throw new Exception("Not authorized.");
+            }
+            SendRequestDelete(
+                string.Format(
+                    "https://platform.uipath.com/{0}/{1}/odata/{2}",
+                    TargetAccount.LogicalName,
+                    TargetServiceInstance.LogicalName,
+                    operationPart
+                    )
+                    , true
+                );
+        }
+
         private void GetAllServiceInstances()
         {
             ServiceInstances = JsonConvert.DeserializeObject<List<ServiceInstance>>(
@@ -406,6 +467,66 @@ namespace UiPathCloudAPISharp.Managers
             sendStream.Write(sentData, 0, sentData.Length);
 
             return SendRequest(req);
+        }
+
+        private void SendRequestPut(string url, byte[] sentData, bool access = false)
+        {
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                throw new ArgumentException("Url is empty.");
+            }
+
+            HttpWebRequest req = WebRequest.Create(url) as HttpWebRequest;
+            req.Method = "PUT";
+            req.Timeout = RequestTimeout;
+            req.ContentType = "application/json";
+            req.Accept = "application/json";
+            if (access)
+            {
+                if (IsAuthorized)
+                {
+                    req.Headers.Add("Authorization", Token.TokenType + " " + Token.AccessToken);
+                    req.Headers.Add("X-UIPATH-TenantName", TargetServiceInstance.LogicalName);
+                }
+                else
+                {
+                    req.Headers.Add("X-UIPATH-TenantName", TenantLogicalName);
+                }
+            }
+
+            req.ContentLength = sentData.Length;
+            Stream sendStream = req.GetRequestStream();
+            sendStream.Write(sentData, 0, sentData.Length);
+
+            string responseString = SendRequest(req);
+        }
+
+        private void SendRequestDelete(string url, bool access = false)
+        {
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                throw new ArgumentException("Url is empty.");
+            }
+
+            HttpWebRequest req = WebRequest.Create(url) as HttpWebRequest;
+            req.Method = "DELETE";
+            req.Timeout = RequestTimeout;
+            req.ContentType = "application/json";
+            req.Accept = "application/json";
+            if (access)
+            {
+                if (IsAuthorized)
+                {
+                    req.Headers.Add("Authorization", Token.TokenType + " " + Token.AccessToken);
+                    req.Headers.Add("X-UIPATH-TenantName", TargetServiceInstance.LogicalName);
+                }
+                else
+                {
+                    req.Headers.Add("X-UIPATH-TenantName", TenantLogicalName);
+                }
+            }
+
+            string responseString = SendRequest(req);
         }
 
         private string SendRequest(HttpWebRequest httpWebRequest)

@@ -10,50 +10,60 @@ namespace UiPathCloudAPISharp.Query
     public class Condition : ICondition
     {
         public Condition(Type objectType, string propertyName, object objectValue, ComparisonOperator comparisonOperator = ComparisonOperator.EQ)
+            : this(comparisonOperator)
         {
             SetNameAndValue(objectType, propertyName, objectValue);
-            ComparisonOperator = comparisonOperator;
         }
 
         public Condition(Type objectClass, object objectValue, ComparisonOperator comparisonOperator = ComparisonOperator.EQ)
+            : this(comparisonOperator)
         {
             SetNameAndValue(objectClass, objectValue);
-            ComparisonOperator = comparisonOperator;
         }
 
         public Condition(string baseName, string propertyName, object value, ComparisonOperator comparisonOperator = ComparisonOperator.EQ)
+            : this(comparisonOperator)
         {
             BaseName = baseName;
             PropertyName = propertyName;
             Value = value;
-            ComparisonOperator = comparisonOperator;
         }
 
         public Condition(string name, object value, ComparisonOperator comparisonOperator = ComparisonOperator.EQ)
+            : this(comparisonOperator)
         {
             Name = name;
             Value = value;
-            ComparisonOperator = comparisonOperator;
+        }
+
+        public Condition(PrimitiveCondition primitiveCondition)
+            : this()
+        {
+            Name = primitiveCondition.Name;
+            Value = TryCast(primitiveCondition.Value);
+            ComparisonOperator = primitiveCondition.ComparisonOperator;
         }
 
         public Condition(string condition)
+            : this()
         {
             Set(condition);
         }
 
-        public Condition()
+        public Condition(ComparisonOperator comparisonOperator = ComparisonOperator.EQ)
         {
+            ComparisonOperator = comparisonOperator;
         }
 
         /// <summary>
         /// Element base name
         /// </summary>
-        public string BaseName { get; set; } = "";
+        public string BaseName { get; set; }
 
         /// <summary>
         /// Element property Name
         /// </summary>
-        public string PropertyName { get; set; } = "";
+        public string PropertyName { get; set; }
 
         /// <summary>
         /// Element full name
@@ -62,9 +72,9 @@ namespace UiPathCloudAPISharp.Query
         {
             get
             {
-                if (string.IsNullOrEmpty(PropertyName))
+                if (string.IsNullOrEmpty(BaseName))
                 {
-                    return BaseName;
+                    return PropertyName;
                 }
                 return BaseName + '/' + PropertyName;
             }
@@ -73,7 +83,8 @@ namespace UiPathCloudAPISharp.Query
                 string[] names = value.Split('/');
                 if (names.Count() == 1)
                 {
-                    BaseName = value;
+                    BaseName = "";
+                    PropertyName = value;
                 }
                 else if (names.Count() == 2)
                 {
@@ -90,12 +101,12 @@ namespace UiPathCloudAPISharp.Query
         /// <summary>
         /// Element value
         /// </summary>
-        public object Value { get; set; } = "";
+        public object Value { get; set; }
 
         /// <summary>
         /// Condition operation
         /// </summary>
-        public ComparisonOperator ComparisonOperator { get; set; } = ComparisonOperator.EQ;
+        public ComparisonOperator ComparisonOperator { get; set; }
 
         public string GetQueryString()
         {
@@ -133,13 +144,21 @@ namespace UiPathCloudAPISharp.Query
             {
                 regex = new Regex("\\w+");
                 var matches = regex.Matches(elements[0]);
-                if (matches.Count == 1)
+                if (matches.Count == 1 || matches.Count == 2)
                 {
-                    object value = TryCast(elements[2]);
+                    object value = TryCast(elements[2].Trim());
                     if (value != null)
                     {
                         Value = value;
-                        Name = matches[0].Value;
+                        if (matches.Count == 1)
+                        {
+                            Name = matches[0].Value.Trim();
+                        }
+                        else
+                        {
+                            BaseName = matches[0].Value.Trim();
+                            PropertyName = matches[1].Value.Trim();
+                        }
                         ComparisonOperator = (ComparisonOperator)Enum.Parse(typeof(ComparisonOperator), GetODataComparisonOperator(elements[1]).ToUpper());
                     }
                     else
@@ -207,9 +226,13 @@ namespace UiPathCloudAPISharp.Query
             {
                 return ((DateTime)value).ToString("yyyy-MM-ddTHH:mm:ssZ");
             }
-            else if (value is string)
+            else if (value is string || value is Enum)
             {
                 return "%27" + value.ToString() + "%27";
+            }
+            else if (value is bool)
+            {
+                return value.ToString().ToLower();
             }
             else
             {

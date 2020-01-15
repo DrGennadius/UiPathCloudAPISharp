@@ -11,7 +11,7 @@ namespace UiPathCloudAPISharp.Managers
 {
     public class AssetManager : IManager
     {
-        public QueryStore QueryStore => throw new NotImplementedException();
+        public QueryStore QueryStore { get { throw new NotImplementedException(); } }
 
         private RequestManager _requestManager;
 
@@ -81,6 +81,41 @@ namespace UiPathCloudAPISharp.Managers
         public ConcreteAsset GetConcreteInstanceByRobot(string assetName, Robot robot)
         {
             return GetConcreteInstanceByRobotId(assetName, robot.Id);
+        }
+
+        public void DeleteInstance(Asset instance)
+        {
+            _requestManager.SendRequestDeleteForOdata(string.Format("Assets({0})", instance.Id));
+        }
+
+        public Asset CreateInstance(Asset instance)
+        {
+            string output = JsonConvert.SerializeObject(instance);
+            byte[] sentData = Encoding.UTF8.GetBytes(output);
+            string response = _requestManager.SendRequestPostForOdata("Assets", sentData);
+            return JsonConvert.DeserializeObject<Asset>(response);
+        }
+
+        public Asset CreateInstance(ConcreteAsset instance)
+        {
+            return CreateInstance(instance.Asset);
+        }
+
+        public ConcreteAsset CreateInstanceAndReturnConcrete(Asset instance)
+        {
+            return CreateInstance(instance).Concrete();
+        }
+
+        public ConcreteAsset CreateInstanceAndReturnConcrete(ConcreteAsset instance)
+        {
+            return CreateInstance(instance).Concrete();
+        }
+
+        public void ChangeInstance(Asset instance)
+        {
+            string output = JsonConvert.SerializeObject(instance);
+            byte[] sentData = Encoding.UTF8.GetBytes(output);
+            _requestManager.SendRequestPutForOdata(string.Format("Assets({0})", instance.Id), sentData);
         }
     }
 }

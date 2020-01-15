@@ -1,11 +1,21 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.902
+# Visual Studio 2013
+VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UiPathCloudAPIOld", "..\UiPathCloudAPI\Old\UiPathCloudAPIOld.csproj", "{4E5269ED-041D-4B1E-8E01-960189B39EC3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UiPathOrchestratorConsoleOld", "..\UiPathOrchestratorConsole\Old\UiPathOrchestratorConsoleOld.csproj", "{FDD929C3-E241-473D-BE3E-9827A5432772}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{071F3265-58FF-45BB-9995-5FDFC0CF9635}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\NuGet.Config = .nuget\NuGet.Config
+		.nuget\NuGet.exe = .nuget\NuGet.exe
+		.nuget\NuGet.pdb = .nuget\NuGet.pdb
+		.nuget\NuGet.targets = .nuget\NuGet.targets
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UiPathWinFormExample", "..\UiPathWinFormExample.net40\Old\UiPathWinFormExample.csproj", "{5FB47254-8C22-4C2D-B179-C1658DB9F748}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +31,10 @@ Global
 		{FDD929C3-E241-473D-BE3E-9827A5432772}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FDD929C3-E241-473D-BE3E-9827A5432772}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FDD929C3-E241-473D-BE3E-9827A5432772}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5FB47254-8C22-4C2D-B179-C1658DB9F748}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5FB47254-8C22-4C2D-B179-C1658DB9F748}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5FB47254-8C22-4C2D-B179-C1658DB9F748}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5FB47254-8C22-4C2D-B179-C1658DB9F748}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

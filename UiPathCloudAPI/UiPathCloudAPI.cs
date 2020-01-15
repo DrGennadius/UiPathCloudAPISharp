@@ -23,22 +23,22 @@ namespace UiPathCloudAPISharp
         /// User Key for connect to UiPath Orchestrator via Cloud API.
         /// Used as refresh_token for Authorization.
         /// </summary>
-        public string UserKey => _requestManager.UserKey;
+        public string UserKey { get { return _requestManager.UserKey; } }
 
         /// <summary>
         /// Client Id for connect to UiPath Orchestrator via Cloud API.
         /// </summary>
-        public string ClientId => _requestManager.ClientId;
+        public string ClientId { get { return _requestManager.ClientId; } }
 
         /// <summary>
         /// Tenant Logical Name for connect to UiPath Orchestrator via Cloud API.
         /// </summary>
-        public string TenantLogicalName => _requestManager.TenantLogicalName;
+        public string TenantLogicalName { get { return _requestManager.TenantLogicalName; } }
 
         /// <summary>
         /// Last error message that occurred
         /// </summary>
-        public string LastErrorMessage => _requestManager.LastErrorMessage;
+        public string LastErrorMessage { get { return _requestManager.LastErrorMessage; } }
 
         /// <summary>
         /// Gets or sets the time-out value in milliseconds for the <see cref="HttpWebRequest.GetResponse"/> 
@@ -72,32 +72,32 @@ namespace UiPathCloudAPISharp
         /// <summary>
         /// Passed an authentication?
         /// </summary>
-        public bool IsAuthorized => _requestManager.IsAuthorized;
+        public bool IsAuthorized { get { return _requestManager.IsAuthorized; } }
 
         /// <summary>
         /// Is expired timeout?
         /// </summary>
-        public bool IsExpired => _requestManager.IsExpired;
+        public bool IsExpired { get { return _requestManager.IsExpired; } }
 
         /// <summary>
         /// Last issue response (deserialized).
         /// </summary>
-        public Response LastIssueResponse => _requestManager.LastIssueResponse;
+        public Response LastIssueResponse { get { return _requestManager.LastIssueResponse; } }
 
         /// <summary>
         /// Current target account.
         /// </summary>
-        public Account TargetAccount => _requestManager.TargetAccount;
+        public Account TargetAccount { get { return _requestManager.TargetAccount; } }
 
         /// <summary>
         /// Current target service instance.
         /// </summary>
-        public ServiceInstance TargetServiceInstance => _requestManager.TargetServiceInstance;
+        public ServiceInstance TargetServiceInstance { get { return _requestManager.TargetServiceInstance; } }
 
         /// <summary>
         /// The behavior mode affects the logic of initialization, authorization, and call requests.
         /// </summary>
-        public BehaviorMode BehaviorMode => _requestManager.BehaviorMode;
+        public BehaviorMode BehaviorMode { get { return _requestManager.BehaviorMode; } }
 
         /// <summary>
         /// Robot Manager
@@ -227,10 +227,13 @@ namespace UiPathCloudAPISharp
         public void Initialization(string tenantLogicalName, string clientId, string userKey, string accountLogicalName, BehaviorMode behaviorMode = BehaviorMode.Default)
         {
             _requestManager = new RequestManager(tenantLogicalName, clientId, userKey, behaviorMode);
-            if (_useInitiation)
+            if (_useInitiation && behaviorMode != BehaviorMode.Default)
             {
                 _requestManager.Initiation();
-                _useInitiation = _requestManager.IsAuthorized;
+            }
+            else
+            {
+                _useInitiation = true;
             }
             SessionManager = new SessionManager(_requestManager);
             ConfigurationManager = new UiPathConfigurationManager(_requestManager);

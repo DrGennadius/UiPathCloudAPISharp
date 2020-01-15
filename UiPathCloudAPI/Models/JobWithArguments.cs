@@ -12,13 +12,13 @@ namespace UiPathCloudAPISharp.Models
         /// Representation of input arguments as a single string.
         /// </summary>
         [JsonProperty(PropertyName = "InputArguments")]
-        public string InputArgumentsAsString { get; set; } = null;
+        public string InputArgumentsAsString { get; set; }
 
         /// <summary>
         /// Representation of output arguments as a single string.
         /// </summary>
         [JsonProperty(PropertyName = "OutputArguments")]
-        public string OutputArgumentsAsString { get; set; } = null;
+        public string OutputArgumentsAsString { get; set; }
 
         /// <summary>
         /// Representation of input arguments as <see cref="Dictionary{string, object}"/>.

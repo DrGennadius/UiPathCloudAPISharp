@@ -307,7 +307,11 @@ namespace UiPathCloudAPISharpStartJob
             Console.WriteLine(title);
             ConsoleHelper.UpdateWidth();
             ConsoleHelper.PrintLine();
+#if oldcsharp
+            ConsoleHelper.PrintRow("Id", "Name", "Description");
+#else
             ConsoleHelper.PrintRow(nameof(Robot.Id), nameof(Robot.Name), nameof(Robot.Description));
+#endif
             ConsoleHelper.PrintLine();
             foreach (var item in robots)
             {
@@ -321,7 +325,11 @@ namespace UiPathCloudAPISharpStartJob
             Console.WriteLine(title);
             ConsoleHelper.UpdateWidth();
             ConsoleHelper.PrintLine();
+#if oldcsharp
+            ConsoleHelper.PrintRow("Id", "Name", "Key", "Process.Description");
+#else
             ConsoleHelper.PrintRow(nameof(Process.Id), nameof(Process.Name), nameof(Process.Key), nameof(Process.Description));
+#endif
             ConsoleHelper.PrintLine();
             foreach (var item in proccess)
             {
@@ -335,7 +343,11 @@ namespace UiPathCloudAPISharpStartJob
             Console.WriteLine(title);
             ConsoleHelper.UpdateWidth();
             ConsoleHelper.PrintLine();
+#if oldcsharp
+            ConsoleHelper.PrintRow("Id", "Key", "State", "StartTime", "EndTime");
+#else
             ConsoleHelper.PrintRow(nameof(JobWithArguments.Id), nameof(JobWithArguments.Key), nameof(JobWithArguments.State), nameof(JobWithArguments.StartTime), nameof(JobWithArguments.EndTime));
+#endif
             ConsoleHelper.PrintLine();
             foreach (var item in jobs)
             {

@@ -11,7 +11,7 @@ namespace UiPathCloudAPISharp.Managers
 {
     public class ScheduleManager : IManager, IGetRequest<Schedule>
     {
-        public QueryStore QueryStore => throw new NotImplementedException();
+        public QueryStore QueryStore { get { throw new NotImplementedException(); } }
 
         private RequestManager _requestManager;
 

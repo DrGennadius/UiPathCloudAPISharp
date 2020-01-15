@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>UiPathCloudAPI.net40</id>
-    <version>0.7.1</version>
+    <version>0.8.0</version>
     <title>Specific UiPathCloudAPI .NET40</title>
     <authors>Gennady Zykov</authors>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
