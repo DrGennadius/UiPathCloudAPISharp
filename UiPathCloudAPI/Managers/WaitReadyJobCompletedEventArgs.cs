@@ -4,6 +4,7 @@ using UiPathCloudAPISharp.Models;
 
 namespace UiPathCloudAPISharp.Managers
 {
+#if EnableAsync
     public delegate void WaitReadyJobCompletedEventHandler(object sender, WaitReadyJobCompletedEventArgs e);
 
     public class WaitReadyJobCompletedEventArgs
@@ -15,4 +16,5 @@ namespace UiPathCloudAPISharp.Managers
 
         public JobWithArguments ReadyJob { get; set; }
     }
+#endif
 }
