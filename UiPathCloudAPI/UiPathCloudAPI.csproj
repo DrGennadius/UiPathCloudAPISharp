@@ -12,14 +12,6 @@
     <RepositoryUrl>https://github.com/DrGennadius/UiPathCloudAPISharp</RepositoryUrl>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net40|AnyCPU'">
-    <DefineConstants>TRACE;EnableAsync</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net40|AnyCPU'">
-    <DefineConstants>TRACE;EnableAsync</DefineConstants>
-  </PropertyGroup>
-
   <ItemGroup>
     <Compile Remove="Old\**" />
     <EmbeddedResource Remove="Old\**" />
