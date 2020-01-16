@@ -28,10 +28,12 @@ namespace UiPathCloudAPISharp.Managers
             _processManager = processManager;
         }
 
+#if EnableAsync
         /// <summary>
         /// Completed Event Handler for waitting ready Job.
         /// </summary>
         public event WaitReadyJobCompletedEventHandler WaitReadyJobCompleted;
+#endif
 
         public IEnumerable<JobWithArguments> GetCollection()
         {
@@ -267,6 +269,7 @@ namespace UiPathCloudAPISharp.Managers
             _requestManager.SendRequestPostForOdata("Jobs/UiPath.Server.Configuration.OData.StopJobs", sentData);
         }
 
+#if EnableAsync
         /// <summary>
         /// Async wait ready job.
         /// </summary>
@@ -299,6 +302,7 @@ namespace UiPathCloudAPISharp.Managers
             OnWaitReadyJobCompleted(new WaitReadyJobCompletedEventArgs() { ReadyJob = readyJob });
             return readyJob;
         }
+#endif
 
         /// <summary>
         /// Wait ready job.
@@ -365,6 +369,7 @@ namespace UiPathCloudAPISharp.Managers
             return readyJob;
         }
 
+#if EnableAsync
         protected void OnWaitReadyJobCompleted(WaitReadyJobCompletedEventArgs e)
         {
             if (WaitReadyJobCompleted != null)
@@ -372,5 +377,6 @@ namespace UiPathCloudAPISharp.Managers
                 WaitReadyJobCompleted(this, e);
             }
         }
+#endif
     }
 }
