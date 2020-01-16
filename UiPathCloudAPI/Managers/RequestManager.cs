@@ -19,12 +19,17 @@ namespace UiPathCloudAPISharp.Managers
         }
 
         public RequestManager(string tenantLogicalName, string clientId, string userKey, string accountLogicalName, BehaviorMode behaviorMode = BehaviorMode.Default)
+            : this()
         {
             TenantLogicalName = tenantLogicalName;
             ClientId = clientId;
             UserKey = userKey;
             BehaviorMode = behaviorMode;
             _requiredAccountLogicalName = accountLogicalName;
+        }
+
+        public RequestManager()
+        {
             RequestTimeout = 30000;
             WaitTimeout = 300000;
             BigWaitTimeout = 1800000;

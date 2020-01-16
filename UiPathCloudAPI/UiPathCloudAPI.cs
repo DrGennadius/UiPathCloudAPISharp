@@ -198,6 +198,7 @@ namespace UiPathCloudAPISharp
         /// </summary>
         public UiPathCloudAPI()
         {
+            _requestManager = new RequestManager();
         }
 
         ~UiPathCloudAPI()
@@ -226,7 +227,15 @@ namespace UiPathCloudAPISharp
         /// <param name="behaviorMode"></param>
         public void Initialization(string tenantLogicalName, string clientId, string userKey, string accountLogicalName, BehaviorMode behaviorMode = BehaviorMode.Default)
         {
-            _requestManager = new RequestManager(tenantLogicalName, clientId, userKey, behaviorMode);
+            var _storedRequestTimeout = _requestManager.RequestTimeout;
+            var _storedWaitTimeout = _requestManager.WaitTimeout;
+            var _storedBigWaitTimeout = _requestManager.BigWaitTimeout;
+            _requestManager = new RequestManager(tenantLogicalName, clientId, userKey, behaviorMode)
+            {
+                RequestTimeout = _storedRequestTimeout,
+                WaitTimeout = _storedWaitTimeout,
+                BigWaitTimeout = _storedBigWaitTimeout
+            };
             if (_useInitiation && behaviorMode != BehaviorMode.Default)
             {
                 _requestManager.Initiation();
