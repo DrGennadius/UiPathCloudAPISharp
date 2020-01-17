@@ -230,7 +230,7 @@ namespace UiPathCloudAPISharp
             var _storedRequestTimeout = _requestManager.RequestTimeout;
             var _storedWaitTimeout = _requestManager.WaitTimeout;
             var _storedBigWaitTimeout = _requestManager.BigWaitTimeout;
-            _requestManager = new RequestManager(tenantLogicalName, clientId, userKey, behaviorMode)
+            _requestManager = new RequestManager(tenantLogicalName, clientId, userKey, accountLogicalName, behaviorMode)
             {
                 RequestTimeout = _storedRequestTimeout,
                 WaitTimeout = _storedWaitTimeout,
