@@ -13,16 +13,16 @@ namespace UiPathCloudAPISharp.Managers
     {
         public QueryStore QueryStore { get { throw new NotImplementedException(); } }
 
-        private RequestManager _requestManager;
+        private RequestExecutor _requestExecutor;
 
-        internal ScheduleManager(RequestManager requestManager)
+        internal ScheduleManager(RequestExecutor requestExecutor)
         {
-            _requestManager = requestManager;
+            _requestExecutor = requestExecutor;
         }
 
         public IEnumerable<Schedule> GetCollection()
         {
-            string response = _requestManager.SendRequestGetForOdata("ProcessSchedules");
+            string response = _requestExecutor.SendRequestGetForOdata("ProcessSchedules");
             return JsonConvert.DeserializeObject<Info<Schedule>>(response).Items;
         }
 
@@ -38,13 +38,13 @@ namespace UiPathCloudAPISharp.Managers
 
         public IEnumerable<Schedule> GetCollection(IQueryParameters queryParameters)
         {
-            string response = _requestManager.SendRequestGetForOdata("ProcessSchedules", queryParameters);
+            string response = _requestExecutor.SendRequestGetForOdata("ProcessSchedules", queryParameters);
             return JsonConvert.DeserializeObject<Info<Schedule>>(response).Items;
         }
 
         public Schedule GetInstance(int id)
         {
-            string response = _requestManager.SendRequestGetForOdata(string.Format("ProcessSchedules({0})", id));
+            string response = _requestExecutor.SendRequestGetForOdata(string.Format("ProcessSchedules({0})", id));
             return JsonConvert.DeserializeObject<Schedule>(response);
         }
 

@@ -13,16 +13,16 @@ namespace UiPathCloudAPISharp.Managers
     {
         public QueryStore QueryStore { get { throw new NotImplementedException(); } }
 
-        private RequestManager _requestManager;
+        private RequestExecutor _requestExecutor;
 
-        internal UiPathConfigurationManager(RequestManager requestManager)
+        internal UiPathConfigurationManager(RequestExecutor requestExecutor)
         {
-            _requestManager = requestManager;
+            _requestExecutor = requestExecutor;
         }
 
         public ConfigurationInfo GetConfigurationInfo(int scope = 1)
         {
-            string response = _requestManager.SendRequestGetForOdata(string.Format("Settings/UiPath.Server.Configuration.OData.GetExecutionSettingsConfiguration(scope={0})", scope));
+            string response = _requestExecutor.SendRequestGetForOdata(string.Format("Settings/UiPath.Server.Configuration.OData.GetExecutionSettingsConfiguration(scope={0})", scope));
             return JsonConvert.DeserializeObject<ConfigurationInfo>(response);
         }
 

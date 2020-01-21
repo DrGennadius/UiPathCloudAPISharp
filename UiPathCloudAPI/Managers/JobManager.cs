@@ -15,15 +15,15 @@ namespace UiPathCloudAPISharp.Managers
     {
         public QueryStore QueryStore { get { throw new NotImplementedException(); } }
 
-        private RequestManager _requestManager;
+        private RequestExecutor _requestExecutor;
 
         private RobotManager _robotManager;
 
         private ProcessManager _processManager;
 
-        internal JobManager(RequestManager requestManager, RobotManager robotManager, ProcessManager processManager)
+        internal JobManager(RequestExecutor requestExecutor, RobotManager robotManager, ProcessManager processManager)
         {
-            _requestManager = requestManager;
+            _requestExecutor = requestExecutor;
             _robotManager = robotManager;
             _processManager = processManager;
         }
@@ -35,7 +35,7 @@ namespace UiPathCloudAPISharp.Managers
 
         public IEnumerable<JobWithArguments> GetCollection()
         {
-            string response = _requestManager.SendRequestGetForOdata("Jobs");
+            string response = _requestExecutor.SendRequestGetForOdata("Jobs");
             return JsonConvert.DeserializeObject<Info<JobWithArguments>>(response).Items;
         }
 
@@ -51,7 +51,7 @@ namespace UiPathCloudAPISharp.Managers
 
         public IEnumerable<JobWithArguments> GetCollection(IQueryParameters queryParameters)
         {
-            string response = _requestManager.SendRequestGetForOdata("Jobs", queryParameters);
+            string response = _requestExecutor.SendRequestGetForOdata("Jobs", queryParameters);
             return JsonConvert.DeserializeObject<Info<JobWithArguments>>(response).Items;
         }
 
@@ -222,12 +222,12 @@ namespace UiPathCloudAPISharp.Managers
                 string returnStr = null;
                 try
                 {
-                    returnStr = _requestManager.SendRequestPostForOdata("Jobs/UiPath.Server.Configuration.OData.StartJobs", sentData);
+                    returnStr = _requestExecutor.SendRequestPostForOdata("Jobs/UiPath.Server.Configuration.OData.StartJobs", sentData);
                     job = JsonConvert.DeserializeObject<Info<Job>>(returnStr).Items.FirstOrDefault();
                 }
                 catch (Exception ex)
                 {
-                    string errorString = _requestManager.LastErrorMessage;
+                    string errorString = _requestExecutor.LastErrorMessage;
                     errorString += "\nException message:\n" + ex.Message;
                     if (!string.IsNullOrEmpty(returnStr))
                     {
@@ -264,7 +264,7 @@ namespace UiPathCloudAPISharp.Managers
             string output = JsonConvert.SerializeObject(startJobsInfo);
             //SentDataStore.Enqueue(output);
             byte[] sentData = Encoding.UTF8.GetBytes(output);
-            _requestManager.SendRequestPostForOdata("Jobs/UiPath.Server.Configuration.OData.StopJobs", sentData);
+            _requestExecutor.SendRequestPostForOdata("Jobs/UiPath.Server.Configuration.OData.StopJobs", sentData);
         }
 
         /// <summary>
@@ -274,7 +274,7 @@ namespace UiPathCloudAPISharp.Managers
         /// <returns></returns>
         public async Task<JobWithArguments> WaitReadyJobAsync(Job job)
         {
-            return await WaitReadyJobAsync(job, _requestManager.WaitTimeout);
+            return await WaitReadyJobAsync(job, _requestExecutor.WaitTimeout);
         }
 
         /// <summary>
@@ -284,7 +284,7 @@ namespace UiPathCloudAPISharp.Managers
         /// <returns></returns>
         public async Task<JobWithArguments> WaitReadyBigJobAsync(Job job)
         {
-            return await WaitReadyJobAsync(job, _requestManager.BigWaitTimeout);
+            return await WaitReadyJobAsync(job, _requestExecutor.BigWaitTimeout);
         }
 
         /// <summary>
@@ -307,7 +307,7 @@ namespace UiPathCloudAPISharp.Managers
         /// <returns></returns>
         public JobWithArguments WaitReadyJob(Job job)
         {
-            return WaitReadyJob(job, _requestManager.WaitTimeout);
+            return WaitReadyJob(job, _requestExecutor.WaitTimeout);
         }
 
         /// <summary>
@@ -317,7 +317,7 @@ namespace UiPathCloudAPISharp.Managers
         /// <returns></returns>
         public JobWithArguments WaitReadyBigJob(Job job)
         {
-            return WaitReadyJob(job, _requestManager.BigWaitTimeout);
+            return WaitReadyJob(job, _requestExecutor.BigWaitTimeout);
         }
 
         /// <summary>

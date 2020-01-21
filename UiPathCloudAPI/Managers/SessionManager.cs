@@ -13,16 +13,16 @@ namespace UiPathCloudAPISharp.Managers
     {
         public QueryStore QueryStore { get { throw new NotImplementedException(); } }
 
-        private RequestManager _requestManager;
+        private RequestExecutor _requestExecutor;
 
-        internal SessionManager(RequestManager requestManager)
+        internal SessionManager(RequestExecutor requestExecutor)
         {
-            _requestManager = requestManager;
+            _requestExecutor = requestExecutor;
         }
 
         public IEnumerable<Session> GetCollection()
         {
-            string response = _requestManager.SendRequestGetForOdata("Sessions");
+            string response = _requestExecutor.SendRequestGetForOdata("Sessions");
             return JsonConvert.DeserializeObject<Info<Session>>(response).Items;
         }
 
@@ -38,14 +38,14 @@ namespace UiPathCloudAPISharp.Managers
 
         public IEnumerable<Session> GetCollection(IQueryParameters queryParameters)
         {
-            string response = _requestManager.SendRequestGetForOdata("Sessions", queryParameters);
+            string response = _requestExecutor.SendRequestGetForOdata("Sessions", queryParameters);
             return JsonConvert.DeserializeObject<Info<Session>>(response).Items;
         }
 
         public IEnumerable<RobotInfo> GetRobotCollection()
         {
             QueryParameters queryParameters = new QueryParameters(select: "Robot", expand: "Robot");
-            string response = _requestManager.SendRequestGetForOdata("Sessions", queryParameters);
+            string response = _requestExecutor.SendRequestGetForOdata("Sessions", queryParameters);
             return JsonConvert.DeserializeObject<Info<RobotInfo>>(response).Items;
         }
 
@@ -78,7 +78,7 @@ namespace UiPathCloudAPISharp.Managers
             {
                 commonQueryParameters.Select = "Robot";
                 commonQueryParameters.Expand = "Robot";
-                string response = _requestManager.SendRequestGetForOdata("Sessions", commonQueryParameters);
+                string response = _requestExecutor.SendRequestGetForOdata("Sessions", commonQueryParameters);
                 return JsonConvert.DeserializeObject<Info<RobotInfo>>(response).Items;
             }
         }

@@ -9,16 +9,16 @@ using System.Threading.Tasks;
 using UiPathCloudAPISharp.Models;
 using UiPathCloudAPISharp.Query;
 
-namespace UiPathCloudAPISharp.Managers
+namespace UiPathCloudAPISharp.Common
 {
-    internal class RequestManager
+    internal class RequestExecutor
     {
-        public RequestManager(string tenantLogicalName, string clientId, string userKey, BehaviorMode behaviorMode = BehaviorMode.Default)
+        public RequestExecutor(string tenantLogicalName, string clientId, string userKey, BehaviorMode behaviorMode = BehaviorMode.Default)
             : this(tenantLogicalName, clientId, userKey, null, behaviorMode)
         {
         }
 
-        public RequestManager(string tenantLogicalName, string clientId, string userKey, string accountLogicalName, BehaviorMode behaviorMode = BehaviorMode.Default)
+        public RequestExecutor(string tenantLogicalName, string clientId, string userKey, string accountLogicalName, BehaviorMode behaviorMode = BehaviorMode.Default)
             : this()
         {
             TenantLogicalName = tenantLogicalName;
@@ -28,7 +28,7 @@ namespace UiPathCloudAPISharp.Managers
             _requiredAccountLogicalName = accountLogicalName;
         }
 
-        public RequestManager()
+        public RequestExecutor()
         {
             RequestTimeout = 30000;
             WaitTimeout = 300000;

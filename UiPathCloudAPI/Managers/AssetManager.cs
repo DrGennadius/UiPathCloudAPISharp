@@ -13,16 +13,16 @@ namespace UiPathCloudAPISharp.Managers
     {
         public QueryStore QueryStore { get { throw new NotImplementedException(); } }
 
-        private RequestManager _requestManager;
+        private RequestExecutor _requestExecutor;
 
-        internal AssetManager(RequestManager requestManager)
+        internal AssetManager(RequestExecutor requestExecutor)
         {
-            _requestManager = requestManager;
+            _requestExecutor = requestExecutor;
         }
 
         public IEnumerable<Asset> GetCollection()
         {
-            string response = _requestManager.SendRequestGetForOdata("Assets");
+            string response = _requestExecutor.SendRequestGetForOdata("Assets");
             return JsonConvert.DeserializeObject<Info<Asset>>(response).Items;
         }
 
@@ -38,7 +38,7 @@ namespace UiPathCloudAPISharp.Managers
 
         public IEnumerable<Asset> GetCollection(IQueryParameters queryParameters)
         {
-            string response = _requestManager.SendRequestGetForOdata("Assets", queryParameters);
+            string response = _requestExecutor.SendRequestGetForOdata("Assets", queryParameters);
             return JsonConvert.DeserializeObject<Info<Asset>>(response).Items;
         }
 
@@ -64,7 +64,7 @@ namespace UiPathCloudAPISharp.Managers
 
         public Asset GetInstanceByRobotId(string assetName, int robotId)
         {
-            string response = _requestManager.SendRequestGetForOdata(string.Format("Assets/UiPath.Server.Configuration.OData.GetRobotAssetByRobotId(robotId={0},assetName='{1}')", robotId, assetName));
+            string response = _requestExecutor.SendRequestGetForOdata(string.Format("Assets/UiPath.Server.Configuration.OData.GetRobotAssetByRobotId(robotId={0},assetName='{1}')", robotId, assetName));
             return JsonConvert.DeserializeObject<Asset>(response);
         }
 
@@ -85,14 +85,14 @@ namespace UiPathCloudAPISharp.Managers
 
         public void DeleteInstance(Asset instance)
         {
-            _requestManager.SendRequestDeleteForOdata(string.Format("Assets({0})", instance.Id));
+            _requestExecutor.SendRequestDeleteForOdata(string.Format("Assets({0})", instance.Id));
         }
 
         public Asset CreateInstance(Asset instance)
         {
             string output = JsonConvert.SerializeObject(instance);
             byte[] sentData = Encoding.UTF8.GetBytes(output);
-            string response = _requestManager.SendRequestPostForOdata("Assets", sentData);
+            string response = _requestExecutor.SendRequestPostForOdata("Assets", sentData);
             return JsonConvert.DeserializeObject<Asset>(response);
         }
 
@@ -115,7 +115,7 @@ namespace UiPathCloudAPISharp.Managers
         {
             string output = JsonConvert.SerializeObject(instance);
             byte[] sentData = Encoding.UTF8.GetBytes(output);
-            _requestManager.SendRequestPutForOdata(string.Format("Assets({0})", instance.Id), sentData);
+            _requestExecutor.SendRequestPutForOdata(string.Format("Assets({0})", instance.Id), sentData);
         }
     }
 }

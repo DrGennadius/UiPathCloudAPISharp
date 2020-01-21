@@ -11,19 +11,19 @@ namespace UiPathCloudAPISharp.Managers
     {
         public bool UseSession { get; set; }
 
-        private RequestManager _requestManager;
+        private RequestExecutor _requestExecutor;
 
         private SessionManager _sessionManager;
 
-        internal RobotManager(RequestManager requestManager, SessionManager sessionManager, bool useSession)
-            : this(requestManager, useSession)
+        internal RobotManager(RequestExecutor requestExecutor, SessionManager sessionManager, bool useSession)
+            : this(requestExecutor, useSession)
         {
             _sessionManager = sessionManager;
         }
 
-        internal RobotManager(RequestManager requestManager, bool useSession)
+        internal RobotManager(RequestExecutor requestExecutor, bool useSession)
         {
-            _requestManager = requestManager;
+            _requestExecutor = requestExecutor;
             UseSession = useSession;
         }
 
@@ -39,13 +39,13 @@ namespace UiPathCloudAPISharp.Managers
             {
                 if (_sessionManager == null)
                 {
-                    _sessionManager = new SessionManager(_requestManager);
+                    _sessionManager = new SessionManager(_requestExecutor);
                 }
                 return GetInfoCollection().Select(r => r.Robot);
             }
             else
             {
-                string response = _requestManager.SendRequestGetForOdata("Robots");
+                string response = _requestExecutor.SendRequestGetForOdata("Robots");
                 return JsonConvert.DeserializeObject<Info<Robot>>(response).Items;
             }
         }
@@ -75,7 +75,7 @@ namespace UiPathCloudAPISharp.Managers
             }
             else
             {
-                string response = _requestManager.SendRequestGetForOdata("Robots", queryParameters);
+                string response = _requestExecutor.SendRequestGetForOdata("Robots", queryParameters);
                 return JsonConvert.DeserializeObject<Info<Robot>>(response).Items;
             }
         }
@@ -84,7 +84,7 @@ namespace UiPathCloudAPISharp.Managers
         {
             if (_sessionManager == null)
             {
-                _sessionManager = new SessionManager(_requestManager);
+                _sessionManager = new SessionManager(_requestExecutor);
             }
             return _sessionManager.GetRobotCollection();
         }
@@ -98,7 +98,7 @@ namespace UiPathCloudAPISharp.Managers
         {
             if (_sessionManager == null)
             {
-                _sessionManager = new SessionManager(_requestManager);
+                _sessionManager = new SessionManager(_requestExecutor);
             }
             return _sessionManager.GetRobotCollection(top, filter, select, expand, orderby, skip);
         }
@@ -107,7 +107,7 @@ namespace UiPathCloudAPISharp.Managers
         {
             if (_sessionManager == null)
             {
-                _sessionManager = new SessionManager(_requestManager);
+                _sessionManager = new SessionManager(_requestExecutor);
             }
             if (queryParameters is QueryParameters)
             {
@@ -138,7 +138,7 @@ namespace UiPathCloudAPISharp.Managers
 
         public Robot GetInstance(int id)
         {
-            string response = _requestManager.SendRequestGetForOdata(string.Format("Robots({0})", id));
+            string response = _requestExecutor.SendRequestGetForOdata(string.Format("Robots({0})", id));
             return JsonConvert.DeserializeObject<Robot>(response);
         }
 

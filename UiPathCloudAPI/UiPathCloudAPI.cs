@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading;
+using UiPathCloudAPISharp.Common;
 using UiPathCloudAPISharp.Managers;
 using UiPathCloudAPISharp.Models;
 using UiPathCloudAPISharp.Query;
@@ -23,22 +24,35 @@ namespace UiPathCloudAPISharp
         /// User Key for connect to UiPath Orchestrator via Cloud API.
         /// Used as refresh_token for Authorization.
         /// </summary>
-        public string UserKey { get { return _requestManager.UserKey; } }
+        public string UserKey { get { return _requestExecutor.UserKey; } }
 
         /// <summary>
         /// Client Id for connect to UiPath Orchestrator via Cloud API.
         /// </summary>
-        public string ClientId { get { return _requestManager.ClientId; } }
+        public string ClientId { get { return _requestExecutor.ClientId; } }
 
         /// <summary>
         /// Tenant Logical Name for connect to UiPath Orchestrator via Cloud API.
         /// </summary>
-        public string TenantLogicalName { get { return _requestManager.TenantLogicalName; } }
+        public string TenantLogicalName { get { return _requestExecutor.TenantLogicalName; } }
 
         /// <summary>
         /// Last error message that occurred
         /// </summary>
-        public string LastErrorMessage { get { return _requestManager.LastErrorMessage; } }
+        public string LastErrorMessage
+        {
+            get
+            {
+                if (_requestExecutor == null)
+                {
+                    return _lastErrorMessage;
+                }
+                else
+                {
+                    return _requestExecutor.LastErrorMessage;
+                }
+            }
+        }
 
         /// <summary>
         /// Gets or sets the time-out value in milliseconds for the <see cref="HttpWebRequest.GetResponse"/> 
@@ -47,8 +61,8 @@ namespace UiPathCloudAPISharp
         /// </summary>
         public int RequestTimeout
         {
-            get { return _requestManager.RequestTimeout; }
-            set { _requestManager.RequestTimeout = value; }
+            get { return _requestExecutor.RequestTimeout; }
+            set { _requestExecutor.RequestTimeout = value; }
         }
 
         /// <summary>
@@ -56,8 +70,8 @@ namespace UiPathCloudAPISharp
         /// </summary>
         public int WaitTimeout
         {
-            get { return _requestManager.WaitTimeout; }
-            set { _requestManager.WaitTimeout = value; }
+            get { return _requestExecutor.WaitTimeout; }
+            set { _requestExecutor.WaitTimeout = value; }
         }
 
         /// <summary>
@@ -65,39 +79,39 @@ namespace UiPathCloudAPISharp
         /// </summary>
         public int BigWaitTimeout
         {
-            get { return _requestManager.BigWaitTimeout; }
-            set { _requestManager.BigWaitTimeout = value; }
+            get { return _requestExecutor.BigWaitTimeout; }
+            set { _requestExecutor.BigWaitTimeout = value; }
         }
 
         /// <summary>
         /// Passed an authentication?
         /// </summary>
-        public bool IsAuthorized { get { return _requestManager.IsAuthorized; } }
+        public bool IsAuthorized { get { return _requestExecutor.IsAuthorized; } }
 
         /// <summary>
         /// Is expired timeout?
         /// </summary>
-        public bool IsExpired { get { return _requestManager.IsExpired; } }
+        public bool IsExpired { get { return _requestExecutor.IsExpired; } }
 
         /// <summary>
         /// Last issue response (deserialized).
         /// </summary>
-        public Response LastIssueResponse { get { return _requestManager.LastIssueResponse; } }
+        public Response LastIssueResponse { get { return _requestExecutor.LastIssueResponse; } }
 
         /// <summary>
         /// Current target account.
         /// </summary>
-        public Account TargetAccount { get { return _requestManager.TargetAccount; } }
+        public Account TargetAccount { get { return _requestExecutor.TargetAccount; } }
 
         /// <summary>
         /// Current target service instance.
         /// </summary>
-        public ServiceInstance TargetServiceInstance { get { return _requestManager.TargetServiceInstance; } }
+        public ServiceInstance TargetServiceInstance { get { return _requestExecutor.TargetServiceInstance; } }
 
         /// <summary>
         /// The behavior mode affects the logic of initialization, authorization, and call requests.
         /// </summary>
-        public BehaviorMode BehaviorMode { get { return _requestManager.BehaviorMode; } }
+        public BehaviorMode BehaviorMode { get { return _requestExecutor.BehaviorMode; } }
 
         /// <summary>
         /// Robot Manager
@@ -153,14 +167,16 @@ namespace UiPathCloudAPISharp
         /// Machine Manager
         /// </summary>
         public MachineManager MachineManager { get; private set; }
+        public bool IsInitialized { get; private set; }
 
         #endregion Public fields
 
         #region Private and internal properties
 
-        private RequestManager _requestManager;
+        private RequestExecutor _requestExecutor;
 
         private bool _useInitiation = true;
+        private string _lastErrorMessage;
 
         #endregion Private and internal fields
 
@@ -198,7 +214,9 @@ namespace UiPathCloudAPISharp
         /// </summary>
         public UiPathCloudAPI()
         {
-            _requestManager = new RequestManager();
+            _lastErrorMessage = "";
+            IsInitialized = false;
+            _requestExecutor = new RequestExecutor();
         }
 
         ~UiPathCloudAPI()
@@ -227,10 +245,10 @@ namespace UiPathCloudAPISharp
         /// <param name="behaviorMode"></param>
         public void Initialization(string tenantLogicalName, string clientId, string userKey, string accountLogicalName, BehaviorMode behaviorMode = BehaviorMode.Default)
         {
-            var _storedRequestTimeout = _requestManager.RequestTimeout;
-            var _storedWaitTimeout = _requestManager.WaitTimeout;
-            var _storedBigWaitTimeout = _requestManager.BigWaitTimeout;
-            _requestManager = new RequestManager(tenantLogicalName, clientId, userKey, accountLogicalName, behaviorMode)
+            var _storedRequestTimeout = _requestExecutor.RequestTimeout;
+            var _storedWaitTimeout = _requestExecutor.WaitTimeout;
+            var _storedBigWaitTimeout = _requestExecutor.BigWaitTimeout;
+            _requestExecutor = new RequestExecutor(tenantLogicalName, clientId, userKey, accountLogicalName, behaviorMode)
             {
                 RequestTimeout = _storedRequestTimeout,
                 WaitTimeout = _storedWaitTimeout,
@@ -238,23 +256,33 @@ namespace UiPathCloudAPISharp
             };
             if (_useInitiation && behaviorMode != BehaviorMode.Default)
             {
-                _requestManager.Initiation();
+                try
+                {
+                    _requestExecutor.Initiation();
+                }
+                catch (Exception ex)
+                {
+                    _lastErrorMessage = _requestExecutor.LastErrorMessage;
+                    End();
+                    throw ex;
+                }
             }
             else
             {
                 _useInitiation = true;
             }
-            SessionManager = new SessionManager(_requestManager);
-            ConfigurationManager = new UiPathConfigurationManager(_requestManager);
-            RobotManager = new RobotManager(_requestManager, SessionManager, true);
-            ProcessManager = new ProcessManager(_requestManager);
-            LibraryManager = new LibraryManager(_requestManager);
-            AssetManager = new AssetManager(_requestManager);
-            ScheduleManager = new ScheduleManager(_requestManager);
-            JobManager = new JobManager(_requestManager, RobotManager, ProcessManager);
-            TransactionManager = new TransactionManager(_requestManager);
-            EnvironmentManager = new EnvironmentManager(_requestManager);
-            MachineManager = new MachineManager(_requestManager);
+            SessionManager = new SessionManager(_requestExecutor);
+            ConfigurationManager = new UiPathConfigurationManager(_requestExecutor);
+            RobotManager = new RobotManager(_requestExecutor, SessionManager, true);
+            ProcessManager = new ProcessManager(_requestExecutor);
+            LibraryManager = new LibraryManager(_requestExecutor);
+            AssetManager = new AssetManager(_requestExecutor);
+            ScheduleManager = new ScheduleManager(_requestExecutor);
+            JobManager = new JobManager(_requestExecutor, RobotManager, ProcessManager);
+            TransactionManager = new TransactionManager(_requestExecutor);
+            EnvironmentManager = new EnvironmentManager(_requestExecutor);
+            MachineManager = new MachineManager(_requestExecutor);
+            IsInitialized = true;
         }
 
         /// <summary>
@@ -264,7 +292,7 @@ namespace UiPathCloudAPISharp
         /// <param name="password"></param>
         public void Initiation(string tenantLogicalName = null, string clientId = null, string userKey = null)
         {
-            _requestManager.Initiation();
+            _requestExecutor.Initiation();
         }
 
         /// <summary>
@@ -274,7 +302,7 @@ namespace UiPathCloudAPISharp
         /// <param name="password"></param>
         public void Authorization(string tenantLogicalName = null, string clientId = null, string userKey = null)
         {
-            _requestManager.Authorization();
+            _requestExecutor.Authorization();
         }
 
         /// <summary>
@@ -282,7 +310,27 @@ namespace UiPathCloudAPISharp
         /// </summary>
         public void GetMainData()
         {
-            _requestManager.GetMainData();
+            _requestExecutor.GetMainData();
+        }
+
+        /// <summary>
+        /// Finish work.
+        /// </summary>
+        public void End()
+        {
+            IsInitialized = false;
+            ConfigurationManager = null;
+            JobManager = null;
+            RobotManager = null;
+            SessionManager = null;
+            ProcessManager = null;
+            LibraryManager = null;
+            AssetManager = null;
+            ScheduleManager = null;
+            TransactionManager = null;
+            EnvironmentManager = null;
+            MachineManager = null;
+            _requestExecutor = null;
         }
 
         #endregion Constructors, initiation, etc.
@@ -295,7 +343,7 @@ namespace UiPathCloudAPISharp
         /// <returns></returns>
         public List<Account> GetAccountsForTargetUser()
         {
-            return _requestManager.GetAccountsForTargetUser();
+            return _requestExecutor.GetAccountsForTargetUser();
         }
 
         /// <summary>
@@ -305,7 +353,7 @@ namespace UiPathCloudAPISharp
         /// <returns></returns>
         public bool SetTargetAccount(Account account)
         {
-            return _requestManager.SetTargetAccount(account);
+            return _requestExecutor.SetTargetAccount(account);
         }
 
         #endregion Accounts
@@ -314,9 +362,9 @@ namespace UiPathCloudAPISharp
 
         private AccountsForUser GetAccountsForUser()
         {
-            return JsonConvert.DeserializeObject<AccountsForUser>(_requestManager.SendRequestGet("https://platform.uipath.com/cloudrpa/api/getAccountsForUser"));
+            return JsonConvert.DeserializeObject<AccountsForUser>(_requestExecutor.SendRequestGet("https://platform.uipath.com/cloudrpa/api/getAccountsForUser"));
         }
-        
+
         #endregion Private methods
     }
 }

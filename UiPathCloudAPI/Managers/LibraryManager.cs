@@ -13,16 +13,16 @@ namespace UiPathCloudAPISharp.Managers
     {
         public QueryStore QueryStore { get { throw new NotImplementedException(); } }
 
-        private RequestManager _requestManager;
+        private RequestExecutor _requestExecutor;
 
-        internal LibraryManager(RequestManager requestManager)
+        internal LibraryManager(RequestExecutor requestExecutor)
         {
-            _requestManager = requestManager;
+            _requestExecutor = requestExecutor;
         }
 
         public IEnumerable<Library> GetCollection()
         {
-            string response = _requestManager.SendRequestGetForOdata("Libraries");
+            string response = _requestExecutor.SendRequestGetForOdata("Libraries");
             return JsonConvert.DeserializeObject<Info<Library>>(response).Items;
         }
 
@@ -38,7 +38,7 @@ namespace UiPathCloudAPISharp.Managers
 
         public IEnumerable<Library> GetCollection(IQueryParameters queryParameters)
         {
-            string response = _requestManager.SendRequestGetForOdata("Libraries", queryParameters);
+            string response = _requestExecutor.SendRequestGetForOdata("Libraries", queryParameters);
             return JsonConvert.DeserializeObject<Info<Library>>(response).Items;
         }
     }

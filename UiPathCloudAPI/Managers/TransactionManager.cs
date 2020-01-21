@@ -14,11 +14,11 @@ namespace UiPathCloudAPISharp.Managers
     {
         public QueryStore QueryStore { get { throw new NotImplementedException(); } }
 
-        private RequestManager _requestManager;
+        private RequestExecutor _requestExecutor;
 
-        internal TransactionManager(RequestManager requestManager)
+        internal TransactionManager(RequestExecutor requestExecutor)
         {
-            _requestManager = requestManager;
+            _requestExecutor = requestExecutor;
         }
 
         /// <summary>
@@ -27,7 +27,7 @@ namespace UiPathCloudAPISharp.Managers
         /// <returns></returns>
         public IEnumerable<QueueItem> GetCollection()
         {
-            string response = _requestManager.SendRequestGetForOdata("QueueItems");
+            string response = _requestExecutor.SendRequestGetForOdata("QueueItems");
             return JsonConvert.DeserializeObject<Info<QueueItem>>(response).Items;
         }
 
@@ -43,13 +43,13 @@ namespace UiPathCloudAPISharp.Managers
 
         public IEnumerable<QueueItem> GetCollection(IQueryParameters queryParameters)
         {
-            string response = _requestManager.SendRequestGetForOdata("QueueItems", queryParameters);
+            string response = _requestExecutor.SendRequestGetForOdata("QueueItems", queryParameters);
             return JsonConvert.DeserializeObject<Info<QueueItem>>(response).Items;
         }
 
         public QueueItem GetInstance(int id)
         {
-            string response = _requestManager.SendRequestGetForOdata(string.Format("QueueItems({0})", id));
+            string response = _requestExecutor.SendRequestGetForOdata(string.Format("QueueItems({0})", id));
             return JsonConvert.DeserializeObject<QueueItem>(response);
         }
 

@@ -13,16 +13,16 @@ namespace UiPathCloudAPISharp.Managers
     {
         public QueryStore QueryStore { get { throw new NotImplementedException(); } }
 
-        private RequestManager _requestManager;
+        private RequestExecutor _requestExecutor;
 
-        internal EnvironmentManager(RequestManager requestManager)
+        internal EnvironmentManager(RequestExecutor requestExecutor)
         {
-            _requestManager = requestManager;
+            _requestExecutor = requestExecutor;
         }
 
         public IEnumerable<UiPathEnvironment> GetCollection()
         {
-            string response = _requestManager.SendRequestGetForOdata("Environments");
+            string response = _requestExecutor.SendRequestGetForOdata("Environments");
             return JsonConvert.DeserializeObject<Info<UiPathEnvironment>>(response).Items;
         }
 
@@ -38,13 +38,13 @@ namespace UiPathCloudAPISharp.Managers
 
         public IEnumerable<UiPathEnvironment> GetCollection(IQueryParameters queryParameters)
         {
-            string response = _requestManager.SendRequestGetForOdata("Environments", queryParameters);
+            string response = _requestExecutor.SendRequestGetForOdata("Environments", queryParameters);
             return JsonConvert.DeserializeObject<Info<UiPathEnvironment>>(response).Items;
         }
 
         public UiPathEnvironment GetInstance(int id)
         {
-            string response = _requestManager.SendRequestGetForOdata(string.Format("Environments({0})", id));
+            string response = _requestExecutor.SendRequestGetForOdata(string.Format("Environments({0})", id));
             return JsonConvert.DeserializeObject<UiPathEnvironment>(response);
         }
 

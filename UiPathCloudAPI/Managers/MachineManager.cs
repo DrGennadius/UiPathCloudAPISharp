@@ -13,16 +13,16 @@ namespace UiPathCloudAPISharp.Managers
     {
         public QueryStore QueryStore { get { throw new NotImplementedException(); } }
 
-        private RequestManager _requestManager;
+        private RequestExecutor _requestExecutor;
 
-        internal MachineManager(RequestManager requestManager)
+        internal MachineManager(RequestExecutor requestExecutor)
         {
-            _requestManager = requestManager;
+            _requestExecutor = requestExecutor;
         }
 
         public IEnumerable<Machine> GetCollection()
         {
-            string response = _requestManager.SendRequestGetForOdata("Machines");
+            string response = _requestExecutor.SendRequestGetForOdata("Machines");
             return JsonConvert.DeserializeObject<Info<Machine>>(response).Items;
         }
 
@@ -38,13 +38,13 @@ namespace UiPathCloudAPISharp.Managers
 
         public IEnumerable<Machine> GetCollection(IQueryParameters queryParameters)
         {
-            string response = _requestManager.SendRequestGetForOdata("Machines", queryParameters);
+            string response = _requestExecutor.SendRequestGetForOdata("Machines", queryParameters);
             return JsonConvert.DeserializeObject<Info<Machine>>(response).Items;
         }
 
         public Machine GetInstance(int id)
         {
-            string response = _requestManager.SendRequestGetForOdata(string.Format("Machines({0})", id));
+            string response = _requestExecutor.SendRequestGetForOdata(string.Format("Machines({0})", id));
             return JsonConvert.DeserializeObject<Machine>(response);
         }
 

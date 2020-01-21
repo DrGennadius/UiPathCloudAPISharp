@@ -13,16 +13,16 @@ namespace UiPathCloudAPISharp.Managers
     {
         public QueryStore QueryStore { get { throw new NotImplementedException(); } }
 
-        private RequestManager _requestManager;
+        private RequestExecutor _requestExecutor;
 
-        internal ProcessManager(RequestManager requestManager)
+        internal ProcessManager(RequestExecutor requestExecutor)
         {
-            _requestManager = requestManager;
+            _requestExecutor = requestExecutor;
         }
 
         public IEnumerable<Process> GetCollection()
         {
-            string response = _requestManager.SendRequestGetForOdata("Releases");
+            string response = _requestExecutor.SendRequestGetForOdata("Releases");
             return JsonConvert.DeserializeObject<Info<Process>>(response).Items;
         }
 
@@ -38,13 +38,13 @@ namespace UiPathCloudAPISharp.Managers
 
         public IEnumerable<Process> GetCollection(IQueryParameters queryParameters)
         {
-            string response = _requestManager.SendRequestGetForOdata("Releases", queryParameters);
+            string response = _requestExecutor.SendRequestGetForOdata("Releases", queryParameters);
             return JsonConvert.DeserializeObject<Info<Process>>(response).Items;
         }
 
         public Process GetInstance(int id)
         {
-            string response = _requestManager.SendRequestGetForOdata(string.Format("Releases({0})", id));
+            string response = _requestExecutor.SendRequestGetForOdata(string.Format("Releases({0})", id));
             return JsonConvert.DeserializeObject<Process>(response);
         }
 
@@ -57,7 +57,7 @@ namespace UiPathCloudAPISharp.Managers
         //{
         //    string output = JsonConvert.SerializeObject(instance);
         //    byte[] sentData = Encoding.UTF8.GetBytes(output);
-        //    _requestManager.SendRequestPatchForOdata(string.Format("Releases({0})", instance.Id), sentData);
+        //    _requestExecutor.SendRequestPatchForOdata(string.Format("Releases({0})", instance.Id), sentData);
         //}
     }
 }
