@@ -167,6 +167,7 @@ namespace UiPathCloudAPISharp
         /// Machine Manager
         /// </summary>
         public MachineManager MachineManager { get; private set; }
+
         public bool IsInitialized { get; private set; }
 
         #endregion Public fields
@@ -245,15 +246,24 @@ namespace UiPathCloudAPISharp
         /// <param name="behaviorMode"></param>
         public void Initialization(string tenantLogicalName, string clientId, string userKey, string accountLogicalName, BehaviorMode behaviorMode = BehaviorMode.Default)
         {
-            var _storedRequestTimeout = _requestExecutor.RequestTimeout;
-            var _storedWaitTimeout = _requestExecutor.WaitTimeout;
-            var _storedBigWaitTimeout = _requestExecutor.BigWaitTimeout;
-            _requestExecutor = new RequestExecutor(tenantLogicalName, clientId, userKey, accountLogicalName, behaviorMode)
+            bool requestExecutorWasNull = true;
+            int storedRequestTimeout = -1;
+            int storedWaitTimeout = -1;
+            int storedBigWaitTimeout = -1;
+            if (_requestExecutor != null)
             {
-                RequestTimeout = _storedRequestTimeout,
-                WaitTimeout = _storedWaitTimeout,
-                BigWaitTimeout = _storedBigWaitTimeout
-            };
+                requestExecutorWasNull = false;
+            }
+            storedRequestTimeout = _requestExecutor.RequestTimeout;
+            storedWaitTimeout = _requestExecutor.WaitTimeout;
+            storedBigWaitTimeout = _requestExecutor.BigWaitTimeout;
+            _requestExecutor = new RequestExecutor(tenantLogicalName, clientId, userKey, accountLogicalName, behaviorMode);
+            if (!requestExecutorWasNull)
+            {
+                _requestExecutor.RequestTimeout = storedRequestTimeout;
+                _requestExecutor.WaitTimeout = storedWaitTimeout;
+                _requestExecutor.BigWaitTimeout = storedBigWaitTimeout;
+            }
             if (_useInitiation && behaviorMode != BehaviorMode.Default)
             {
                 try
