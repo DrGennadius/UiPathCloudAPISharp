@@ -118,6 +118,16 @@ namespace UiPathCloudAPISharp.Tests
                         jobs = uiPath.JobManager.GetCollection(queryParameters);
                         Assert.AreEqual(jobs.Count(), count - 1);
                     }
+                    if (count > 2 && uiPath.JobManager.GetCollection().GroupBy(j => j.State).Count() > 1)
+                    {
+                        var jobs1 = uiPath.JobManager.GetCollection(top: 2, orderby: new OrderBy("State", SortDirection.Asc));
+                        var jobs2 = uiPath.JobManager.GetCollection(top: 2, orderby: new OrderBy("State", SortDirection.Asc), skip: 1);
+                        var jobs3 = uiPath.JobManager.GetCollection(top: 2, orderby: new OrderBy("State", SortDirection.Desc));
+                        var jobs4 = uiPath.JobManager.GetCollection(top: 2, orderby: new OrderBy("State", SortDirection.Desc), skip: 1);
+                        Assert.AreEqual(jobs1.ElementAt(1).Id, jobs2.ElementAt(0).Id);
+                        Assert.AreNotEqual(jobs1.ElementAt(0).Id, jobs2.ElementAt(0).Id);
+                        Assert.AreEqual(jobs3.ElementAt(1).Id, jobs4.ElementAt(0).Id);
+                    }
                 }
             }
             catch (Exception ex)
