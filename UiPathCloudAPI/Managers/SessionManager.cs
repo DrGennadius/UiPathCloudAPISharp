@@ -31,7 +31,7 @@ namespace UiPathCloudAPISharp.Managers
             return GetCollection(new Filter(conditions));
         }
 
-        public IEnumerable<Session> GetCollection(int top = -1, IFilter filter = null, string select = null, string expand = null, OrderBy orderby = null, string skip = null)
+        public IEnumerable<Session> GetCollection(int top = -1, IFilter filter = null, string select = null, string expand = null, OrderBy orderby = null, int skip = -1)
         {
             return GetCollection(new QueryParameters(top, filter, select, expand, orderby, skip));
         }
@@ -54,7 +54,7 @@ namespace UiPathCloudAPISharp.Managers
             return GetRobotCollection(new Filter(conditions));
         }
 
-        public IEnumerable<RobotInfo> GetRobotCollection(int top = -1, IFilter filter = null, string select = null, string expand = null, OrderBy orderby = null, string skip = null)
+        public IEnumerable<RobotInfo> GetRobotCollection(int top = -1, IFilter filter = null, string select = null, string expand = null, OrderBy orderby = null, int skip = -1)
         {
             return GetRobotCollection(new QueryParameters(top, filter, select, expand, orderby, skip));
         }
@@ -91,6 +91,24 @@ namespace UiPathCloudAPISharp.Managers
         public Session GetInstance(Session instance)
         {
             return GetInstance(instance.Id);
+        }
+
+        public int Count()
+        {
+            QueryParameters queryParameters = new QueryParameters(top: 0);
+            string response = _requestExecutor.SendRequestGetForOdata("Sessions", queryParameters);
+            return JsonConvert.DeserializeObject<Info<Session>>(response).Count;
+        }
+
+        public int RobotCount()
+        {
+            QueryParameters queryParameters = new QueryParameters
+            {
+                Top = 0,
+                Expand = "Robot"
+            };
+            string response = _requestExecutor.SendRequestGetForOdata("Sessions", queryParameters);
+            return JsonConvert.DeserializeObject<Info<RobotInfo>>(response).Count;
         }
     }
 }

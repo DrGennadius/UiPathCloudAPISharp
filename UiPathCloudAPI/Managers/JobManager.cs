@@ -44,7 +44,7 @@ namespace UiPathCloudAPISharp.Managers
             return GetCollection(new Filter(conditions));
         }
 
-        public IEnumerable<JobWithArguments> GetCollection(int top = -1, IFilter filter = null, string select = null, string expand = null, OrderBy orderby = null, string skip = null)
+        public IEnumerable<JobWithArguments> GetCollection(int top = -1, IFilter filter = null, string select = null, string expand = null, OrderBy orderby = null, int skip = -1)
         {
             return GetCollection(new QueryParameters(top, filter, select, expand, orderby, skip));
         }
@@ -363,6 +363,13 @@ namespace UiPathCloudAPISharp.Managers
             }
 
             return readyJob;
+        }
+
+        public int Count()
+        {
+            QueryParameters queryParameters = new QueryParameters(top: 0);
+            string response = _requestExecutor.SendRequestGetForOdata("Jobs", queryParameters);
+            return JsonConvert.DeserializeObject<Info<JobWithArguments>>(response).Count;
         }
 
         protected void OnWaitReadyJobCompleted(WaitReadyJobCompletedEventArgs e)

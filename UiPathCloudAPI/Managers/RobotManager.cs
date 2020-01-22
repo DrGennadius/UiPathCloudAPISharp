@@ -55,7 +55,7 @@ namespace UiPathCloudAPISharp.Managers
             return GetCollection(new Filter(conditions));
         }
 
-        public IEnumerable<Robot> GetCollection(int top = -1, IFilter filter = null, string select = null, string expand = null, OrderBy orderby = null, string skip = null)
+        public IEnumerable<Robot> GetCollection(int top = -1, IFilter filter = null, string select = null, string expand = null, OrderBy orderby = null, int skip = -1)
         {
             if (UseSession)
             {
@@ -94,7 +94,7 @@ namespace UiPathCloudAPISharp.Managers
             return _sessionManager.GetRobotCollection(conditions);
         }
 
-        public IEnumerable<RobotInfo> GetInfoCollection(int top = -1, IFilter filter = null, string select = null, string expand = null, OrderBy orderby = null, string skip = null)
+        public IEnumerable<RobotInfo> GetInfoCollection(int top = -1, IFilter filter = null, string select = null, string expand = null, OrderBy orderby = null, int skip = -1)
         {
             if (_sessionManager == null)
             {
@@ -145,6 +145,20 @@ namespace UiPathCloudAPISharp.Managers
         public Robot GetInstance(Robot instance)
         {
             return GetInstance(instance.Id);
+        }
+
+        public int Count()
+        {
+            if (UseSession)
+            {
+                return _sessionManager.RobotCount();
+            }
+            else
+            {
+                QueryParameters queryParameters = new QueryParameters(top: 0);
+                string response = _requestExecutor.SendRequestGetForOdata("Robots", queryParameters);
+                return JsonConvert.DeserializeObject<Info<Robot>>(response).Count;
+            }
         }
     }
 }

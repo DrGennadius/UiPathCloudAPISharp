@@ -9,14 +9,14 @@ namespace UiPathCloudAPISharp.Query
     {
         public QueryParameters() : this(-1) {}
 
-        public QueryParameters(int top = -1, IFilter filter = null, string select = null, string expand = null, OrderBy orderby = null, string skip = null)
+        public QueryParameters(int top = -1, IFilter filter = null, string select = null, string expand = null, OrderBy orderby = null, int skip = -1)
         {
             Top = top;
             Filter = filter;
             Select = select;
             Expand = expand;
             OrderBy = orderby;
-            Skip = Skip;
+            Skip = skip;
         }
 
         public int Top { get; set; }
@@ -27,7 +27,7 @@ namespace UiPathCloudAPISharp.Query
 
         public OrderBy OrderBy { get; set; }
 
-        public string Skip { get; set; }
+        public int Skip { get; set; }
 
         public IFilter Filter { get; set; }
 
@@ -78,9 +78,9 @@ namespace UiPathCloudAPISharp.Query
             {
                 AppendToResult(orderByString);
             }
-            if (!string.IsNullOrEmpty(Skip))
+            if (Skip != -1)
             {
-                AppendToResult(string.Format("skip={0}", Skip));
+                AppendToResult(string.Format("$skip={0}", Skip));
             }
 
             return _resultBuilder.ToString();

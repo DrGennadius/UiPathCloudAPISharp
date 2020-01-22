@@ -31,7 +31,7 @@ namespace UiPathCloudAPISharp.Managers
             return GetCollection(new Filter(conditions));
         }
 
-        public IEnumerable<Asset> GetCollection(int top = -1, IFilter filter = null, string select = null, string expand = null, OrderBy orderby = null, string skip = null)
+        public IEnumerable<Asset> GetCollection(int top = -1, IFilter filter = null, string select = null, string expand = null, OrderBy orderby = null, int skip = -1)
         {
             return GetCollection(new QueryParameters(top, filter, select, expand, orderby, skip));
         }
@@ -52,7 +52,7 @@ namespace UiPathCloudAPISharp.Managers
             return GetCollection(conditions).Select(x => x.Concrete()).ToList();
         }
 
-        public IEnumerable<ConcreteAsset> GetConcreteCollection(int top = -1, IFilter filter = null, string select = null, string expand = null, OrderBy orderby = null, string skip = null)
+        public IEnumerable<ConcreteAsset> GetConcreteCollection(int top = -1, IFilter filter = null, string select = null, string expand = null, OrderBy orderby = null, int skip = -1)
         {
             return GetCollection(top, filter, select, expand, orderby, skip).Select(x => x.Concrete()).ToList();
         }
@@ -116,6 +116,13 @@ namespace UiPathCloudAPISharp.Managers
             string output = JsonConvert.SerializeObject(instance);
             byte[] sentData = Encoding.UTF8.GetBytes(output);
             _requestExecutor.SendRequestPutForOdata(string.Format("Assets({0})", instance.Id), sentData);
+        }
+
+        public int Count()
+        {
+            QueryParameters queryParameters = new QueryParameters(top: 0);
+            string response = _requestExecutor.SendRequestGetForOdata("Assets", queryParameters);
+            return JsonConvert.DeserializeObject<Info<Asset>>(response).Count;
         }
     }
 }

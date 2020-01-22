@@ -281,7 +281,7 @@ namespace UiPathCloudAPISharp.Common
             return result;
         }
 
-        public string SendRequestGetForOdata(string operationPart, int top = -1, Filter filter = null, string select = null, string expand = null, OrderBy orderBy = null, string skip = null)
+        public string SendRequestGetForOdata(string operationPart, int top = -1, Filter filter = null, string select = null, string expand = null, OrderBy orderBy = null, int skip = -1)
         {
             QueryParameters clauses = new QueryParameters(top, filter, select, expand, orderBy, skip);
             return SendRequestGetForOdata(string.Format("{0}?{1}", operationPart, clauses.GetQueryString()));
