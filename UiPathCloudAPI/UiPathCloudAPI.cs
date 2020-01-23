@@ -253,10 +253,10 @@ namespace UiPathCloudAPISharp
             if (_requestExecutor != null)
             {
                 requestExecutorWasNull = false;
+                storedRequestTimeout = _requestExecutor.RequestTimeout;
+                storedWaitTimeout = _requestExecutor.WaitTimeout;
+                storedBigWaitTimeout = _requestExecutor.BigWaitTimeout;
             }
-            storedRequestTimeout = _requestExecutor.RequestTimeout;
-            storedWaitTimeout = _requestExecutor.WaitTimeout;
-            storedBigWaitTimeout = _requestExecutor.BigWaitTimeout;
             _requestExecutor = new RequestExecutor(tenantLogicalName, clientId, userKey, accountLogicalName, behaviorMode);
             if (!requestExecutorWasNull)
             {
