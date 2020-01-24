@@ -244,5 +244,26 @@ namespace UiPathCloudAPISharp.Tests
                 throw ex;
             }
         }
+
+        [TestMethod]
+        public void GetRobotsForProcess()
+        {
+            try
+            {
+                var processes = uiPath.ProcessManager.GetCollection();
+                foreach (var process in processes)
+                {
+                    var robots = uiPath.RobotManager.GetRobotsForProcess(process);
+                }
+            }
+            catch (Exception ex)
+            {
+                if (!string.IsNullOrEmpty(uiPath.LastErrorMessage))
+                {
+                    throw new Exception(uiPath.LastErrorMessage, ex);
+                }
+                throw ex;
+            }
+        }
     }
 }

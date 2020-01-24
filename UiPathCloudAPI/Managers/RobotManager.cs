@@ -160,5 +160,11 @@ namespace UiPathCloudAPISharp.Managers
                 return JsonConvert.DeserializeObject<Info<Robot>>(response).Count;
             }
         }
+
+        public IEnumerable<Robot> GetRobotsForProcess(Process process)
+        {
+            string response = _requestExecutor.SendRequestGetForOdata(string.Format("Robots/UiPath.Server.Configuration.OData.GetRobotsForProcess(processId='{0}')", process.ProcessKey));
+            return JsonConvert.DeserializeObject<Info<Robot>>(response).Items;
+        }
     }
 }
