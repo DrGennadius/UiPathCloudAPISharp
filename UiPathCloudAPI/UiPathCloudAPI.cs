@@ -343,6 +343,18 @@ namespace UiPathCloudAPISharp
             _requestExecutor = null;
         }
 
+#if !NET40
+        public void EnableUsingExtendSecurityProtocolTypes()
+        {
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
+        }
+
+        public void DisableUsingExtendSecurityProtocolTypes()
+        {
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls;
+        }
+#endif
+
         #endregion Constructors, initiation, etc.
 
         #region Accounts
@@ -366,15 +378,15 @@ namespace UiPathCloudAPISharp
             return _requestExecutor.SetTargetAccount(account);
         }
 
-        #endregion Accounts
+#endregion Accounts
  
-        #region Private methods
+#region Private methods
 
         private AccountsForUser GetAccountsForUser()
         {
             return JsonConvert.DeserializeObject<AccountsForUser>(_requestExecutor.SendRequestGet("https://platform.uipath.com/cloudrpa/api/getAccountsForUser"));
         }
 
-        #endregion Private methods
+#endregion Private methods
     }
 }
