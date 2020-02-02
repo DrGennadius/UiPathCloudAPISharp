@@ -65,6 +65,43 @@ namespace UiPathCloudAPISharp.Managers
             return JsonConvert.DeserializeObject<Info<QueueItem>>(response).Count;
         }
 
+        public IEnumerable<QueueDefinition> GetQueueDefinitions()
+        {
+            string response = _requestExecutor.SendRequestGetForOdata("QueueDefinitions");
+            return JsonConvert.DeserializeObject<Info<QueueDefinition>>(response).Items;
+        }
+
+        public IEnumerable<QueueDefinition> GetQueueDefinitions(IQueryParameters queryParameters)
+        {
+            string response = _requestExecutor.SendRequestGetForOdata("QueueDefinitions", queryParameters);
+            return JsonConvert.DeserializeObject<Info<QueueDefinition>>(response).Items;
+        }
+
+        public QueueItem AddQueueItem(NewQueueItem queueItem)
+        {
+            string output = JsonConvert.SerializeObject(queueItem);
+            byte[] sentData = Encoding.UTF8.GetBytes(output);
+            string response = _requestExecutor.SendRequestPostForOdata("Queues/UiPathODataSvc.AddQueueItem", sentData);
+            return JsonConvert.DeserializeObject<QueueItem>(response);
+        }
+
+        public QueueItem AddQueueItem(NewQueueItemData queueItemData)
+        {
+            NewQueueItem newQueueItem = new NewQueueItem
+            {
+                ItemData = queueItemData
+            };
+            return AddQueueItem(newQueueItem);
+        }
+
+        public TransactionStatus AddQueueItems(NewMultipleQueueItems newMultipleQueueItems)
+        {
+            string output = JsonConvert.SerializeObject(newMultipleQueueItems);
+            byte[] sentData = Encoding.UTF8.GetBytes(output);
+            string response = _requestExecutor.SendRequestPostForOdata("Queues/UiPathODataSvc.BulkAddQueueItems", sentData);
+            return JsonConvert.DeserializeObject<TransactionStatus>(response);
+        }
+
         #region QueueItemEvents
         public IEnumerable<QueueItemEvent> GetQueueItemEvents()
         {
