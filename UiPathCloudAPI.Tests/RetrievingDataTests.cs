@@ -265,5 +265,34 @@ namespace UiPathCloudAPISharp.Tests
                 throw ex;
             }
         }
+
+        [TestMethod]
+        public void GetRobotLogsTest()
+        {
+            try
+            {
+                var logs = uiPath.RobotManager.GetLogs();
+                Assert.IsNotNull(logs);
+                int count = uiPath.RobotManager.LogCount();
+                var robots = uiPath.RobotManager.GetCollection();
+                foreach (var robot in robots)
+                {
+                    int countForRobot = uiPath.RobotManager.LogCount(robot);
+                    if (countForRobot <= 1000)
+                    {
+                        var logsForRobot = uiPath.RobotManager.GetLogs(robot);
+                        Assert.AreEqual(logsForRobot.Count(), countForRobot);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                if (!string.IsNullOrEmpty(uiPath.LastErrorMessage))
+                {
+                    throw new Exception(uiPath.LastErrorMessage, ex);
+                }
+                throw ex;
+            }
+        }
     }
 }

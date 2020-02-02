@@ -166,5 +166,99 @@ namespace UiPathCloudAPISharp.Managers
             string response = _requestExecutor.SendRequestGetForOdata(string.Format("Robots/UiPath.Server.Configuration.OData.GetRobotsForProcess(processId='{0}')", process.ProcessKey));
             return JsonConvert.DeserializeObject<Info<Robot>>(response).Items;
         }
+
+        /// <summary>
+        /// Get logs. Max 1000 for getting collection in one time.
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<RobotLog> GetLogs()
+        {
+            string response = _requestExecutor.SendRequestGetForOdata("RobotLogs");
+            return JsonConvert.DeserializeObject<Info<RobotLog>>(response).Items;
+        }
+
+        public IEnumerable<RobotLog> GetLogs(IQueryParameters queryParameters)
+        {
+            string response = _requestExecutor.SendRequestGetForOdata("RobotLogs", queryParameters);
+            return JsonConvert.DeserializeObject<Info<RobotLog>>(response).Items;
+        }
+
+        public IEnumerable<RobotLog> GetLogs(string robotName)
+        {
+            Filter filter = new Filter();
+            return GetLogs(robotName, filter);
+        }
+
+        public IEnumerable<RobotLog> GetLogs(string robotName, IQueryParameters queryParameters)
+        {
+            if (queryParameters is QueryParameters)
+            {
+                var query = queryParameters as QueryParameters;
+                if (query.Filter == null)
+                {
+                    query.Filter = new Filter("RobotName", robotName);
+                }
+                else if (query.Filter is IFilter)
+                {
+                    query.Filter = CorrectFilterForLogs(query.Filter as IFilter, robotName);
+                }
+            }
+            else if (queryParameters is IFilter)
+            {
+                queryParameters = CorrectFilterForLogs(queryParameters as IFilter, robotName);
+            }
+            string response = _requestExecutor.SendRequestGetForOdata("RobotLogs", queryParameters);
+            return JsonConvert.DeserializeObject<Info<RobotLog>>(response).Items;
+        }
+
+        public IEnumerable<RobotLog> GetLogs(Robot instance)
+        {
+            return GetLogs(instance.Name);
+        }
+
+        public IEnumerable<RobotLog> GetLogs(Robot instance, IQueryParameters queryParameters)
+        {
+            return GetLogs(instance.Name, queryParameters);
+        }
+
+        public int LogCount()
+        {
+            QueryParameters queryParameters = new QueryParameters(top: 0);
+            string response = _requestExecutor.SendRequestGetForOdata("RobotLogs", queryParameters);
+            return JsonConvert.DeserializeObject<Info<RobotLog>>(response).Count;
+        }
+
+        public int LogCount(string robotName)
+        {
+            QueryParameters queryParameters = new QueryParameters(top: 0, filter: new Filter("RobotName", robotName));
+            string response = _requestExecutor.SendRequestGetForOdata("RobotLogs", queryParameters);
+            return JsonConvert.DeserializeObject<Info<RobotLog>>(response).Count;
+        }
+
+        public int LogCount(Robot instance)
+        {
+            return LogCount(instance.Name);
+        }
+
+        private IFilter CorrectFilterForLogs(IFilter filter, string robotName)
+        {
+            if (filter is Filter)
+            {
+                var mfilter = filter as Filter;
+                var condition = mfilter.ConditionLine.Where(x => x is Condition)
+                    .Select(e => e as Condition)
+                    .Where(c => c.Name == robotName)
+                    .FirstOrDefault();
+                if (condition == null)
+                {
+                    mfilter.AddCondition("RobotName", robotName);
+                }
+                else
+                {
+                    condition.Value = robotName;
+                }
+            }
+            return new Filter("RobotName", robotName);
+        }
     }
 }

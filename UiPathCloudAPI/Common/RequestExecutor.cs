@@ -292,7 +292,7 @@ namespace UiPathCloudAPISharp.Common
             return SendRequestGetForOdata(string.Format("{0}?{1}", operationPart, queryParameters.GetQueryString()));
         }
 
-        private string SendRequestGetForOdata(string operationPart)
+        public string SendRequestGetForOdata(string operationPart)
         {
             if (!IsAuthorized)
             {
