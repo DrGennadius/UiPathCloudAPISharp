@@ -294,5 +294,75 @@ namespace UiPathCloudAPISharp.Tests
                 throw ex;
             }
         }
+
+        [TestMethod]
+        public void GetQueueItems()
+        {
+            try
+            {
+                var queueItems = uiPath.TransactionManager.GetCollection();
+                Assert.IsNotNull(queueItems);
+                int count = uiPath.TransactionManager.Count();
+                Assert.AreEqual(queueItems.Count(), count);
+                if (queueItems.Any())
+                {
+                    QueryParameters queryParameters = new QueryParameters(top: 1, orderby: new OrderBy("Status"));
+                    queryParameters.Filter = new Filter("Status", queueItems.First().Status);
+                    queueItems = uiPath.TransactionManager.GetCollection(queryParameters);
+                    Assert.IsTrue(queueItems.Count() == 1);
+                    var queueItem = uiPath.TransactionManager.GetInstance(queueItems.First());
+                    Assert.IsNotNull(queueItem);
+                    Assert.AreEqual(queueItem.Id, queueItems.First().Id);
+                    if (count > 1)
+                    {
+                        queryParameters = new QueryParameters(skip: 1);
+                        queueItems = uiPath.TransactionManager.GetCollection(queryParameters);
+                        Assert.AreEqual(queueItems.Count(), count - 1);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                if (!string.IsNullOrEmpty(uiPath.LastErrorMessage))
+                {
+                    throw new Exception(uiPath.LastErrorMessage, ex);
+                }
+                throw ex;
+            }
+        }
+
+        [TestMethod]
+        public void GetQueueItemEvents()
+        {
+            try
+            {
+                var queueItemEvents = uiPath.TransactionManager.GetQueueItemEvents();
+                Assert.IsNotNull(queueItemEvents);
+                int count = uiPath.TransactionManager.QueueItemEventCount();
+                if (queueItemEvents.Any())
+                {
+                    QueryParameters queryParameters = new QueryParameters(top: 1, orderby: new OrderBy("Status"));
+                    queryParameters.Filter = new Filter("Status", queueItemEvents.First().Status);
+                    queueItemEvents = uiPath.TransactionManager.GetQueueItemEvents(queryParameters);
+                    Assert.IsTrue(queueItemEvents.Count() == 1);
+                    var queueItemEvent = uiPath.TransactionManager.GetQueueItemEvent(queueItemEvents.First());
+                    Assert.IsNotNull(queueItemEvent);
+                    Assert.AreEqual(queueItemEvent.Id, queueItemEvents.First().Id);
+                    var queueItem = uiPath.TransactionManager.GetCollection(top: 1).FirstOrDefault();
+                    if (queueItem != null)
+                    {
+                        queueItemEvents = uiPath.TransactionManager.GetQueueItemEventsHistory(queueItem);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                if (!string.IsNullOrEmpty(uiPath.LastErrorMessage))
+                {
+                    throw new Exception(uiPath.LastErrorMessage, ex);
+                }
+                throw ex;
+            }
+        }
     }
 }
