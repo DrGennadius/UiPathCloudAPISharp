@@ -313,7 +313,8 @@ namespace UiPathCloudAPISharp.Common
             }
             return SendRequestGet(
                 string.Format(
-                    "https://platform.uipath.com/{0}/{1}/odata/{2}",
+                    "{0}/{1}/{2}/odata/{3}",
+                    Configuration.BaseURL,
                     TargetAccount.LogicalName,
                     TargetServiceInstance.LogicalName,
                     operationPart
@@ -341,7 +342,8 @@ namespace UiPathCloudAPISharp.Common
             }
             return SendRequestPost(
                 string.Format(
-                    "https://platform.uipath.com/{0}/{1}/odata/{2}",
+                    "{0}/{1}/{2}/odata/{3}",
+                    Configuration.BaseURL,
                     TargetAccount.LogicalName,
                     TargetServiceInstance.LogicalName,
                     operationPart
@@ -370,7 +372,8 @@ namespace UiPathCloudAPISharp.Common
             }
             SendRequestPut(
                 string.Format(
-                    "https://platform.uipath.com/{0}/{1}/odata/{2}",
+                    "{0}/{1}/{2}/odata/{3}",
+                    Configuration.BaseURL,
                     TargetAccount.LogicalName,
                     TargetServiceInstance.LogicalName,
                     operationPart
@@ -399,7 +402,8 @@ namespace UiPathCloudAPISharp.Common
             }
             SendRequestDelete(
                 string.Format(
-                    "https://platform.uipath.com/{0}/{1}/odata/{2}",
+                    "{0}/{1}/{2}/odata/{3}",
+                    Configuration.BaseURL,
                     TargetAccount.LogicalName,
                     TargetServiceInstance.LogicalName,
                     operationPart
@@ -413,7 +417,8 @@ namespace UiPathCloudAPISharp.Common
             ServiceInstances = JsonConvert.DeserializeObject<List<ServiceInstance>>(
                 SendRequestGet(
                     string.Format(
-                        "https://platform.uipath.com/cloudrpa/api/account/{0}/getAllServiceInstances",
+                        "{0}/cloudrpa/api/account/{1}/getAllServiceInstances",
+                        Configuration.BaseURL,
                         TargetAccount.LogicalName
                     )
                 )
@@ -422,7 +427,7 @@ namespace UiPathCloudAPISharp.Common
 
         private AccountsForUser GetAccountsForUser()
         {
-            return JsonConvert.DeserializeObject<AccountsForUser>(SendRequestGet("https://platform.uipath.com/cloudrpa/api/getAccountsForUser"));
+            return JsonConvert.DeserializeObject<AccountsForUser>(SendRequestGet(Configuration.BaseURL + "/cloudrpa/api/getAccountsForUser"));
         }
 
         public string SendRequestGet(string url, bool access = false)
