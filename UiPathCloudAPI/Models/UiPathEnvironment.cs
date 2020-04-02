@@ -15,6 +15,6 @@ namespace UiPathCloudAPISharp.Models
 
         public int Id { get; set; }
 
-        List<Robot> Robots { get; set; }
+        public List<Robot> Robots { get; set; }
     }
 }

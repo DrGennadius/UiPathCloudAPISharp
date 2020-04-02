@@ -19,23 +19,7 @@ namespace UiPathCloudAPISharp
     public class UiPathCloudAPI
     {
         #region Public properties
-
-        /// <summary>
-        /// User Key for connect to UiPath Orchestrator via Cloud API.
-        /// Used as refresh_token for Authorization.
-        /// </summary>
-        public string UserKey { get { return _requestExecutor.UserKey; } }
-
-        /// <summary>
-        /// Client Id for connect to UiPath Orchestrator via Cloud API.
-        /// </summary>
-        public string ClientId { get { return _requestExecutor.ClientId; } }
-
-        /// <summary>
-        /// Tenant Logical Name for connect to UiPath Orchestrator via Cloud API.
-        /// </summary>
-        public string TenantLogicalName { get { return _requestExecutor.TenantLogicalName; } }
-
+        
         /// <summary>
         /// Last error message that occurred
         /// </summary>
@@ -211,13 +195,23 @@ namespace UiPathCloudAPISharp
         }
 
         /// <summary>
+        /// Create instance by configuration.
+        /// </summary>
+        public UiPathCloudAPI(CloudConfiguration configuration)
+        {
+            _lastErrorMessage = "";
+            IsInitialized = false;
+            _requestExecutor = new RequestExecutor(configuration);
+        }
+
+        /// <summary>
         /// Create instance.
         /// </summary>
         public UiPathCloudAPI()
         {
             _lastErrorMessage = "";
             IsInitialized = false;
-            _requestExecutor = new RequestExecutor();
+            _requestExecutor = new RequestExecutor(new CloudConfiguration());
         }
 
         ~UiPathCloudAPI()
@@ -246,6 +240,19 @@ namespace UiPathCloudAPISharp
         /// <param name="behaviorMode"></param>
         public void Initialization(string tenantLogicalName, string clientId, string userKey, string accountLogicalName, BehaviorMode behaviorMode = BehaviorMode.Default)
         {
+            CloudConfiguration configuration = new CloudConfiguration
+            {
+                TenantLogicalName = tenantLogicalName,
+                ClientId = clientId,
+                UserKey = userKey,
+                AccountLogicalName = accountLogicalName,
+                BehaviorMode = behaviorMode
+            };
+            Initialization(configuration);
+        }
+
+        public void Initialization(CloudConfiguration configuration)
+        {
             bool requestExecutorWasNull = true;
             int storedRequestTimeout = -1;
             int storedWaitTimeout = -1;
@@ -257,14 +264,14 @@ namespace UiPathCloudAPISharp
                 storedWaitTimeout = _requestExecutor.WaitTimeout;
                 storedBigWaitTimeout = _requestExecutor.BigWaitTimeout;
             }
-            _requestExecutor = new RequestExecutor(tenantLogicalName, clientId, userKey, accountLogicalName, behaviorMode);
+            _requestExecutor = new RequestExecutor(configuration);
             if (!requestExecutorWasNull)
             {
                 _requestExecutor.RequestTimeout = storedRequestTimeout;
                 _requestExecutor.WaitTimeout = storedWaitTimeout;
                 _requestExecutor.BigWaitTimeout = storedBigWaitTimeout;
             }
-            if (_useInitiation && behaviorMode != BehaviorMode.Default)
+            if (_useInitiation && configuration.BehaviorMode != BehaviorMode.Default)
             {
                 try
                 {

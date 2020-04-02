@@ -19,38 +19,40 @@ namespace UiPathCloudAPISharp.Common
         }
 
         public RequestExecutor(string tenantLogicalName, string clientId, string userKey, string accountLogicalName, BehaviorMode behaviorMode = BehaviorMode.Default)
-            : this()
+            : this(
+                  new CloudConfiguration
+                  {
+                      TenantLogicalName = tenantLogicalName,
+                      ClientId = clientId,
+                      UserKey = userKey,
+                      AccountLogicalName = accountLogicalName,
+                      BehaviorMode = behaviorMode
+                  }
+                  )
         {
-            TenantLogicalName = tenantLogicalName;
-            ClientId = clientId;
-            UserKey = userKey;
-            BehaviorMode = behaviorMode;
-            _requiredAccountLogicalName = accountLogicalName;
         }
 
-        public RequestExecutor()
+        public RequestExecutor(CloudConfiguration configuration)
         {
+            Configuration = configuration;
+            if (!string.IsNullOrEmpty(configuration.AccountLogicalName))
+            {
+                _requiredAccountLogicalName = configuration.AccountLogicalName;
+            }
+            if (string.IsNullOrEmpty(configuration.BaseURL))
+            {
+                configuration.BaseURL = urlUiPathDefault;
+            }
             RequestTimeout = 30000;
             WaitTimeout = 300000;
             BigWaitTimeout = 1800000;
         }
 
         /// <summary>
-        /// User Key for connect to UiPath Orchestrator via Cloud API.
-        /// Used as refresh_token for Authorization.
+        /// Configuration.
         /// </summary>
-        public string UserKey { get; set; }
-
-        /// <summary>
-        /// Client Id for connect to UiPath Orchestrator via Cloud API.
-        /// </summary>
-        public string ClientId { get; set; }
-
-        /// <summary>
-        /// Tenant Logical Name for connect to UiPath Orchestrator via Cloud API.
-        /// </summary>
-        public string TenantLogicalName { get; private set; }
-
+        public CloudConfiguration Configuration { get; private set; }
+        
         /// <summary>
         /// Last error message that occurred
         /// </summary>
@@ -136,7 +138,7 @@ namespace UiPathCloudAPISharp.Common
 
         private DateTime _expirationTime;
 
-        private readonly string urlUipathAuth = "https://account.uipath.com/oauth/token";
+        private readonly string urlUiPathDefault = "https://platform.uipath.com";
 
         private string _requiredAccountLogicalName = null;
 
@@ -170,17 +172,17 @@ namespace UiPathCloudAPISharp.Common
             IsAuthorized = false;
             if (!string.IsNullOrEmpty(tenantLogicalName))
             {
-                TenantLogicalName = tenantLogicalName;
+                Configuration.TenantLogicalName = tenantLogicalName;
             }
             if (!string.IsNullOrEmpty(clientId))
             {
-                ClientId = clientId;
+                Configuration.ClientId = clientId;
             }
             if (!string.IsNullOrEmpty(userKey))
             {
-                UserKey = userKey;
+                Configuration.UserKey = userKey;
             }
-            if (string.IsNullOrWhiteSpace(TenantLogicalName) || string.IsNullOrWhiteSpace(ClientId) || string.IsNullOrWhiteSpace(UserKey))
+            if (string.IsNullOrWhiteSpace(Configuration.TenantLogicalName) || string.IsNullOrWhiteSpace(Configuration.ClientId) || string.IsNullOrWhiteSpace(Configuration.UserKey))
             {
                 throw new ArgumentException("Tenant Logical Name or Client Id or User Key is empty.");
             }
@@ -188,12 +190,12 @@ namespace UiPathCloudAPISharp.Common
 
             var authParametr = new AuthParameters
             {
-                ClientId = ClientId,
-                RefreshToken = UserKey
+                ClientId = Configuration.ClientId,
+                RefreshToken = Configuration.UserKey
             };
             string output = JsonConvert.SerializeObject(authParametr);
             var sentData = Encoding.UTF8.GetBytes(output);
-            Token = JsonConvert.DeserializeObject<AuthToken>(SendRequestPost(urlUipathAuth, sentData, true));
+            Token = JsonConvert.DeserializeObject<AuthToken>(SendRequestPost(Configuration.BaseURL + "/oauth/token", sentData, true));
             _expirationTime = DateTime.Now.AddSeconds(Token.ExpiresIn - _leeway);
             IsAuthorized = true;
         }
@@ -220,7 +222,7 @@ namespace UiPathCloudAPISharp.Common
                     throw new Exception("Required Account is not found.");
                 }
             }
-            if (string.IsNullOrWhiteSpace(TenantLogicalName))
+            if (string.IsNullOrWhiteSpace(Configuration.TenantLogicalName))
             {
                 throw new Exception("LogicalName is null, empty or white space filled.");
             }
@@ -298,11 +300,11 @@ namespace UiPathCloudAPISharp.Common
             {
                 if (BehaviorMode == BehaviorMode.AutoAuthorization)
                 {
-                    Authorization(TenantLogicalName, ClientId, UserKey);
+                    Authorization(Configuration.TenantLogicalName, Configuration.ClientId, Configuration.UserKey);
                 }
                 else if (BehaviorMode == BehaviorMode.AutoInitiation)
                 {
-                    Initiation(TenantLogicalName, ClientId, UserKey);
+                    Initiation(Configuration.TenantLogicalName, Configuration.ClientId, Configuration.UserKey);
                 }
             }
             if (!IsAuthorized)
@@ -326,11 +328,11 @@ namespace UiPathCloudAPISharp.Common
             {
                 if (BehaviorMode == BehaviorMode.AutoAuthorization)
                 {
-                    Authorization(TenantLogicalName, ClientId, UserKey);
+                    Authorization(Configuration.TenantLogicalName, Configuration.ClientId, Configuration.UserKey);
                 }
                 else if (BehaviorMode == BehaviorMode.AutoInitiation)
                 {
-                    Initiation(TenantLogicalName, ClientId, UserKey);
+                    Initiation(Configuration.TenantLogicalName, Configuration.ClientId, Configuration.UserKey);
                 }
             }
             if (!IsAuthorized)
@@ -355,11 +357,11 @@ namespace UiPathCloudAPISharp.Common
             {
                 if (BehaviorMode == BehaviorMode.AutoAuthorization)
                 {
-                    Authorization(TenantLogicalName, ClientId, UserKey);
+                    Authorization(Configuration.TenantLogicalName, Configuration.ClientId, Configuration.UserKey);
                 }
                 else if (BehaviorMode == BehaviorMode.AutoInitiation)
                 {
-                    Initiation(TenantLogicalName, ClientId, UserKey);
+                    Initiation(Configuration.TenantLogicalName, Configuration.ClientId, Configuration.UserKey);
                 }
             }
             if (!IsAuthorized)
@@ -384,11 +386,11 @@ namespace UiPathCloudAPISharp.Common
             {
                 if (BehaviorMode == BehaviorMode.AutoAuthorization)
                 {
-                    Authorization(TenantLogicalName, ClientId, UserKey);
+                    Authorization(Configuration.TenantLogicalName, Configuration.ClientId, Configuration.UserKey);
                 }
                 else if (BehaviorMode == BehaviorMode.AutoInitiation)
                 {
-                    Initiation(TenantLogicalName, ClientId, UserKey);
+                    Initiation(Configuration.TenantLogicalName, Configuration.ClientId, Configuration.UserKey);
                 }
             }
             if (!IsAuthorized)
@@ -463,7 +465,7 @@ namespace UiPathCloudAPISharp.Common
                 }
                 else
                 {
-                    req.Headers.Add("X-UIPATH-TenantName", TenantLogicalName);
+                    req.Headers.Add("X-UIPATH-TenantName", Configuration.TenantLogicalName);
                 }
             }
 
@@ -495,7 +497,7 @@ namespace UiPathCloudAPISharp.Common
                 }
                 else
                 {
-                    req.Headers.Add("X-UIPATH-TenantName", TenantLogicalName);
+                    req.Headers.Add("X-UIPATH-TenantName", Configuration.TenantLogicalName);
                 }
             }
 
@@ -527,7 +529,7 @@ namespace UiPathCloudAPISharp.Common
                 }
                 else
                 {
-                    req.Headers.Add("X-UIPATH-TenantName", TenantLogicalName);
+                    req.Headers.Add("X-UIPATH-TenantName", Configuration.TenantLogicalName);
                 }
             }
 
