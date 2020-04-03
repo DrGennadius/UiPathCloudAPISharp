@@ -93,7 +93,17 @@ namespace UiPathCloudAPISharp.Common
         /// <summary>
         /// The behavior mode affects the logic of initialization, authorization, and call requests.
         /// </summary>
-        public BehaviorMode BehaviorMode { get; private set; }
+        public BehaviorMode BehaviorMode
+        {
+            get
+            {
+                return Configuration.BehaviorMode;
+            }
+            private set
+            {
+                Configuration.BehaviorMode = value;
+            }
+        }
         
         /// <summary>
         /// Last issue response (deserialized).
@@ -195,7 +205,8 @@ namespace UiPathCloudAPISharp.Common
             };
             string output = JsonConvert.SerializeObject(authParametr);
             var sentData = Encoding.UTF8.GetBytes(output);
-            Token = JsonConvert.DeserializeObject<AuthToken>(SendRequestPost(Configuration.BaseURL + "/oauth/token", sentData, true));
+            string result = SendRequestPost(Configuration.BaseURL + "https://platform.uipath.com/oauth/token", sentData, true);
+            Token = JsonConvert.DeserializeObject<AuthToken>(result);
             _expirationTime = DateTime.Now.AddSeconds(Token.ExpiresIn - _leeway);
             IsAuthorized = true;
         }
