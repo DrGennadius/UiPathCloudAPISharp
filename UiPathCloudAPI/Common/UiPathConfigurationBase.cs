@@ -11,6 +11,8 @@ namespace UiPathCloudAPISharp.Common
 
         public string BaseURL { get; set; }
 
+        public string AccountAuthURL { get; set; }
+
         public abstract ConnectionType ConnectionType { get; }
     }
 

@@ -43,6 +43,10 @@ namespace UiPathCloudAPISharp.Common
             {
                 configuration.BaseURL = urlUiPathDefault;
             }
+            if (string.IsNullOrEmpty(configuration.AccountAuthURL))
+            {
+                configuration.AccountAuthURL = urlUiPathAccounAuthDefault;
+            }
             RequestTimeout = 30000;
             WaitTimeout = 300000;
             BigWaitTimeout = 1800000;
@@ -150,6 +154,8 @@ namespace UiPathCloudAPISharp.Common
 
         private readonly string urlUiPathDefault = "https://platform.uipath.com";
 
+        private readonly string urlUiPathAccounAuthDefault = "https://account.uipath.com";
+
         private string _requiredAccountLogicalName = null;
 
         /// <summary>
@@ -205,7 +211,7 @@ namespace UiPathCloudAPISharp.Common
             };
             string output = JsonConvert.SerializeObject(authParametr);
             var sentData = Encoding.UTF8.GetBytes(output);
-            string result = SendRequestPost(Configuration.BaseURL + "https://platform.uipath.com/oauth/token", sentData, true);
+            string result = SendRequestPost(Configuration.AccountAuthURL + "/oauth/token", sentData, true);
             Token = JsonConvert.DeserializeObject<AuthToken>(result);
             _expirationTime = DateTime.Now.AddSeconds(Token.ExpiresIn - _leeway);
             IsAuthorized = true;
