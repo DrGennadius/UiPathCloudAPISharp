@@ -152,6 +152,20 @@ namespace UiPathCloudAPISharp
         /// </summary>
         public MachineManager MachineManager { get; private set; }
 
+        /// <summary>
+        /// Folder Manager
+        /// </summary>
+        public FolderManager FolderManager { get; private set; }
+
+        /// <summary>
+        /// Default Folder. null - dont use specific folder.
+        /// </summary>
+        public Folder DefaultFolder
+        {
+            get { return _requestExecutor.DefaultFolder; }
+            set { _requestExecutor.DefaultFolder = value; }
+        }
+
         public bool IsInitialized { get; private set; }
 
         #endregion Public fields
@@ -289,6 +303,7 @@ namespace UiPathCloudAPISharp
                 _useInitiation = true;
             }
             SessionManager = new SessionManager(_requestExecutor);
+            FolderManager = new FolderManager(_requestExecutor);
             ConfigurationManager = new UiPathConfigurationManager(_requestExecutor);
             RobotManager = new RobotManager(_requestExecutor, SessionManager, true);
             ProcessManager = new ProcessManager(_requestExecutor);
@@ -328,6 +343,87 @@ namespace UiPathCloudAPISharp
         public void GetMainData()
         {
             _requestExecutor.GetMainData();
+        }
+
+        public void ConfigureDefaultFolder(string displayFolderName)
+        {
+            if (!IsAuthorized)
+            {
+                throw new Exception("Not authorized!");
+            }
+            var folder = FolderManager.GetInstance(displayFolderName);
+            if (folder == null)
+            {
+                throw new ArgumentException("Folder is not found!");
+            }
+            DefaultFolder = folder;
+        }
+
+        public void ConfigureDefaultFolder(int folderId)
+        {
+            if (!IsAuthorized)
+            {
+                throw new Exception("Not authorized!");
+            }
+            var folder = FolderManager.GetInstance(folderId);
+            if (folder == null)
+            {
+                throw new ArgumentException("Folder is not found!");
+            }
+            DefaultFolder = folder;
+        }
+
+        public void ConfigureDefaultFolder(Folder folder)
+        {
+            if (!IsAuthorized)
+            {
+                throw new Exception("Not authorized!");
+            }
+            var updatedFolder = FolderManager.GetInstance(folder);
+            if (folder == null)
+            {
+                throw new ArgumentException("Folder is not found!");
+            }
+            DefaultFolder = updatedFolder;
+        }
+
+        public bool TryConfigureDefaultFolder(string displayFolderName)
+        {
+            try
+            {
+                ConfigureDefaultFolder(displayFolderName);
+            }
+            catch
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public bool TryConfigureDefaultFolder(int folderId)
+        {
+            try
+            {
+                ConfigureDefaultFolder(folderId);
+            }
+            catch
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public bool TryConfigureDefaultFolder(Folder folder)
+        {
+            try
+            {
+                ConfigureDefaultFolder(folder);
+            }
+            catch
+            {
+                return false;
+            }
+            return true;
         }
 
         /// <summary>

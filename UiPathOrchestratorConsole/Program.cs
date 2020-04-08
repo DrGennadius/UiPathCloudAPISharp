@@ -21,13 +21,7 @@ namespace UiPathCloudAPISharpStartJob
             string refreshToken = ConfigurationManager.AppSettings["UserKey"];
 
             UiPathCloudAPI uiPath = new UiPathCloudAPI(tenantLogicalName, clientId, refreshToken, BehaviorMode.AutoInitiation);
-            var robot = uiPath.RobotManager.GetCollection().First();
-            var release = uiPath.ProcessManager.GetCollection().First();
-            var dsf = uiPath.RobotManager.GetRobotsForProcess(release);
-            var envs = uiPath.EnvironmentManager.GetCollection();
-            var newJob = uiPath.JobManager.StartJob(robot, release);
-            Console.ReadKey();
-            //MenuLoop(uiPath);
+            MenuLoop(uiPath);
         }
 
         static void MenuLoop(UiPathCloudAPI uiPath)

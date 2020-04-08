@@ -95,6 +95,11 @@ namespace UiPathCloudAPISharp.Common
         public ServiceInstance TargetServiceInstance { get; private set; }
 
         /// <summary>
+        /// Default Folder.
+        /// </summary>
+        public Folder DefaultFolder { get; set; }
+
+        /// <summary>
         /// The behavior mode affects the logic of initialization, authorization, and call requests.
         /// </summary>
         public BehaviorMode BehaviorMode
@@ -328,7 +333,9 @@ namespace UiPathCloudAPISharp.Common
             {
                 throw new Exception("Not authorized.");
             }
-            return SendRequestGet(
+            if (DefaultFolder == null)
+            {
+                return SendRequestGet(
                 string.Format(
                     "{0}/{1}/{2}/odata/{3}",
                     Configuration.BaseURL,
@@ -338,6 +345,21 @@ namespace UiPathCloudAPISharp.Common
                     )
                     , true
                 );
+            }
+            else
+            {
+                return SendRequestGet(
+                string.Format(
+                    "{0}/{1}/{2}/odata/{3}",
+                    Configuration.BaseURL,
+                    TargetAccount.LogicalName,
+                    TargetServiceInstance.LogicalName,
+                    operationPart
+                    )
+                    , true
+                    , DefaultFolder
+                );
+            }
         }
 
         public string SendRequestPostForOdata(string operationPart, byte[] sentData)
@@ -357,7 +379,9 @@ namespace UiPathCloudAPISharp.Common
             {
                 throw new Exception("Not authorized.");
             }
-            return SendRequestPost(
+            if (DefaultFolder == null)
+            {
+                return SendRequestPost(
                 string.Format(
                     "{0}/{1}/{2}/odata/{3}",
                     Configuration.BaseURL,
@@ -368,6 +392,22 @@ namespace UiPathCloudAPISharp.Common
                     , sentData
                     , true
                 );
+            }
+            else
+            {
+                return SendRequestPost(
+                string.Format(
+                    "{0}/{1}/{2}/odata/{3}",
+                    Configuration.BaseURL,
+                    TargetAccount.LogicalName,
+                    TargetServiceInstance.LogicalName,
+                    operationPart
+                    )
+                    , sentData
+                    , true
+                    , DefaultFolder
+                );
+            }
         }
 
         public void SendRequestPutForOdata(string operationPart, byte[] sentData)
@@ -387,7 +427,9 @@ namespace UiPathCloudAPISharp.Common
             {
                 throw new Exception("Not authorized.");
             }
-            SendRequestPut(
+            if (DefaultFolder == null)
+            {
+                SendRequestPut(
                 string.Format(
                     "{0}/{1}/{2}/odata/{3}",
                     Configuration.BaseURL,
@@ -398,6 +440,22 @@ namespace UiPathCloudAPISharp.Common
                     , sentData
                     , true
                 );
+            }
+            else
+            {
+                SendRequestPut(
+                string.Format(
+                    "{0}/{1}/{2}/odata/{3}",
+                    Configuration.BaseURL,
+                    TargetAccount.LogicalName,
+                    TargetServiceInstance.LogicalName,
+                    operationPart
+                    )
+                    , sentData
+                    , true
+                    , DefaultFolder
+                );
+            }
         }
 
         public void SendRequestDeleteForOdata(string operationPart)
@@ -417,7 +475,9 @@ namespace UiPathCloudAPISharp.Common
             {
                 throw new Exception("Not authorized.");
             }
-            SendRequestDelete(
+            if (DefaultFolder == null)
+            {
+                SendRequestDelete(
                 string.Format(
                     "{0}/{1}/{2}/odata/{3}",
                     Configuration.BaseURL,
@@ -427,6 +487,21 @@ namespace UiPathCloudAPISharp.Common
                     )
                     , true
                 );
+            }
+            else
+            {
+                SendRequestDelete(
+                string.Format(
+                    "{0}/{1}/{2}/odata/{3}",
+                    Configuration.BaseURL,
+                    TargetAccount.LogicalName,
+                    TargetServiceInstance.LogicalName,
+                    operationPart
+                    )
+                    , true
+                    , DefaultFolder
+                );
+            }
         }
 
         private void GetAllServiceInstances()
@@ -447,7 +522,7 @@ namespace UiPathCloudAPISharp.Common
             return JsonConvert.DeserializeObject<AccountsForUser>(SendRequestGet(Configuration.BaseURL + "/cloudrpa/api/getAccountsForUser"));
         }
 
-        public string SendRequestGet(string url, bool access = false)
+        public string SendRequestGet(string url, bool access = false, Folder folder = null)
         {
             if (string.IsNullOrWhiteSpace(url))
             {
@@ -461,12 +536,16 @@ namespace UiPathCloudAPISharp.Common
             if (access)
             {
                 req.Headers.Add("X-UIPATH-TenantName", TargetServiceInstance.LogicalName);
+                if (folder != null)
+                {
+                    req.Headers.Add("X-UIPATH-OrganizationUnitId", folder.Id.ToString());
+                }
             }
 
             return SendRequest(req);
         }
 
-        private string SendRequestPost(string url, byte[] sentData, bool access = false)
+        private string SendRequestPost(string url, byte[] sentData, bool access = false, Folder folder = null)
         {
             if (string.IsNullOrWhiteSpace(url))
             {
@@ -489,6 +568,10 @@ namespace UiPathCloudAPISharp.Common
                 {
                     req.Headers.Add("X-UIPATH-TenantName", Configuration.TenantLogicalName);
                 }
+                if (folder != null)
+                {
+                    req.Headers.Add("X-UIPATH-OrganizationUnitId", folder.Id.ToString());
+                }
             }
 
             req.ContentLength = sentData.Length;
@@ -498,7 +581,7 @@ namespace UiPathCloudAPISharp.Common
             return SendRequest(req);
         }
 
-        private void SendRequestPut(string url, byte[] sentData, bool access = false)
+        private void SendRequestPut(string url, byte[] sentData, bool access = false, Folder folder = null)
         {
             if (string.IsNullOrWhiteSpace(url))
             {
@@ -521,6 +604,10 @@ namespace UiPathCloudAPISharp.Common
                 {
                     req.Headers.Add("X-UIPATH-TenantName", Configuration.TenantLogicalName);
                 }
+                if (folder != null)
+                {
+                    req.Headers.Add("X-UIPATH-OrganizationUnitId", folder.Id.ToString());
+                }
             }
 
             req.ContentLength = sentData.Length;
@@ -530,7 +617,7 @@ namespace UiPathCloudAPISharp.Common
             string responseString = SendRequest(req);
         }
 
-        private void SendRequestDelete(string url, bool access = false)
+        private void SendRequestDelete(string url, bool access = false, Folder folder = null)
         {
             if (string.IsNullOrWhiteSpace(url))
             {
@@ -552,6 +639,10 @@ namespace UiPathCloudAPISharp.Common
                 else
                 {
                     req.Headers.Add("X-UIPATH-TenantName", Configuration.TenantLogicalName);
+                }
+                if (folder != null)
+                {
+                    req.Headers.Add("X-UIPATH-OrganizationUnitId", folder.Id.ToString());
                 }
             }
 

@@ -31,8 +31,11 @@ namespace UiPathCloudAPISharp.Tests
             Assert.IsTrue(uiPath2.IsAuthorized);
 
             UiPathCloudAPI uiPath3 = new UiPathCloudAPI(_configuration["TenantLogicalName"], _configuration["ClientId"], _configuration["UserKey"], BehaviorMode.AutoInitiation);
-            var robots = uiPath3.RobotManager.GetCollection();
-            Assert.IsNotNull(robots);
+            if (uiPath3.TryConfigureDefaultFolder("Default"))
+            {
+                var robots = uiPath3.RobotManager.GetCollection();
+                Assert.IsNotNull(robots);
+            }
         }
     }
 }

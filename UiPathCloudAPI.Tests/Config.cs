@@ -28,6 +28,8 @@ namespace UiPathCloudAPISharp.Tests
                 {
                     _uiPath = new UiPathCloudAPI();
                     _uiPath.Initialization(_configuration["TenantLogicalName"], _configuration["ClientId"], _configuration["UserKey"], BehaviorMode.AutoAuthorization);
+                    var folder = _uiPath.FolderManager.GetInstance("Default");
+                    _uiPath.DefaultFolder = folder;
                 }
                 return _uiPath;
             }
