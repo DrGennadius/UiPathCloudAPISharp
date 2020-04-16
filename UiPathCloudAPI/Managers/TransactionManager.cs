@@ -31,37 +31,48 @@ namespace UiPathCloudAPISharp.Managers
             return JsonConvert.DeserializeObject<Info<QueueItem>>(response).Items;
         }
 
-        public IEnumerable<QueueItem> GetCollection(string conditions)
+        /// <summary>
+        /// Get Queue items from Folder.
+        /// </summary>
+        /// <param name="folder">Folder</param>
+        /// <returns></returns>
+        public IEnumerable<QueueItem> GetCollection(Folder folder)
         {
-            return GetCollection(new Filter(conditions));
-        }
-
-        public IEnumerable<QueueItem> GetCollection(int top = -1, IFilter filter = null, string select = null, string expand = null, OrderBy orderby = null, int skip = -1)
-        {
-            return GetCollection(new QueryParameters(top, filter, select, expand, orderby, skip));
-        }
-
-        public IEnumerable<QueueItem> GetCollection(IQueryParameters queryParameters)
-        {
-            string response = _requestExecutor.SendRequestGetForOdata("QueueItems", queryParameters);
+            string response = _requestExecutor.SendRequestGetForOdata("QueueItems", folder);
             return JsonConvert.DeserializeObject<Info<QueueItem>>(response).Items;
         }
 
-        public QueueItem GetInstance(int id)
+        public IEnumerable<QueueItem> GetCollection(string conditions, Folder folder = null)
         {
-            string response = _requestExecutor.SendRequestGetForOdata(string.Format("QueueItems({0})", id));
+            return GetCollection(new Filter(conditions), folder);
+        }
+
+        public IEnumerable<QueueItem> GetCollection(int top = -1, IFilter filter = null, string select = null, string expand = null, OrderBy orderby = null, int skip = -1, Folder folder = null)
+        {
+            return GetCollection(new QueryParameters(top, filter, select, expand, orderby, skip), folder);
+        }
+
+        public IEnumerable<QueueItem> GetCollection(IQueryParameters queryParameters, Folder folder = null)
+        {
+            string response = _requestExecutor.SendRequestGetForOdata("QueueItems", queryParameters, folder);
+            return JsonConvert.DeserializeObject<Info<QueueItem>>(response).Items;
+        }
+
+        public QueueItem GetInstance(int id, Folder folder = null)
+        {
+            string response = _requestExecutor.SendRequestGetForOdata(string.Format("QueueItems({0})", id), folder);
             return JsonConvert.DeserializeObject<QueueItem>(response);
         }
 
-        public QueueItem GetInstance(QueueItem instance)
+        public QueueItem GetInstance(QueueItem instance, Folder folder = null)
         {
-            return GetInstance(instance.Id);
+            return GetInstance(instance.Id, folder);
         }
 
-        public int Count()
+        public int Count(Folder folder = null)
         {
             QueryParameters queryParameters = new QueryParameters(top: 0);
-            string response = _requestExecutor.SendRequestGetForOdata("QueueItems", queryParameters);
+            string response = _requestExecutor.SendRequestGetForOdata("QueueItems", queryParameters, folder);
             return JsonConvert.DeserializeObject<Info<QueueItem>>(response).Count;
         }
 
@@ -71,34 +82,40 @@ namespace UiPathCloudAPISharp.Managers
             return JsonConvert.DeserializeObject<Info<QueueDefinition>>(response).Items;
         }
 
-        public IEnumerable<QueueDefinition> GetQueueDefinitions(IQueryParameters queryParameters)
+        public IEnumerable<QueueDefinition> GetQueueDefinitions(Folder folder)
         {
-            string response = _requestExecutor.SendRequestGetForOdata("QueueDefinitions", queryParameters);
+            string response = _requestExecutor.SendRequestGetForOdata("QueueDefinitions", folder);
             return JsonConvert.DeserializeObject<Info<QueueDefinition>>(response).Items;
         }
 
-        public QueueItem AddQueueItem(NewQueueItem queueItem)
+        public IEnumerable<QueueDefinition> GetQueueDefinitions(IQueryParameters queryParameters, Folder folder = null)
+        {
+            string response = _requestExecutor.SendRequestGetForOdata("QueueDefinitions", queryParameters, folder);
+            return JsonConvert.DeserializeObject<Info<QueueDefinition>>(response).Items;
+        }
+
+        public QueueItem AddQueueItem(NewQueueItem queueItem, Folder folder = null)
         {
             string output = JsonConvert.SerializeObject(queueItem);
             byte[] sentData = Encoding.UTF8.GetBytes(output);
-            string response = _requestExecutor.SendRequestPostForOdata("Queues/UiPathODataSvc.AddQueueItem", sentData);
+            string response = _requestExecutor.SendRequestPostForOdata("Queues/UiPathODataSvc.AddQueueItem", sentData, folder);
             return JsonConvert.DeserializeObject<QueueItem>(response);
         }
 
-        public QueueItem AddQueueItem(NewQueueItemData queueItemData)
+        public QueueItem AddQueueItem(NewQueueItemData queueItemData, Folder folder = null)
         {
             NewQueueItem newQueueItem = new NewQueueItem
             {
                 ItemData = queueItemData
             };
-            return AddQueueItem(newQueueItem);
+            return AddQueueItem(newQueueItem, folder);
         }
 
-        public TransactionStatus AddQueueItems(NewMultipleQueueItems newMultipleQueueItems)
+        public TransactionStatus AddQueueItems(NewMultipleQueueItems newMultipleQueueItems, Folder folder = null)
         {
             string output = JsonConvert.SerializeObject(newMultipleQueueItems);
             byte[] sentData = Encoding.UTF8.GetBytes(output);
-            string response = _requestExecutor.SendRequestPostForOdata("Queues/UiPathODataSvc.BulkAddQueueItems", sentData);
+            string response = _requestExecutor.SendRequestPostForOdata("Queues/UiPathODataSvc.BulkAddQueueItems", sentData, folder);
             return JsonConvert.DeserializeObject<TransactionStatus>(response);
         }
 
@@ -109,22 +126,30 @@ namespace UiPathCloudAPISharp.Managers
             return JsonConvert.DeserializeObject<Info<QueueItemEvent>>(response).Items;
         }
 
-        public IEnumerable<QueueItemEvent> GetQueueItemEvents(IQueryParameters queryParameters)
+        public IEnumerable<QueueItemEvent> GetQueueItemEvents(Folder folder)
         {
-            string response = _requestExecutor.SendRequestGetForOdata("QueueItemEvents", queryParameters);
+            string response = _requestExecutor.SendRequestGetForOdata("QueueItemEvents", folder);
             return JsonConvert.DeserializeObject<Info<QueueItemEvent>>(response).Items;
         }
 
-        public IEnumerable<QueueItemEvent> GetQueueItemEventsHistory(int queueItemId)
+        public IEnumerable<QueueItemEvent> GetQueueItemEvents(IQueryParameters queryParameters, Folder folder = null)
+        {
+            string response = _requestExecutor.SendRequestGetForOdata("QueueItemEvents", queryParameters, folder);
+            return JsonConvert.DeserializeObject<Info<QueueItemEvent>>(response).Items;
+        }
+
+        public IEnumerable<QueueItemEvent> GetQueueItemEventsHistory(int queueItemId, Folder folder = null)
         {
             QueryParameters queryParameters = new QueryParameters(orderby: new OrderBy("Timestamp"));
             string response = _requestExecutor.SendRequestGetForOdata(
                 string.Format("QueueItemEvents/UiPath.Server.Configuration.OData.GetQueueItemEventsHistory(queueItemId={0})", queueItemId),
-                queryParameters);
+                queryParameters,
+                folder
+                );
             return JsonConvert.DeserializeObject<Info<QueueItemEvent>>(response).Items;
         }
 
-        public IEnumerable<QueueItemEvent> GetQueueItemEventsHistory(int queueItemId, IQueryParameters queryParameters)
+        public IEnumerable<QueueItemEvent> GetQueueItemEventsHistory(int queueItemId, IQueryParameters queryParameters, Folder folder = null)
         {
             if (queryParameters is QueryParameters)
             {
@@ -140,35 +165,37 @@ namespace UiPathCloudAPISharp.Managers
             }
             string response = _requestExecutor.SendRequestGetForOdata(
                 string.Format("QueueItemEvents/UiPath.Server.Configuration.OData.GetQueueItemEventsHistory(queueItemId={0})", queueItemId),
-                queryParameters);
+                queryParameters,
+                folder
+                );
             return JsonConvert.DeserializeObject<Info<QueueItemEvent>>(response).Items;
         }
 
-        public IEnumerable<QueueItemEvent> GetQueueItemEventsHistory(QueueItem instance)
+        public IEnumerable<QueueItemEvent> GetQueueItemEventsHistory(QueueItem instance, Folder folder = null)
         {
-            return GetQueueItemEventsHistory(instance.Id);
+            return GetQueueItemEventsHistory(instance.Id, folder);
         }
 
-        public IEnumerable<QueueItemEvent> GetQueueItemEventsHistory(QueueItem instance, IQueryParameters queryParameters)
+        public IEnumerable<QueueItemEvent> GetQueueItemEventsHistory(QueueItem instance, IQueryParameters queryParameters, Folder folder = null)
         {
-            return GetQueueItemEventsHistory(instance.Id, queryParameters);
+            return GetQueueItemEventsHistory(instance.Id, queryParameters, folder);
         }
 
-        public QueueItemEvent GetQueueItemEvent(int queueItemEventId)
+        public QueueItemEvent GetQueueItemEvent(int queueItemEventId, Folder folder = null)
         {
-            string response = _requestExecutor.SendRequestGetForOdata(string.Format("QueueItemEvents({0})", queueItemEventId));
+            string response = _requestExecutor.SendRequestGetForOdata(string.Format("QueueItemEvents({0})", queueItemEventId), folder);
             return JsonConvert.DeserializeObject<QueueItemEvent>(response);
         }
 
-        public QueueItemEvent GetQueueItemEvent(QueueItemEvent queueItemEvent)
+        public QueueItemEvent GetQueueItemEvent(QueueItemEvent queueItemEvent, Folder folder = null)
         {
-            return GetQueueItemEvent(queueItemEvent.Id);
+            return GetQueueItemEvent(queueItemEvent.Id, folder);
         }
 
-        public int QueueItemEventCount()
+        public int QueueItemEventCount(Folder folder = null)
         {
             QueryParameters queryParameters = new QueryParameters(top: 0);
-            string response = _requestExecutor.SendRequestGetForOdata("QueueItemEvents", queryParameters);
+            string response = _requestExecutor.SendRequestGetForOdata("QueueItemEvents", queryParameters, folder);
             return JsonConvert.DeserializeObject<Info<QueueItem>>(response).Count;
         }
         #endregion QueueItemEvents

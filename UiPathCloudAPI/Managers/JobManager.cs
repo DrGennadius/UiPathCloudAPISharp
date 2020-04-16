@@ -39,35 +39,41 @@ namespace UiPathCloudAPISharp.Managers
             return JsonConvert.DeserializeObject<Info<JobWithArguments>>(response).Items;
         }
 
-        public IEnumerable<JobWithArguments> GetCollection(string conditions)
+        public IEnumerable<JobWithArguments> GetCollection(Folder folder)
         {
-            return GetCollection(new Filter(conditions));
-        }
-
-        public IEnumerable<JobWithArguments> GetCollection(int top = -1, IFilter filter = null, string select = null, string expand = null, OrderBy orderby = null, int skip = -1)
-        {
-            return GetCollection(new QueryParameters(top, filter, select, expand, orderby, skip));
-        }
-
-        public IEnumerable<JobWithArguments> GetCollection(IQueryParameters queryParameters)
-        {
-            string response = _requestExecutor.SendRequestGetForOdata("Jobs", queryParameters);
+            string response = _requestExecutor.SendRequestGetForOdata("Jobs", folder);
             return JsonConvert.DeserializeObject<Info<JobWithArguments>>(response).Items;
         }
 
-        public JobWithArguments GetInstance(int id)
+        public IEnumerable<JobWithArguments> GetCollection(string conditions, Folder folder = null)
         {
-            return GetCollection(new Filter("Id", id)).FirstOrDefault();
+            return GetCollection(new Filter(conditions), folder);
         }
 
-        public JobWithArguments GetInstance(JobWithArguments instance)
+        public IEnumerable<JobWithArguments> GetCollection(int top = -1, IFilter filter = null, string select = null, string expand = null, OrderBy orderby = null, int skip = -1, Folder folder = null)
         {
-            return GetInstance(instance.Id);
+            return GetCollection(new QueryParameters(top, filter, select, expand, orderby, skip), folder);
         }
 
-        public JobWithArguments GetInstance(Job instance)
+        public IEnumerable<JobWithArguments> GetCollection(IQueryParameters queryParameters, Folder folder = null)
         {
-            return GetInstance(instance.Id);
+            string response = _requestExecutor.SendRequestGetForOdata("Jobs", queryParameters, folder);
+            return JsonConvert.DeserializeObject<Info<JobWithArguments>>(response).Items;
+        }
+
+        public JobWithArguments GetInstance(int id, Folder folder = null)
+        {
+            return GetCollection(new Filter("Id", id), folder).FirstOrDefault();
+        }
+
+        public JobWithArguments GetInstance(JobWithArguments instance, Folder folder = null)
+        {
+            return GetInstance(instance.Id, folder);
+        }
+
+        public JobWithArguments GetInstance(Job instance, Folder folder = null)
+        {
+            return GetInstance(instance.Id, folder);
         }
 
         /// <summary>
@@ -76,9 +82,9 @@ namespace UiPathCloudAPISharp.Managers
         /// <param name="robot"></param>
         /// <param name="process"></param>
         /// <returns></returns>
-        public Job StartJob(Robot robot, Process process)
+        public Job StartJob(Robot robot, Process process, Folder folder = null)
         {
-            return StartJob(robot.Id, process.Key);
+            return StartJob(robot.Id, process.Key, folder);
         }
 
         /// <summary>
@@ -88,9 +94,9 @@ namespace UiPathCloudAPISharp.Managers
         /// <param name="process"></param>
         /// <param name="inputArguments">Input Arguments</param>
         /// <returns></returns>
-        public Job StartJob(Robot robot, Process process, Dictionary<string, object> inputArguments)
+        public Job StartJob(Robot robot, Process process, Dictionary<string, object> inputArguments, Folder folder = null)
         {
-            return StartJob(robot.Id, process.Key, inputArguments);
+            return StartJob(robot.Id, process.Key, inputArguments, folder);
         }
 
         /// <summary>
@@ -101,9 +107,9 @@ namespace UiPathCloudAPISharp.Managers
         /// <param name="processKey"></param>
         /// <param name="environmentName"></param>
         /// <returns></returns>
-        public Job StartJob(string robotName, string processKey, string environmentName)
+        public Job StartJob(string robotName, string processKey, string environmentName, Folder folder = null)
         {
-            return StartJob(robotName, processKey + "_" + environmentName);
+            return StartJob(robotName, processKey + "_" + environmentName, folder);
         }
 
         /// <summary>
@@ -112,9 +118,9 @@ namespace UiPathCloudAPISharp.Managers
         /// <param name="robotName"></param>
         /// <param name="processName"></param>
         /// <returns></returns>
-        public Job StartJob(string robotName, string processName)
+        public Job StartJob(string robotName, string processName, Folder folder = null)
         {
-            return StartJob(robotName, processName, new Dictionary<string, object>());
+            return StartJob(robotName, processName, new Dictionary<string, object>(), folder);
         }
 
         /// <summary>
@@ -126,9 +132,9 @@ namespace UiPathCloudAPISharp.Managers
         /// <param name="environmentName"></param>
         /// <param name="inputArguments"></param>
         /// <returns></returns>
-        public Job StartJob(string robotName, string processKey, string environmentName, Dictionary<string, object> inputArguments)
+        public Job StartJob(string robotName, string processKey, string environmentName, Dictionary<string, object> inputArguments, Folder folder = null)
         {
-            return StartJob(robotName, processKey + "_" + environmentName, inputArguments);
+            return StartJob(robotName, processKey + "_" + environmentName, inputArguments, folder);
         }
 
         /// <summary>
@@ -138,28 +144,28 @@ namespace UiPathCloudAPISharp.Managers
         /// <param name="processName">{Process Key} + _ + {Environment Name}</param>
         /// <param name="inputArguments">Input Arguments</param>
         /// <returns></returns>
-        public Job StartJob(string robotName, string processName, Dictionary<string, object> inputArguments)
+        public Job StartJob(string robotName, string processName, Dictionary<string, object> inputArguments, Folder folder = null)
         {
             Robot robot = null;
             if (_robotManager.UseSession)
             {
                 // TODO: Fix it
-                robot = _robotManager.GetCollection(new Filter("Robot/Name", robotName)).FirstOrDefault();
+                robot = _robotManager.GetCollection(new Filter("Robot/Name", robotName), folder).FirstOrDefault();
             }
             else
             {
-                robot = _robotManager.GetCollection(new Filter("Name", robotName)).FirstOrDefault();
+                robot = _robotManager.GetCollection(new Filter("Name", robotName), folder).FirstOrDefault();
             }
             if (robot == null)
             {
                 throw new Exception("The specified robot was not found.");
             }
-            Process process = _processManager.GetCollection(new Filter("Name", processName)).FirstOrDefault();
+            Process process = _processManager.GetCollection(new Filter("Name", processName), folder).FirstOrDefault();
             if (process == null)
             {
                 throw new Exception("The specified proccess was not found.");
             }
-            return StartJob(robot.Id, process.Key, inputArguments);
+            return StartJob(robot.Id, process.Key, inputArguments, folder);
         }
 
         /// <summary>
@@ -168,9 +174,9 @@ namespace UiPathCloudAPISharp.Managers
         /// <param name="robotId">Robot ID</param>
         /// <param name="releaseKey">Proccess release key</param>
         /// <returns></returns>
-        public Job StartJob(int robotId, string releaseKey)
+        public Job StartJob(int robotId, string releaseKey, Folder folder = null)
         {
-            return StartJob(robotId, releaseKey, new Dictionary<string, object>());
+            return StartJob(robotId, releaseKey, new Dictionary<string, object>(), folder);
         }
 
         /// <summary>
@@ -180,7 +186,7 @@ namespace UiPathCloudAPISharp.Managers
         /// <param name="releaseKey">Proccess release key</param>
         /// <param name="inputArguments">Input Arguments</param>
         /// <returns></returns>
-        public Job StartJob(int robotId, string releaseKey, Dictionary<string, object> inputArguments)
+        public Job StartJob(int robotId, string releaseKey, Dictionary<string, object> inputArguments, Folder folder = null)
         {
             Job job = null;
             if (string.IsNullOrEmpty(releaseKey))
@@ -222,7 +228,7 @@ namespace UiPathCloudAPISharp.Managers
                 string returnStr = null;
                 try
                 {
-                    returnStr = _requestExecutor.SendRequestPostForOdata("Jobs/UiPath.Server.Configuration.OData.StartJobs", sentData);
+                    returnStr = _requestExecutor.SendRequestPostForOdata("Jobs/UiPath.Server.Configuration.OData.StartJobs", sentData, folder);
                     job = JsonConvert.DeserializeObject<Info<Job>>(returnStr).Items.FirstOrDefault();
                 }
                 catch (Exception ex)
@@ -244,9 +250,9 @@ namespace UiPathCloudAPISharp.Managers
         /// </summary>
         /// <param name="job"></param>
         /// <param name="stopStrategy">Strategy: Kill or SoftStop</param>
-        public void StopJob(Job job, StopJobsStrategy stopStrategy = StopJobsStrategy.SoftStop)
+        public void StopJob(Job job, StopJobsStrategy stopStrategy = StopJobsStrategy.SoftStop, Folder folder = null)
         {
-            StopJobs(new List<Job> { job }, stopStrategy);
+            StopJobs(new List<Job> { job }, stopStrategy, folder);
         }
 
         /// <summary>
@@ -254,7 +260,7 @@ namespace UiPathCloudAPISharp.Managers
         /// </summary>
         /// <param name="jobs"></param>
         /// <param name="stopStrategy">Strategy: Kill or SoftStop</param>
-        public void StopJobs(List<Job> jobs, StopJobsStrategy stopStrategy = StopJobsStrategy.SoftStop)
+        public void StopJobs(List<Job> jobs, StopJobsStrategy stopStrategy = StopJobsStrategy.SoftStop, Folder folder = null)
         {
             var startJobsInfo = new StopJobsInfo
             {
@@ -264,7 +270,7 @@ namespace UiPathCloudAPISharp.Managers
             string output = JsonConvert.SerializeObject(startJobsInfo);
             //SentDataStore.Enqueue(output);
             byte[] sentData = Encoding.UTF8.GetBytes(output);
-            _requestExecutor.SendRequestPostForOdata("Jobs/UiPath.Server.Configuration.OData.StopJobs", sentData);
+            _requestExecutor.SendRequestPostForOdata("Jobs/UiPath.Server.Configuration.OData.StopJobs", sentData, folder);
         }
 
         /// <summary>
@@ -272,9 +278,9 @@ namespace UiPathCloudAPISharp.Managers
         /// </summary>
         /// <param name="job"></param>
         /// <returns></returns>
-        public async Task<JobWithArguments> WaitReadyJobAsync(Job job)
+        public async Task<JobWithArguments> WaitReadyJobAsync(Job job, Folder folder = null)
         {
-            return await WaitReadyJobAsync(job, _requestExecutor.WaitTimeout);
+            return await WaitReadyJobAsync(job, _requestExecutor.WaitTimeout, folder);
         }
 
         /// <summary>
@@ -282,9 +288,9 @@ namespace UiPathCloudAPISharp.Managers
         /// </summary>
         /// <param name="job"></param>
         /// <returns></returns>
-        public async Task<JobWithArguments> WaitReadyBigJobAsync(Job job)
+        public async Task<JobWithArguments> WaitReadyBigJobAsync(Job job, Folder folder = null)
         {
-            return await WaitReadyJobAsync(job, _requestExecutor.BigWaitTimeout);
+            return await WaitReadyJobAsync(job, _requestExecutor.BigWaitTimeout, folder);
         }
 
         /// <summary>
@@ -293,9 +299,9 @@ namespace UiPathCloudAPISharp.Managers
         /// <param name="job"></param>
         /// <param name="timeout"></param>
         /// <returns></returns>
-        public async Task<JobWithArguments> WaitReadyJobAsync(Job job, int timeout)
+        public async Task<JobWithArguments> WaitReadyJobAsync(Job job, int timeout, Folder folder = null)
         {
-            JobWithArguments readyJob = await Task.Factory.StartNew<JobWithArguments>(() => WaitReadyJob(job, timeout));
+            JobWithArguments readyJob = await Task.Factory.StartNew<JobWithArguments>(() => WaitReadyJob(job, timeout, folder));
             OnWaitReadyJobCompleted(new WaitReadyJobCompletedEventArgs() { ReadyJob = readyJob });
             return readyJob;
         }
@@ -305,9 +311,9 @@ namespace UiPathCloudAPISharp.Managers
         /// </summary>
         /// <param name="job"></param>
         /// <returns></returns>
-        public JobWithArguments WaitReadyJob(Job job)
+        public JobWithArguments WaitReadyJob(Job job, Folder folder = null)
         {
-            return WaitReadyJob(job, _requestExecutor.WaitTimeout);
+            return WaitReadyJob(job, _requestExecutor.WaitTimeout, folder);
         }
 
         /// <summary>
@@ -315,9 +321,9 @@ namespace UiPathCloudAPISharp.Managers
         /// </summary>
         /// <param name="job"></param>
         /// <returns></returns>
-        public JobWithArguments WaitReadyBigJob(Job job)
+        public JobWithArguments WaitReadyBigJob(Job job, Folder folder = null)
         {
-            return WaitReadyJob(job, _requestExecutor.BigWaitTimeout);
+            return WaitReadyJob(job, _requestExecutor.BigWaitTimeout, folder);
         }
 
         /// <summary>
@@ -326,7 +332,7 @@ namespace UiPathCloudAPISharp.Managers
         /// <param name="job"></param>
         /// <param name="timeout"></param>
         /// <returns></returns>
-        public JobWithArguments WaitReadyJob(Job job, int timeout)
+        public JobWithArguments WaitReadyJob(Job job, int timeout, Folder folder = null)
         {
             JobWithArguments readyJob = null;
 
@@ -340,7 +346,7 @@ namespace UiPathCloudAPISharp.Managers
                 while (true)
                 {
                     Thread.Sleep(5000);
-                    var returnJob = GetInstance(job.Id);
+                    var returnJob = GetInstance(job.Id, folder);
                     if (DateTime.Now >= stopDateTime)
                     {
                         break;
@@ -365,10 +371,10 @@ namespace UiPathCloudAPISharp.Managers
             return readyJob;
         }
 
-        public int Count()
+        public int Count(Folder folder = null)
         {
             QueryParameters queryParameters = new QueryParameters(top: 0);
-            string response = _requestExecutor.SendRequestGetForOdata("Jobs", queryParameters);
+            string response = _requestExecutor.SendRequestGetForOdata("Jobs", queryParameters, folder);
             return JsonConvert.DeserializeObject<Info<JobWithArguments>>(response).Count;
         }
 

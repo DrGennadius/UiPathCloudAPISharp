@@ -26,26 +26,32 @@ namespace UiPathCloudAPISharp.Managers
             return JsonConvert.DeserializeObject<Info<Library>>(response).Items;
         }
 
-        public IEnumerable<Library> GetCollection(string conditions)
+        public IEnumerable<Library> GetCollection(Folder folder)
         {
-            return GetCollection(new Filter(conditions));
-        }
-
-        public IEnumerable<Library> GetCollection(int top = -1, IFilter filter = null, string select = null, string expand = null, OrderBy orderby = null, int skip = -1)
-        {
-            return GetCollection(new QueryParameters(top, filter, select, expand, orderby, skip));
-        }
-
-        public IEnumerable<Library> GetCollection(IQueryParameters queryParameters)
-        {
-            string response = _requestExecutor.SendRequestGetForOdata("Libraries", queryParameters);
+            string response = _requestExecutor.SendRequestGetForOdata("Libraries", folder);
             return JsonConvert.DeserializeObject<Info<Library>>(response).Items;
         }
 
-        public int Count()
+        public IEnumerable<Library> GetCollection(string conditions, Folder folder = null)
+        {
+            return GetCollection(new Filter(conditions), folder);
+        }
+
+        public IEnumerable<Library> GetCollection(int top = -1, IFilter filter = null, string select = null, string expand = null, OrderBy orderby = null, int skip = -1, Folder folder = null)
+        {
+            return GetCollection(new QueryParameters(top, filter, select, expand, orderby, skip), folder);
+        }
+
+        public IEnumerable<Library> GetCollection(IQueryParameters queryParameters, Folder folder = null)
+        {
+            string response = _requestExecutor.SendRequestGetForOdata("Libraries", queryParameters, folder);
+            return JsonConvert.DeserializeObject<Info<Library>>(response).Items;
+        }
+
+        public int Count(Folder folder = null)
         {
             QueryParameters queryParameters = new QueryParameters(top: 0);
-            string response = _requestExecutor.SendRequestGetForOdata("Libraries", queryParameters);
+            string response = _requestExecutor.SendRequestGetForOdata("Libraries", queryParameters, folder);
             return JsonConvert.DeserializeObject<Info<Library>>(response).Count;
         }
     }

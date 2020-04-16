@@ -26,37 +26,43 @@ namespace UiPathCloudAPISharp.Managers
             return JsonConvert.DeserializeObject<Info<Schedule>>(response).Items;
         }
 
-        public IEnumerable<Schedule> GetCollection(string conditions)
+        public IEnumerable<Schedule> GetCollection(Folder folder)
         {
-            return GetCollection(new Filter(conditions));
-        }
-
-        public IEnumerable<Schedule> GetCollection(int top = -1, IFilter filter = null, string select = null, string expand = null, OrderBy orderby = null, int skip = -1)
-        {
-            return GetCollection(new QueryParameters(top, filter, select, expand, orderby, skip));
-        }
-
-        public IEnumerable<Schedule> GetCollection(IQueryParameters queryParameters)
-        {
-            string response = _requestExecutor.SendRequestGetForOdata("ProcessSchedules", queryParameters);
+            string response = _requestExecutor.SendRequestGetForOdata("ProcessSchedules", folder);
             return JsonConvert.DeserializeObject<Info<Schedule>>(response).Items;
         }
 
-        public Schedule GetInstance(int id)
+        public IEnumerable<Schedule> GetCollection(string conditions, Folder folder = null)
         {
-            string response = _requestExecutor.SendRequestGetForOdata(string.Format("ProcessSchedules({0})", id));
+            return GetCollection(new Filter(conditions), folder);
+        }
+
+        public IEnumerable<Schedule> GetCollection(int top = -1, IFilter filter = null, string select = null, string expand = null, OrderBy orderby = null, int skip = -1, Folder folder = null)
+        {
+            return GetCollection(new QueryParameters(top, filter, select, expand, orderby, skip), folder);
+        }
+
+        public IEnumerable<Schedule> GetCollection(IQueryParameters queryParameters, Folder folder = null)
+        {
+            string response = _requestExecutor.SendRequestGetForOdata("ProcessSchedules", queryParameters, folder);
+            return JsonConvert.DeserializeObject<Info<Schedule>>(response).Items;
+        }
+
+        public Schedule GetInstance(int id, Folder folder = null)
+        {
+            string response = _requestExecutor.SendRequestGetForOdata(string.Format("ProcessSchedules({0})", id), folder);
             return JsonConvert.DeserializeObject<Schedule>(response);
         }
 
-        public Schedule GetInstance(Schedule instance)
+        public Schedule GetInstance(Schedule instance, Folder folder = null)
         {
-            return GetInstance(instance.Id);
+            return GetInstance(instance.Id, folder);
         }
 
-        public int Count()
+        public int Count(Folder folder = null)
         {
             QueryParameters queryParameters = new QueryParameters(top: 0);
-            string response = _requestExecutor.SendRequestGetForOdata("ProcessSchedules", queryParameters);
+            string response = _requestExecutor.SendRequestGetForOdata("ProcessSchedules", queryParameters, folder);
             return JsonConvert.DeserializeObject<Info<Schedule>>(response).Count;
         }
     }

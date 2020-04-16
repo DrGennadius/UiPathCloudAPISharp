@@ -26,37 +26,43 @@ namespace UiPathCloudAPISharp.Managers
             return JsonConvert.DeserializeObject<Info<UiPathEnvironment>>(response).Items;
         }
 
-        public IEnumerable<UiPathEnvironment> GetCollection(string conditions)
+        public IEnumerable<UiPathEnvironment> GetCollection(Folder folder)
         {
-            return GetCollection(new Filter(conditions));
-        }
-
-        public IEnumerable<UiPathEnvironment> GetCollection(int top = -1, IFilter filter = null, string select = null, string expand = null, OrderBy orderby = null, int skip = -1)
-        {
-            return GetCollection(new QueryParameters(top, filter, select, expand, orderby, skip));
-        }
-
-        public IEnumerable<UiPathEnvironment> GetCollection(IQueryParameters queryParameters)
-        {
-            string response = _requestExecutor.SendRequestGetForOdata("Environments", queryParameters);
+            string response = _requestExecutor.SendRequestGetForOdata("Environments", folder);
             return JsonConvert.DeserializeObject<Info<UiPathEnvironment>>(response).Items;
         }
 
-        public UiPathEnvironment GetInstance(int id)
+        public IEnumerable<UiPathEnvironment> GetCollection(string conditions, Folder folder = null)
         {
-            string response = _requestExecutor.SendRequestGetForOdata(string.Format("Environments({0})", id));
+            return GetCollection(new Filter(conditions), folder);
+        }
+
+        public IEnumerable<UiPathEnvironment> GetCollection(int top = -1, IFilter filter = null, string select = null, string expand = null, OrderBy orderby = null, int skip = -1, Folder folder = null)
+        {
+            return GetCollection(new QueryParameters(top, filter, select, expand, orderby, skip), folder);
+        }
+
+        public IEnumerable<UiPathEnvironment> GetCollection(IQueryParameters queryParameters, Folder folder = null)
+        {
+            string response = _requestExecutor.SendRequestGetForOdata("Environments", queryParameters, folder);
+            return JsonConvert.DeserializeObject<Info<UiPathEnvironment>>(response).Items;
+        }
+
+        public UiPathEnvironment GetInstance(int id, Folder folder = null)
+        {
+            string response = _requestExecutor.SendRequestGetForOdata(string.Format("Environments({0})", id), folder);
             return JsonConvert.DeserializeObject<UiPathEnvironment>(response);
         }
 
-        public UiPathEnvironment GetInstance(UiPathEnvironment instance)
+        public UiPathEnvironment GetInstance(UiPathEnvironment instance, Folder folder = null)
         {
-            return GetInstance(instance.Id);
+            return GetInstance(instance.Id, folder);
         }
 
-        public int Count()
+        public int Count(Folder folder = null)
         {
             QueryParameters queryParameters = new QueryParameters(top: 0);
-            string response = _requestExecutor.SendRequestGetForOdata("Environments", queryParameters);
+            string response = _requestExecutor.SendRequestGetForOdata("Environments", queryParameters, folder);
             return JsonConvert.DeserializeObject<Info<UiPathEnvironment>>(response).Count;
         }
     }

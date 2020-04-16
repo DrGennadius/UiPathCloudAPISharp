@@ -19,23 +19,7 @@ namespace UiPathCloudAPISharp
     public class UiPathCloudAPI
     {
         #region Public properties
-
-        /// <summary>
-        /// User Key for connect to UiPath Orchestrator via Cloud API.
-        /// Used as refresh_token for Authorization.
-        /// </summary>
-        public string UserKey { get { return _requestExecutor.UserKey; } }
-
-        /// <summary>
-        /// Client Id for connect to UiPath Orchestrator via Cloud API.
-        /// </summary>
-        public string ClientId { get { return _requestExecutor.ClientId; } }
-
-        /// <summary>
-        /// Tenant Logical Name for connect to UiPath Orchestrator via Cloud API.
-        /// </summary>
-        public string TenantLogicalName { get { return _requestExecutor.TenantLogicalName; } }
-
+        
         /// <summary>
         /// Last error message that occurred
         /// </summary>
@@ -168,6 +152,20 @@ namespace UiPathCloudAPISharp
         /// </summary>
         public MachineManager MachineManager { get; private set; }
 
+        /// <summary>
+        /// Folder Manager
+        /// </summary>
+        public FolderManager FolderManager { get; private set; }
+
+        /// <summary>
+        /// Default Folder. null - dont use specific folder.
+        /// </summary>
+        public Folder DefaultFolder
+        {
+            get { return _requestExecutor.DefaultFolder; }
+            set { _requestExecutor.DefaultFolder = value; }
+        }
+
         public bool IsInitialized { get; private set; }
 
         #endregion Public fields
@@ -211,13 +209,23 @@ namespace UiPathCloudAPISharp
         }
 
         /// <summary>
+        /// Create instance by configuration.
+        /// </summary>
+        public UiPathCloudAPI(CloudConfiguration configuration)
+        {
+            _lastErrorMessage = "";
+            IsInitialized = false;
+            _requestExecutor = new RequestExecutor(configuration);
+        }
+
+        /// <summary>
         /// Create instance.
         /// </summary>
         public UiPathCloudAPI()
         {
             _lastErrorMessage = "";
             IsInitialized = false;
-            _requestExecutor = new RequestExecutor();
+            _requestExecutor = new RequestExecutor(new CloudConfiguration());
         }
 
         ~UiPathCloudAPI()
@@ -246,6 +254,19 @@ namespace UiPathCloudAPISharp
         /// <param name="behaviorMode"></param>
         public void Initialization(string tenantLogicalName, string clientId, string userKey, string accountLogicalName, BehaviorMode behaviorMode = BehaviorMode.Default)
         {
+            CloudConfiguration configuration = new CloudConfiguration
+            {
+                TenantLogicalName = tenantLogicalName,
+                ClientId = clientId,
+                UserKey = userKey,
+                AccountLogicalName = accountLogicalName,
+                BehaviorMode = behaviorMode
+            };
+            Initialization(configuration);
+        }
+
+        public void Initialization(CloudConfiguration configuration)
+        {
             bool requestExecutorWasNull = true;
             int storedRequestTimeout = -1;
             int storedWaitTimeout = -1;
@@ -257,14 +278,14 @@ namespace UiPathCloudAPISharp
                 storedWaitTimeout = _requestExecutor.WaitTimeout;
                 storedBigWaitTimeout = _requestExecutor.BigWaitTimeout;
             }
-            _requestExecutor = new RequestExecutor(tenantLogicalName, clientId, userKey, accountLogicalName, behaviorMode);
+            _requestExecutor = new RequestExecutor(configuration);
             if (!requestExecutorWasNull)
             {
                 _requestExecutor.RequestTimeout = storedRequestTimeout;
                 _requestExecutor.WaitTimeout = storedWaitTimeout;
                 _requestExecutor.BigWaitTimeout = storedBigWaitTimeout;
             }
-            if (_useInitiation && behaviorMode != BehaviorMode.Default)
+            if (_useInitiation && configuration.BehaviorMode != BehaviorMode.Default)
             {
                 try
                 {
@@ -282,6 +303,7 @@ namespace UiPathCloudAPISharp
                 _useInitiation = true;
             }
             SessionManager = new SessionManager(_requestExecutor);
+            FolderManager = new FolderManager(_requestExecutor);
             ConfigurationManager = new UiPathConfigurationManager(_requestExecutor);
             RobotManager = new RobotManager(_requestExecutor, SessionManager, true);
             ProcessManager = new ProcessManager(_requestExecutor);
@@ -321,6 +343,87 @@ namespace UiPathCloudAPISharp
         public void GetMainData()
         {
             _requestExecutor.GetMainData();
+        }
+
+        public void ConfigureDefaultFolder(string displayFolderName)
+        {
+            if (!IsAuthorized)
+            {
+                throw new Exception("Not authorized!");
+            }
+            var folder = FolderManager.GetInstance(displayFolderName);
+            if (folder == null)
+            {
+                throw new ArgumentException("Folder is not found!");
+            }
+            DefaultFolder = folder;
+        }
+
+        public void ConfigureDefaultFolder(int folderId)
+        {
+            if (!IsAuthorized)
+            {
+                throw new Exception("Not authorized!");
+            }
+            var folder = FolderManager.GetInstance(folderId);
+            if (folder == null)
+            {
+                throw new ArgumentException("Folder is not found!");
+            }
+            DefaultFolder = folder;
+        }
+
+        public void ConfigureDefaultFolder(Folder folder)
+        {
+            if (!IsAuthorized)
+            {
+                throw new Exception("Not authorized!");
+            }
+            var updatedFolder = FolderManager.GetInstance(folder);
+            if (folder == null)
+            {
+                throw new ArgumentException("Folder is not found!");
+            }
+            DefaultFolder = updatedFolder;
+        }
+
+        public bool TryConfigureDefaultFolder(string displayFolderName)
+        {
+            try
+            {
+                ConfigureDefaultFolder(displayFolderName);
+            }
+            catch
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public bool TryConfigureDefaultFolder(int folderId)
+        {
+            try
+            {
+                ConfigureDefaultFolder(folderId);
+            }
+            catch
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public bool TryConfigureDefaultFolder(Folder folder)
+        {
+            try
+            {
+                ConfigureDefaultFolder(folder);
+            }
+            catch
+            {
+                return false;
+            }
+            return true;
         }
 
         /// <summary>
