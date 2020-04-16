@@ -21,6 +21,6 @@ jobs:
     - name: Install dependencies
       run: dotnet restore
     - name: Build
-      run: dotnet build --configuration Release --no-restore -f netstandard2.2
+      run: dotnet build UiPathCloudAPI --configuration Release --no-restore -f netstandard2.2
  #   - name: Test
  #     run: dotnet test --no-restore --verbosity normal
