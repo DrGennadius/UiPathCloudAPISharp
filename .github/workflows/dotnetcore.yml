@@ -15,10 +15,4 @@ jobs:
         dotnet-version: 2.2.108
     - name: Build with dotnet
       run: dotnet build UiPathCloudAPI --configuration Release -f netstandard2.0
-    - name: Publish nuget
-      run: |
-           for f in ./[repository]/bin/Release/*.nupkg
-           do
-             curl -vX PUT -u "[user]:${{ secrets.GHPackagesToken }}" -F package=@$f https://nuget.pkg.github.com/[user]/
-           done
       shell: bash
