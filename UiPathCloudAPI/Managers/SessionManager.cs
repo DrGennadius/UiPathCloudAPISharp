@@ -26,19 +26,25 @@ namespace UiPathCloudAPISharp.Managers
             return JsonConvert.DeserializeObject<Info<Session>>(response).Items;
         }
 
-        public IEnumerable<Session> GetCollection(string conditions)
+        public IEnumerable<Session> GetCollection(Folder folder)
         {
-            return GetCollection(new Filter(conditions));
+            string response = _requestExecutor.SendRequestGetForOdata("Sessions", folder);
+            return JsonConvert.DeserializeObject<Info<Session>>(response).Items;
         }
 
-        public IEnumerable<Session> GetCollection(int top = -1, IFilter filter = null, string select = null, string expand = null, OrderBy orderby = null, int skip = -1)
+        public IEnumerable<Session> GetCollection(string conditions, Folder folder = null)
         {
-            return GetCollection(new QueryParameters(top, filter, select, expand, orderby, skip));
+            return GetCollection(new Filter(conditions), folder);
         }
 
-        public IEnumerable<Session> GetCollection(IQueryParameters queryParameters)
+        public IEnumerable<Session> GetCollection(int top = -1, IFilter filter = null, string select = null, string expand = null, OrderBy orderby = null, int skip = -1, Folder folder = null)
         {
-            string response = _requestExecutor.SendRequestGetForOdata("Sessions", queryParameters);
+            return GetCollection(new QueryParameters(top, filter, select, expand, orderby, skip), folder);
+        }
+
+        public IEnumerable<Session> GetCollection(IQueryParameters queryParameters, Folder folder = null)
+        {
+            string response = _requestExecutor.SendRequestGetForOdata("Sessions", queryParameters, folder);
             return JsonConvert.DeserializeObject<Info<Session>>(response).Items;
         }
 
@@ -49,17 +55,24 @@ namespace UiPathCloudAPISharp.Managers
             return JsonConvert.DeserializeObject<Info<RobotInfo>>(response).Items;
         }
 
-        public IEnumerable<RobotInfo> GetRobotCollection(string conditions)
+        public IEnumerable<RobotInfo> GetRobotCollection(Folder folder)
         {
-            return GetRobotCollection(new Filter(conditions));
+            QueryParameters queryParameters = new QueryParameters(select: "Robot", expand: "Robot");
+            string response = _requestExecutor.SendRequestGetForOdata("Sessions", queryParameters, folder);
+            return JsonConvert.DeserializeObject<Info<RobotInfo>>(response).Items;
         }
 
-        public IEnumerable<RobotInfo> GetRobotCollection(int top = -1, IFilter filter = null, string select = null, string expand = null, OrderBy orderby = null, int skip = -1)
+        public IEnumerable<RobotInfo> GetRobotCollection(string conditions, Folder folder = null)
         {
-            return GetRobotCollection(new QueryParameters(top, filter, select, expand, orderby, skip));
+            return GetRobotCollection(new Filter(conditions), folder);
         }
 
-        public IEnumerable<RobotInfo> GetRobotCollection(IQueryParameters queryParameters)
+        public IEnumerable<RobotInfo> GetRobotCollection(int top = -1, IFilter filter = null, string select = null, string expand = null, OrderBy orderby = null, int skip = -1, Folder folder = null)
+        {
+            return GetRobotCollection(new QueryParameters(top, filter, select, expand, orderby, skip), folder);
+        }
+
+        public IEnumerable<RobotInfo> GetRobotCollection(IQueryParameters queryParameters, Folder folder = null)
         {
             QueryParameters commonQueryParameters = null;
             if (queryParameters is IFilter)
@@ -72,42 +85,42 @@ namespace UiPathCloudAPISharp.Managers
             }
             if (commonQueryParameters == null)
             {
-                return GetRobotCollection();
+                return GetRobotCollection(folder);
             }
             else
             {
                 commonQueryParameters.Select = "Robot";
                 commonQueryParameters.Expand = "Robot";
-                string response = _requestExecutor.SendRequestGetForOdata("Sessions", commonQueryParameters);
+                string response = _requestExecutor.SendRequestGetForOdata("Sessions", commonQueryParameters, folder);
                 return JsonConvert.DeserializeObject<Info<RobotInfo>>(response).Items;
             }
         }
 
-        public Session GetInstance(int id)
+        public Session GetInstance(int id, Folder folder = null)
         {
-            return GetCollection().Where(s => s.Id == id).FirstOrDefault();
+            return GetCollection(folder).Where(s => s.Id == id).FirstOrDefault();
         }
 
-        public Session GetInstance(Session instance)
+        public Session GetInstance(Session instance, Folder folder = null)
         {
-            return GetInstance(instance.Id);
+            return GetInstance(instance.Id, folder);
         }
 
-        public int Count()
+        public int Count(Folder folder = null)
         {
             QueryParameters queryParameters = new QueryParameters(top: 0);
-            string response = _requestExecutor.SendRequestGetForOdata("Sessions", queryParameters);
+            string response = _requestExecutor.SendRequestGetForOdata("Sessions", queryParameters, folder);
             return JsonConvert.DeserializeObject<Info<Session>>(response).Count;
         }
 
-        public int RobotCount()
+        public int RobotCount(Folder folder = null)
         {
             QueryParameters queryParameters = new QueryParameters
             {
                 Top = 0,
                 Expand = "Robot"
             };
-            string response = _requestExecutor.SendRequestGetForOdata("Sessions", queryParameters);
+            string response = _requestExecutor.SendRequestGetForOdata("Sessions", queryParameters, folder);
             return JsonConvert.DeserializeObject<Info<RobotInfo>>(response).Count;
         }
     }

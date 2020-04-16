@@ -9,7 +9,10 @@ using UiPathCloudAPISharp.Query;
 
 namespace UiPathCloudAPISharp.Managers
 {
-    public class FolderManager : IManager, IGetRequest<Folder>
+    /// <summary>
+    /// Folder Manager. Get information about Organization Unit. It is need for access to specific folder in requests.
+    /// </summary>
+    public class FolderManager : IManager
     {
         public QueryStore QueryStore
         {
@@ -28,7 +31,7 @@ namespace UiPathCloudAPISharp.Managers
             string response = _requestExecutor.SendRequestGetForOdata("Folders");
             return JsonConvert.DeserializeObject<Info<Folder>>(response).Items;
         }
-
+        
         public IEnumerable<Folder> GetCollection(string conditions)
         {
             return GetCollection(new Filter(conditions));
@@ -38,16 +41,16 @@ namespace UiPathCloudAPISharp.Managers
         {
             return GetCollection(new QueryParameters(top, filter, select, expand, orderby, skip));
         }
-
+        
         public IEnumerable<Folder> GetCollection(IQueryParameters queryParameters)
         {
-            string response = _requestExecutor.SendRequestGetForOdata("Folders", queryParameters);
+            string response = _requestExecutor.SendRequestGetForOdata("Folders", queryParameters, null);
             return JsonConvert.DeserializeObject<Info<Folder>>(response).Items;
         }
 
         public Folder GetInstance(int id)
         {
-            string response = _requestExecutor.SendRequestGetForOdata(string.Format("Folders({0})", id));
+            string response = _requestExecutor.SendRequestGetForOdata(string.Format("Folders({0})", id), null);
             return JsonConvert.DeserializeObject<Folder>(response);
         }
 
@@ -64,7 +67,7 @@ namespace UiPathCloudAPISharp.Managers
         public int Count()
         {
             QueryParameters queryParameters = new QueryParameters(top: 0);
-            string response = _requestExecutor.SendRequestGetForOdata("Folders", queryParameters);
+            string response = _requestExecutor.SendRequestGetForOdata("Folders", queryParameters, null);
             return JsonConvert.DeserializeObject<Info<Machine>>(response).Count;
         }
     }

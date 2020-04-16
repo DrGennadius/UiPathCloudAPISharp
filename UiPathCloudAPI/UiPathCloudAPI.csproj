@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>net40;net461;netstandard2.0</TargetFrameworks>
     <PackageId>UiPathCloudAPISharp</PackageId>
-    <Version>0.9.0</Version>
+    <Version>0.9.2</Version>
     <Authors>Gennady Zykov</Authors>
     <Company />
     <RootNamespace>UiPathCloudAPISharp</RootNamespace>

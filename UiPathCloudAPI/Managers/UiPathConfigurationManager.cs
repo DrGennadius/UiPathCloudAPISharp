@@ -20,15 +20,20 @@ namespace UiPathCloudAPISharp.Managers
             _requestExecutor = requestExecutor;
         }
 
-        public ConfigurationInfo GetConfigurationInfo(int scope = 1)
+        public ConfigurationInfo GetConfigurationInfo(Folder folder)
         {
-            string response = _requestExecutor.SendRequestGetForOdata(string.Format("Settings/UiPath.Server.Configuration.OData.GetExecutionSettingsConfiguration(scope={0})", scope));
+            return GetConfigurationInfo(1, folder);
+        }
+
+        public ConfigurationInfo GetConfigurationInfo(int scope = 1, Folder folder = null)
+        {
+            string response = _requestExecutor.SendRequestGetForOdata(string.Format("Settings/UiPath.Server.Configuration.OData.GetExecutionSettingsConfiguration(scope={0})", scope), folder);
             return JsonConvert.DeserializeObject<ConfigurationInfo>(response);
         }
 
-        public Setting GetSetting(string key)
+        public Setting GetSetting(string key, Folder folder = null)
         {
-            return GetConfigurationInfo().Configuration.Where(s => s.Key == key).FirstOrDefault();
+            return GetConfigurationInfo(folder).Configuration.Where(s => s.Key == key).FirstOrDefault();
         }
 
         public Setting this[string key]
@@ -36,6 +41,14 @@ namespace UiPathCloudAPISharp.Managers
             get
             {
                 return GetSetting(key);
+            }
+        }
+
+        public Setting this[string key, Folder folder]
+        {
+            get
+            {
+                return GetSetting(key, folder);
             }
         }
     }
